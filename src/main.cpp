@@ -52,7 +52,7 @@ int main(int argc, const char** argv) {
   printKernelBuildLog(deviceID, program);
   free(kernelFileBuffer);
 
-  cl_kernel kernel = clCreateKernel(program, "linearKernel", &error);
+  cl_kernel kernel = clCreateKernel(program, "tileKernel", &error);
 
   #define IMAGE_WIDTH 2048
   #define IMAGE_HEIGHT 2048
@@ -89,6 +89,9 @@ int main(int argc, const char** argv) {
     printf("Block #%d: %f\n", x, outputHost[x * workBlockSize[0] * workBlockSize[1]]);
   }
 
+  clReleaseMemObject(outputDevice);
+  free(outputHost);
+  
   clReleaseKernel(kernel);
   clReleaseProgram(program);
   clReleaseCommandQueue(commandQueue);
