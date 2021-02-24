@@ -8,9 +8,7 @@ int main(int argc, const char** argv) {
     .sType = STRUCTURE_TYPE_RENDER_PROPERTIES_OPENCL,
     .pNext = NULL,
     .kernelMode = KERNEL_MODE_LINEAR,
-    .imageWidth = 2048,
-    .imageHeight = 2048,
-    .imageDepth = 1
+    .imageDimensions = {2048, 2048, 3},
   };
 
   engine->render(&renderProperties);

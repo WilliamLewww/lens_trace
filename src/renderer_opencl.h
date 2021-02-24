@@ -16,9 +16,7 @@ struct RenderPropertiesOpenCL {
   StructureType sType;
   void* pNext;
   KernelMode kernelMode;
-  uint64_t imageWidth;
-  uint64_t imageHeight;
-  uint64_t imageDepth;
+  uint64_t imageDimensions[3];
 };
 
 class RendererOpenCL : public Renderer {
