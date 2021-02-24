@@ -8,10 +8,6 @@ enum StructureType {
 
 class Renderer {
 protected:
-  uint64_t imageWidth;
-  uint64_t imageHeight;
-  uint64_t imageDepth;
 public:
-  virtual void setResolution(uint64_t width, uint64_t height, uint64_t depth) = 0;
-  virtual void render(void* pNext = NULL) = 0;
+  virtual void render(void* pNext) = 0;
 };

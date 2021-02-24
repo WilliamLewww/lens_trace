@@ -16,6 +16,9 @@ struct RenderPropertiesOpenCL {
   StructureType sType;
   void* pNext;
   KernelMode kernelMode;
+  uint64_t imageWidth;
+  uint64_t imageHeight;
+  uint64_t imageDepth;
 };
 
 class RendererOpenCL : public Renderer {
@@ -33,10 +36,10 @@ private:
   cl_context context;
   cl_command_queue commandQueue;
   cl_program program;
+  cl_kernel kernel;
 public:
   RendererOpenCL();
   ~RendererOpenCL();
 
-  void setResolution(uint64_t width, uint64_t height, uint64_t depth);
-  void render(void* pNext = NULL);
+  void render(void* pNext);
 };
