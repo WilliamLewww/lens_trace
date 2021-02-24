@@ -1,7 +1,17 @@
-__kernel void squareKernel(__global float* output) {
-  size_t idX = get_global_id(0);
-  size_t idY = get_global_id(1);
-  int id = idY * 64 + idX;
+__kernel void linearKernel(__global float* output, uint currentBlock, uint width, uint height) {
+  int blockIDY = get_global_id(1) + ((currentBlock / (width / get_global_size(0))) * get_global_size(1));
+  int blockIDX = get_global_id(0) + ((currentBlock % (width / get_global_size(0))) * get_global_size(0));
+  int blockID = blockIDY * width + blockIDX;
 
-  output[id] = id;
+  if (blockIDX >= width || blockIDY >= height) {
+    return;
+  }
+
+  output[blockID] = blockID;
+}
+
+__kernel void tileKernel(__global float* output, uint currentBlock, uint width, uint height) {
+  int idX = get_global_id(1) * get_global_size(0) + get_global_id(0);
+
+  output[idX] = idX;
 }

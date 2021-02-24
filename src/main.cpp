@@ -52,7 +52,7 @@ int main(int argc, const char** argv) {
   printKernelBuildLog(deviceID, program);
   free(kernelFileBuffer);
 
-  cl_kernel kernel = clCreateKernel(program, "squareKernel", &error);
+  cl_kernel kernel = clCreateKernel(program, "linearKernel", &error);
 
   #define IMAGE_WIDTH 2048
   #define IMAGE_HEIGHT 2048
@@ -65,6 +65,24 @@ int main(int argc, const char** argv) {
   printf("Work Block Size: %lux%lu\n", workBlockSize[0], workBlockSize[1]);
   printf("Thread Group Size: %lux%lu\n", threadGroupSize[0], threadGroupSize[1]);
   printf("Work Block Count: %lu\n", workBlockCount);
+
+  float* outputHost = (float*)malloc(sizeof(float) * IMAGE_WIDTH * IMAGE_HEIGHT);
+  cl_mem outputDevice = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(float) * IMAGE_WIDTH * IMAGE_HEIGHT, NULL, NULL);
+
+  cl_uint currentBlock = 0;
+  cl_uint width = IMAGE_WIDTH;
+  cl_uint height = IMAGE_HEIGHT;
+
+  cl_event event;
+  clSetKernelArg(kernel, 0, sizeof(cl_mem), &outputDevice);
+  clSetKernelArg(kernel, 1, sizeof(cl_uint), &currentBlock);
+  clSetKernelArg(kernel, 2, sizeof(cl_uint), &width);
+  clSetKernelArg(kernel, 3, sizeof(cl_uint), &height);
+  clEnqueueNDRangeKernel(commandQueue, kernel, 2, NULL, workBlockSize, threadGroupSize, 0, NULL, &event);
+  clWaitForEvents(1, &event);
+
+  clEnqueueReadBuffer(commandQueue, outputDevice, CL_TRUE, 0, sizeof(float) * IMAGE_WIDTH * IMAGE_HEIGHT, outputHost, 0, NULL, NULL);
+  clFinish(commandQueue);
 
   clReleaseKernel(kernel);
   clReleaseProgram(program);
