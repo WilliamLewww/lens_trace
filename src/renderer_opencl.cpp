@@ -68,16 +68,17 @@ void RendererOpenCL::render(void* pNext) {
   uint64_t threadGroupSize[2] = {32, (this->maxWorkGroupSize / 32)};
   uint64_t workBlockCount = (renderProperties->imageWidth / workBlockSize[0]) * (renderProperties->imageHeight / workBlockSize[1]);
 
-  printf("Image Size: %lux%lu\n", renderProperties->imageWidth, renderProperties->imageHeight);
+  printf("Image Size: %lux%lux%lu\n", renderProperties->imageWidth, renderProperties->imageHeight, renderProperties->imageDepth);
   printf("Work Block Size: %lux%lu\n", workBlockSize[0], workBlockSize[1]);
   printf("Thread Group Size: %lux%lu\n", threadGroupSize[0], threadGroupSize[1]);
   printf("Work Block Count: %lu\n", workBlockCount);
 
-  float* outputHost = (float*)malloc(sizeof(float) * renderProperties->imageWidth * renderProperties->imageHeight);
-  cl_mem outputDevice = clCreateBuffer(this->context, CL_MEM_WRITE_ONLY, sizeof(float) * renderProperties->imageWidth * renderProperties->imageHeight, NULL, NULL);
+  float* outputHost = (float*)malloc(sizeof(float) * renderProperties->imageWidth * renderProperties->imageHeight * renderProperties->imageDepth);
+  cl_mem outputDevice = clCreateBuffer(this->context, CL_MEM_WRITE_ONLY, sizeof(float) * renderProperties->imageWidth * renderProperties->imageHeight * renderProperties->imageDepth, NULL, NULL);
 
   cl_uint width = renderProperties->imageWidth;
   cl_uint height = renderProperties->imageHeight;
+  cl_uint depth = renderProperties->imageDepth;
 
   cl_event events[workBlockCount];
   for (cl_uint x = 0; x < workBlockCount; x++) {
@@ -85,15 +86,16 @@ void RendererOpenCL::render(void* pNext) {
     clSetKernelArg(this->kernel, 1, sizeof(cl_uint), &x);
     clSetKernelArg(this->kernel, 2, sizeof(cl_uint), &width);
     clSetKernelArg(this->kernel, 3, sizeof(cl_uint), &height);
+    clSetKernelArg(this->kernel, 4, sizeof(cl_uint), &depth);
     clEnqueueNDRangeKernel(this->commandQueue, this->kernel, 2, NULL, workBlockSize, threadGroupSize, 0, NULL, &events[x]);
   }
   clWaitForEvents(workBlockCount, events);
 
-  clEnqueueReadBuffer(this->commandQueue, outputDevice, CL_TRUE, 0, sizeof(float) * renderProperties->imageWidth * renderProperties->imageHeight, outputHost, 0, NULL, NULL);
+  clEnqueueReadBuffer(this->commandQueue, outputDevice, CL_TRUE, 0, sizeof(float) * renderProperties->imageWidth * renderProperties->imageHeight * renderProperties->imageDepth, outputHost, 0, NULL, NULL);
   clFinish(this->commandQueue);
 
   for (int x = 0; x < workBlockCount; x++) {
-    printf("Block #%d: %f\n", x, outputHost[x * workBlockSize[0] * workBlockSize[1]]);
+    printf("Block #%d: %f\n", x, outputHost[x * workBlockSize[0] * workBlockSize[1] * renderProperties->imageDepth]);
   }
 
   clReleaseMemObject(outputDevice);
