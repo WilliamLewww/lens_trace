@@ -59,9 +59,24 @@ void RendererOpenCL::setResolution(uint64_t width, uint64_t height, uint64_t dep
   this->imageDepth = depth;
 }
 
-void RendererOpenCL::render() {
+void RendererOpenCL::render(void* pNext) {
   cl_int error;
-  cl_kernel kernel = clCreateKernel(this->program, "tileKernel", &error);
+  cl_kernel kernel;
+
+  if (pNext) {
+    RenderPropertiesOpenCL* renderProperties = (RenderPropertiesOpenCL*)pNext;
+    if (renderProperties->sType == STRUCTURE_TYPE_RENDER_PROPERTIES_OPENCL) {
+      if (renderProperties->kernelMode == KERNEL_MODE_LINEAR) {
+        kernel = clCreateKernel(this->program, "linearKernel", &error);
+      }
+      if (renderProperties->kernelMode == KERNEL_MODE_TILE) {
+        kernel = clCreateKernel(this->program, "tileKernel", &error);
+      }
+    }
+  }
+  else {
+    kernel = clCreateKernel(this->program, "linearKernel", &error);
+  }
 
   uint64_t workBlockSize[2] = {64 * (this->maxWorkItemSizes[0] / 64), 64 * (this->maxWorkItemSizes[1] / 64)};
   uint64_t threadGroupSize[2] = {32, (this->maxWorkGroupSize / 32)};

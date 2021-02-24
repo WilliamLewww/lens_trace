@@ -16,5 +16,5 @@ public:
   ~Engine();
 
   void setResolution(uint64_t width, uint64_t height, uint64_t depth);
-  void render();
+  void render(void* pNext = NULL);
 };

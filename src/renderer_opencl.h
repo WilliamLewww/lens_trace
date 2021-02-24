@@ -7,6 +7,17 @@
 
 #include <CL/cl.h>
 
+enum KernelMode {
+  KERNEL_MODE_LINEAR,
+  KERNEL_MODE_TILE
+};
+
+struct RenderPropertiesOpenCL {
+  StructureType sType;
+  void* pNext;
+  KernelMode kernelMode;
+};
+
 class RendererOpenCL : public Renderer {
 private:
   cl_uint platformCount;
@@ -27,5 +38,5 @@ public:
   ~RendererOpenCL();
 
   void setResolution(uint64_t width, uint64_t height, uint64_t depth);
-  void render();
+  void render(void* pNext = NULL);
 };

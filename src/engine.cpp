@@ -16,6 +16,6 @@ void Engine::setResolution(uint64_t width, uint64_t height, uint64_t depth) {
   this->renderer->setResolution(width, height, depth);
 }
 
-void Engine::render() {
-  this->renderer->render();
+void Engine::render(void* pNext) {
+  this->renderer->render(pNext);
 }
