@@ -1,23 +1,12 @@
 #pragma once
 #define CL_TARGET_OPENCL_VERSION 300
 #include "renderer.h"
+#include "structures.h"
 
 #include <stdio.h>
 #include <time.h>
 
 #include <CL/cl.h>
-
-enum KernelMode {
-  KERNEL_MODE_LINEAR,
-  KERNEL_MODE_TILE
-};
-
-struct RenderPropertiesOpenCL {
-  StructureType sType;
-  void* pNext;
-  KernelMode kernelMode;
-  uint64_t imageDimensions[3];
-};
 
 class RendererOpenCL : public Renderer {
 private:
@@ -34,10 +23,14 @@ private:
   cl_context context;
   cl_command_queue commandQueue;
   cl_program program;
+
   cl_kernel kernel;
+  uint64_t workBlockSize[2];
+  uint64_t threadGroupSize[2];
+  uint64_t workBlockCount;
 public:
   RendererOpenCL();
   ~RendererOpenCL();
 
-  void render(void* pNext);
+  void render(void* renderProperties);
 };

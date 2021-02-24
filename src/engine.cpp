@@ -12,6 +12,6 @@ Engine::~Engine() {
   delete this->renderer;
 }
 
-void Engine::render(void* pNext) {
-  this->renderer->render(pNext);
+void Engine::render(void* renderProperties) {
+  this->renderer->render(renderProperties);
 }

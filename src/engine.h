@@ -15,5 +15,5 @@ public:
   Engine(RenderPlatform renderPlatform);
   ~Engine();
 
-  void render(void* pNext);
+  void render(void* renderProperties);
 };
