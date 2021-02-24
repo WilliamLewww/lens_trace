@@ -11,7 +11,16 @@ __kernel void linearKernel(__global float* output, uint currentBlock, uint width
 }
 
 __kernel void tileKernel(__global float* output, uint currentBlock, uint width, uint height) {
-  int idX = get_global_id(1) * get_global_size(0) + get_global_id(0);
+  int localBlockID = get_group_id(1) * get_num_groups(0) + get_group_id(0);
+  int localIDY = get_local_id(1) + ((localBlockID / (get_global_size(1) / get_local_size(1))) * get_local_size(1));
+  int localIDX = get_local_id(0) + ((localBlockID % (get_global_size(0) / get_local_size(0))) * get_local_size(0));
+  int blockIDY = localIDY + ((currentBlock / (width / get_global_size(0))) * get_global_size(1));
+  int blockIDX = localIDX + ((currentBlock % (width / get_global_size(0))) * get_global_size(0));
+  int blockID = blockIDY * width + blockIDX;
 
-  output[idX] = idX;
+  if (blockIDX >= width || blockIDY >= height) {
+    return;
+  }
+
+  output[blockID] = blockID;
 }
