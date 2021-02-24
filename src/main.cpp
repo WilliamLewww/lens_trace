@@ -57,12 +57,14 @@ int main(int argc, const char** argv) {
   #define IMAGE_WIDTH 2048
   #define IMAGE_HEIGHT 2048
 
-  printf("%lu %lu | %lu \n", maxWorkItemSizes[0], maxWorkItemSizes[1], maxWorkGroupSize);
-
   uint64_t workBlockSize[2] = {64 * (maxWorkItemSizes[0] / 64), 64 * (maxWorkItemSizes[1] / 64)};
   uint64_t threadGroupSize[2] = {32, (maxWorkGroupSize / 32)};
+  uint64_t workBlockCount[2] = { IMAGE_WIDTH / workBlockSize[0], IMAGE_HEIGHT / workBlockSize[1] };
 
-  printf("%lu %lu | %lu %lu\n", workBlockSize[0], workBlockSize[1], threadGroupSize[0], threadGroupSize[1]);
+  printf("Image Size: %lux%lu\n", IMAGE_WIDTH, IMAGE_HEIGHT);
+  printf("Work Block Size: %lux%lu\n", workBlockSize[0], workBlockSize[1]);
+  printf("Thread Group Size: %lux%lu\n", threadGroupSize[0], threadGroupSize[1]);
+  printf("Work Block Count: %lu\n", workBlockCount[0] * workBlockCount[1]);
 
   clReleaseKernel(kernel);
   clReleaseProgram(program);
