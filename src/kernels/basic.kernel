@@ -1,0 +1,7 @@
+__kernel void squareKernel(__global float* output) {
+  size_t idX = get_global_id(0);
+  size_t idY = get_global_id(1);
+  int id = idY * 64 + idX;
+
+  output[id] = id;
+}
