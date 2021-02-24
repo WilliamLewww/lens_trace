@@ -73,7 +73,7 @@ int main(int argc, const char** argv) {
   cl_uint height = IMAGE_HEIGHT;
 
   cl_event events[workBlockCount];
-  for (int x = 0; x < workBlockCount; x++) {
+  for (cl_uint x = 0; x < workBlockCount; x++) {
     clSetKernelArg(kernel, 0, sizeof(cl_mem), &outputDevice);
     clSetKernelArg(kernel, 1, sizeof(cl_uint), &x);
     clSetKernelArg(kernel, 2, sizeof(cl_uint), &width);
