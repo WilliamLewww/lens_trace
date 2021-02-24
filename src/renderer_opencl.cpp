@@ -18,8 +18,6 @@ RendererOpenCL::RendererOpenCL() {
   clGetPlatformIDs(1, &this->platformID, &this->platformCount);
   clGetDeviceIDs(this->platformID, CL_DEVICE_TYPE_GPU, 1, &this->deviceID, &this->deviceCount);
 
-  printDeviceName(this->deviceID);
-
   clGetDeviceInfo(this->deviceID, CL_DEVICE_MAX_WORK_ITEM_SIZES, sizeof(this->maxWorkItemSizes), &this->maxWorkItemSizes, NULL);
   clGetDeviceInfo(this->deviceID, CL_DEVICE_MAX_WORK_GROUP_SIZE, sizeof(this->maxWorkGroupSize), &this->maxWorkGroupSize, NULL);
 
@@ -27,9 +25,8 @@ RendererOpenCL::RendererOpenCL() {
   this->contextProperties[1] = (cl_context_properties)this->platformID;
   this->contextProperties[2] = 0;
 
-  cl_int error;
-  this->context = clCreateContext(this->contextProperties, 1, &this->deviceID, NULL, NULL, &error);
-  this->commandQueue = clCreateCommandQueueWithProperties(this->context, this->deviceID, NULL, &error);
+  this->context = clCreateContext(this->contextProperties, 1, &this->deviceID, NULL, NULL, NULL);
+  this->commandQueue = clCreateCommandQueueWithProperties(this->context, this->deviceID, NULL, NULL);
 
   FILE* kernelFile = fopen("src/kernels/basic.kernel", "rb");
   fseek(kernelFile, 0, SEEK_END);
@@ -41,10 +38,12 @@ RendererOpenCL::RendererOpenCL() {
   fclose(kernelFile);
   kernelFileBuffer[kernelFileSize] = '\0';
 
-  this->program = clCreateProgramWithSource(this->context, 1, (const char**)&kernelFileBuffer, NULL, &error);
-  clBuildProgram(this->program, 0, NULL, NULL, NULL, NULL);
-  printKernelBuildLog(this->deviceID, this->program);
+  this->program = clCreateProgramWithSource(this->context, 1, (const char**)&kernelFileBuffer, NULL, NULL);
   free(kernelFileBuffer);
+  clBuildProgram(this->program, 0, NULL, NULL, NULL, NULL);
+
+  printDeviceName(this->deviceID);
+  printKernelBuildLog(this->deviceID, this->program);
 }
 
 RendererOpenCL::~RendererOpenCL() {
