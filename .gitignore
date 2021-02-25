@@ -1,3 +1,6 @@
+dump/*
+!dump/.gitkeep
+
 # Prerequisites
 *.d
 

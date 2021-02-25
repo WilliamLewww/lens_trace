@@ -34,7 +34,7 @@ int main(int argc, const char** argv) {
     .pBuffer = outputBuffer,
     .imageDimensions = {2048, 2048, 3},
     .imageType = IMAGE_TYPE_JPEG,
-    .filename = "test.jpg"
+    .filename = "dump/test.jpg"
   };
 
   engine->writeBufferToImage(bufferToImageProperties);
