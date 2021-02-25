@@ -110,10 +110,6 @@ void RendererOpenCL::render(void* pRenderProperties) {
   clEnqueueReadBuffer(this->commandQueue, outputDevice, CL_TRUE, 0, renderPropertiesOpenCL->outputBufferSize, renderPropertiesOpenCL->pOutputBuffer, 0, NULL, NULL);
   clFinish(this->commandQueue);
 
-  for (int x = 0; x < this->workBlockCount; x++) {
-    printf("Block #%d: %f\n", x, ((float*)renderPropertiesOpenCL->pOutputBuffer)[x * this->workBlockSize[0] * this->workBlockSize[1] * renderPropertiesOpenCL->imageDimensions[2]]);
-  }
-
   clReleaseMemObject(outputDevice);
   clReleaseKernel(this->kernel);
 }
