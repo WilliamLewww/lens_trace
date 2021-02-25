@@ -3,7 +3,8 @@
 enum StructureType {
   STRUCTURE_TYPE_RENDER_PROPERTIES_OPENCL,
   STRUCTURE_TYPE_THREAD_ORGANIZATION_OPENCL,
-  STRUCTURE_TYPE_BUFFER_TO_IMAGE_PROPERTIES
+  STRUCTURE_TYPE_BUFFER_TO_IMAGE_PROPERTIES,
+  STRUCTURE_TYPE_BUFFER_TO_RAW_FILE_PROPERTIES
 };
 
 enum KernelMode {
@@ -46,5 +47,14 @@ struct BufferToImageProperties {
   uint64_t bufferSize;
   uint64_t imageDimensions[3];
   ImageType imageType;
+  const char* filename;
+};
+
+struct BufferToRawFileProperties {
+  StructureType sType;
+  void* pNext;
+  void* pBuffer;
+  uint64_t bufferSize;
+  uint64_t imageDimensions[3];
   const char* filename;
 };

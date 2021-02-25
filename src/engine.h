@@ -22,4 +22,5 @@ public:
 
   void render(void* pRenderProperties);
   void writeBufferToImage(BufferToImageProperties bufferToImageProperties);
+  void writeBufferToRawFile(BufferToRawFileProperties bufferToRawFileProperties);
 };
