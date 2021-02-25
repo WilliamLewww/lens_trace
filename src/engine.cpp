@@ -27,6 +27,7 @@ void Engine::writeBufferToImage(BufferToImageProperties bufferToImageProperties)
     uint64_t imageDepth = bufferToImageProperties.imageDimensions[2];
 
     for (int x = 0; x < imageWidth * imageHeight * imageDepth; x++) {
+      // writeBuffer[(imageWidth * imageHeight * (x % 3)) + (x / 3)] = imageBuffer[x];
       writeBuffer[x] = imageBuffer[x];
     }
 
