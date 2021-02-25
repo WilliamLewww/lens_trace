@@ -29,5 +29,7 @@ int main(int argc, const char** argv) {
   engine->render(&renderProperties);
 
   delete engine;
+  free(outputBuffer);
+  
   return 0;
 }
