@@ -29,4 +29,6 @@ struct RenderPropertiesOpenCL {
   uint64_t imageDimensions[3];
   ThreadOrganizationMode threadOrganizationMode;
   ThreadOrganizationOpenCL* pThreadOrganization;
+  void* pOutputBuffer;
+  uint64_t outputBufferSize;
 };

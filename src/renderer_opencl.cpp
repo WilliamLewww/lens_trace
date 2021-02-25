@@ -84,15 +84,13 @@ void RendererOpenCL::render(void* renderProperties) {
       }
     }
   }
-  
 
   printf("Image Size: %lux%lux%lu\n", renderPropertiesOpenCL->imageDimensions[0], renderPropertiesOpenCL->imageDimensions[1], renderPropertiesOpenCL->imageDimensions[2]);
   printf("Work Block Size: %lux%lu\n", this->workBlockSize[0], this->workBlockSize[1]);
   printf("Thread Group Size: %lux%lu\n", this->threadGroupSize[0], this->threadGroupSize[1]);
   printf("Work Block Count: %lu\n", this->workBlockCount);
 
-  float* outputHost = (float*)malloc(sizeof(float) * renderPropertiesOpenCL->imageDimensions[0] * renderPropertiesOpenCL->imageDimensions[1] * renderPropertiesOpenCL->imageDimensions[2]);
-  cl_mem outputDevice = clCreateBuffer(this->context, CL_MEM_WRITE_ONLY, sizeof(float) * renderPropertiesOpenCL->imageDimensions[0] * renderPropertiesOpenCL->imageDimensions[1] * renderPropertiesOpenCL->imageDimensions[2], NULL, NULL);
+  cl_mem outputDevice = clCreateBuffer(this->context, CL_MEM_WRITE_ONLY, renderPropertiesOpenCL->outputBufferSize, NULL, NULL);
 
   cl_uint width = renderPropertiesOpenCL->imageDimensions[0];
   cl_uint height = renderPropertiesOpenCL->imageDimensions[1];
@@ -109,15 +107,13 @@ void RendererOpenCL::render(void* renderProperties) {
   }
   clWaitForEvents(this->workBlockCount, events);
 
-  clEnqueueReadBuffer(this->commandQueue, outputDevice, CL_TRUE, 0, sizeof(float) * renderPropertiesOpenCL->imageDimensions[0] * renderPropertiesOpenCL->imageDimensions[1] * renderPropertiesOpenCL->imageDimensions[2], outputHost, 0, NULL, NULL);
+  clEnqueueReadBuffer(this->commandQueue, outputDevice, CL_TRUE, 0, renderPropertiesOpenCL->outputBufferSize, renderPropertiesOpenCL->pOutputBuffer, 0, NULL, NULL);
   clFinish(this->commandQueue);
 
   for (int x = 0; x < this->workBlockCount; x++) {
-    printf("Block #%d: %f\n", x, outputHost[x * this->workBlockSize[0] * this->workBlockSize[1] * renderPropertiesOpenCL->imageDimensions[2]]);
+    printf("Block #%d: %f\n", x, ((float*)renderPropertiesOpenCL->pOutputBuffer)[x * this->workBlockSize[0] * this->workBlockSize[1] * renderPropertiesOpenCL->imageDimensions[2]]);
   }
 
   clReleaseMemObject(outputDevice);
-  free(outputHost);
-  
   clReleaseKernel(this->kernel);
 }

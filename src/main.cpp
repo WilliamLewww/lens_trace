@@ -5,6 +5,9 @@
 int main(int argc, const char** argv) {
   Engine* engine = new Engine(RENDER_PLATFORM_OPENCL);
 
+  uint64_t outputBufferSize = sizeof(float) * 2048 * 2048 * 3;
+  void* outputBuffer = malloc(outputBufferSize);
+
   ThreadOrganizationOpenCL threadOrganization = {
     .sType = STRUCTURE_TYPE_THREAD_ORGANIZATION_OPENCL,
     .pNext = NULL,
@@ -18,7 +21,9 @@ int main(int argc, const char** argv) {
     .kernelMode = KERNEL_MODE_LINEAR,
     .imageDimensions = {2048, 2048, 3},
     .threadOrganizationMode = THREAD_ORGANIZATION_MODE_MAX_FIT,
-    .pThreadOrganization = &threadOrganization
+    .pThreadOrganization = &threadOrganization,
+    .pOutputBuffer = outputBuffer,
+    .outputBufferSize = outputBufferSize
   };
 
   engine->render(&renderProperties);
