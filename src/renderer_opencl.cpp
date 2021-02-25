@@ -52,8 +52,8 @@ RendererOpenCL::~RendererOpenCL() {
   clReleaseContext(this->context);
 }
 
-void RendererOpenCL::render(void* renderProperties) {
-  RenderPropertiesOpenCL* renderPropertiesOpenCL = (RenderPropertiesOpenCL*)renderProperties;
+void RendererOpenCL::render(void* pRenderProperties) {
+  RenderPropertiesOpenCL* renderPropertiesOpenCL = (RenderPropertiesOpenCL*)pRenderProperties;
 
   if (renderPropertiesOpenCL->sType == STRUCTURE_TYPE_RENDER_PROPERTIES_OPENCL) {
     if (renderPropertiesOpenCL->kernelMode == KERNEL_MODE_LINEAR) {

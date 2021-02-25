@@ -32,5 +32,5 @@ public:
   RendererOpenCL();
   ~RendererOpenCL();
 
-  void render(void* renderProperties);
+  void render(void* pRenderProperties);
 };

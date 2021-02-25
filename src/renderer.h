@@ -5,5 +5,5 @@
 class Renderer {
 protected:
 public:
-  virtual void render(void* renderProperties) = 0;
+  virtual void render(void* pRenderProperties) = 0;
 };

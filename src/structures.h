@@ -2,7 +2,8 @@
 
 enum StructureType {
   STRUCTURE_TYPE_RENDER_PROPERTIES_OPENCL,
-  STRUCTURE_TYPE_THREAD_ORGANIZATION_OPENCL
+  STRUCTURE_TYPE_THREAD_ORGANIZATION_OPENCL,
+  STRUCTURE_TYPE_BUFFER_TO_IMAGE_PROPERTIES
 };
 
 enum KernelMode {
@@ -13,6 +14,11 @@ enum KernelMode {
 enum ThreadOrganizationMode {
   THREAD_ORGANIZATION_MODE_MAX_FIT,
   THREAD_ORGANIZATION_MODE_CUSTOM
+};
+
+enum ImageType {
+  IMAGE_TYPE_JPEG,
+  IMAGE_TYPE_PNG
 };
 
 struct ThreadOrganizationOpenCL {
@@ -31,4 +37,13 @@ struct RenderPropertiesOpenCL {
   ThreadOrganizationOpenCL* pThreadOrganization;
   void* pOutputBuffer;
   uint64_t outputBufferSize;
+};
+
+struct BufferToImageProperties {
+  StructureType sType;
+  void* pNext;
+  void* pBuffer;
+  uint64_t imageDimensions[3];
+  ImageType imageType;
+  const char* filename;
 };

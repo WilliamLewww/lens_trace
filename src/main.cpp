@@ -28,8 +28,19 @@ int main(int argc, const char** argv) {
 
   engine->render(&renderProperties);
 
+  BufferToImageProperties bufferToImageProperties = {
+    .sType = STRUCTURE_TYPE_BUFFER_TO_IMAGE_PROPERTIES,
+    .pNext = NULL,
+    .pBuffer = outputBuffer,
+    .imageDimensions = {2048, 2048, 3},
+    .imageType = IMAGE_TYPE_JPEG,
+    .filename = "test.jpg"
+  };
+
+  engine->writeBufferToImage(bufferToImageProperties);
+
   delete engine;
   free(outputBuffer);
-  
+
   return 0;
 }
