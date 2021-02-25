@@ -8,6 +8,8 @@ __kernel void linearKernel(__global float* output, uint currentBlock, uint width
   }
 
   output[blockID] = blockID;
+  output[blockID + 1] = blockID;
+  output[blockID + 2] = blockID;
 }
 
 __kernel void tileKernel(__global float* output, uint currentBlock, uint width, uint height, uint depth) {
@@ -23,4 +25,6 @@ __kernel void tileKernel(__global float* output, uint currentBlock, uint width, 
   }
 
   output[blockID] = blockID;
+  output[blockID + 1] = blockID;
+  output[blockID + 2] = blockID;
 }

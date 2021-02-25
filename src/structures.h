@@ -43,6 +43,7 @@ struct BufferToImageProperties {
   StructureType sType;
   void* pNext;
   void* pBuffer;
+  uint64_t bufferSize;
   uint64_t imageDimensions[3];
   ImageType imageType;
   const char* filename;

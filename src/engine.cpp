@@ -19,6 +19,17 @@ void Engine::render(void* pRenderProperties) {
 
 void Engine::writeBufferToImage(BufferToImageProperties bufferToImageProperties) {
   if (bufferToImageProperties.sType == STRUCTURE_TYPE_BUFFER_TO_IMAGE_PROPERTIES) {
-    stbi_write_jpg(bufferToImageProperties.filename, bufferToImageProperties.imageDimensions[0], bufferToImageProperties.imageDimensions[1], bufferToImageProperties.imageDimensions[2], bufferToImageProperties.pBuffer, 100);
+    float* imageBuffer = (float*)bufferToImageProperties.pBuffer;
+    char* writeBuffer = (char*)malloc(bufferToImageProperties.bufferSize);
+
+    uint64_t imageWidth = bufferToImageProperties.imageDimensions[0];
+    uint64_t imageHeight = bufferToImageProperties.imageDimensions[1];
+    uint64_t imageDepth = bufferToImageProperties.imageDimensions[2];
+
+    for (int x = 0; x < imageWidth * imageHeight * imageDepth; x++) {
+      writeBuffer[(imageWidth * imageHeight * (x % 3)) + (x / 3)] = imageBuffer[x];
+    }
+
+    stbi_write_jpg(bufferToImageProperties.filename, imageWidth, imageHeight, imageDepth, writeBuffer, 100);
   }
 }

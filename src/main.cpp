@@ -32,6 +32,7 @@ int main(int argc, const char** argv) {
     .sType = STRUCTURE_TYPE_BUFFER_TO_IMAGE_PROPERTIES,
     .pNext = NULL,
     .pBuffer = outputBuffer,
+    .bufferSize = outputBufferSize,
     .imageDimensions = {2048, 2048, 3},
     .imageType = IMAGE_TYPE_JPEG,
     .filename = "dump/test.jpg"
