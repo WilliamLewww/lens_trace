@@ -1,6 +1,7 @@
 #include "acceleration_structure.h"
 
-AccelerationStructure::AccelerationStructure(Model* model) {
+AccelerationStructure::AccelerationStructure(AccelerationStructureProperties accelerationStructureProperties) {
+  Model* model = (Model*)accelerationStructureProperties.pModel;
   tinyobj::attrib_t attrib = model->getAttrib();
   std::vector<tinyobj::shape_t> shapes = model->getShapes();
 

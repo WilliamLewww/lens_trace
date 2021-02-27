@@ -1,4 +1,5 @@
 #pragma once
+#include <stdint.h>
 
 enum StructureType {
   STRUCTURE_TYPE_RENDER_PROPERTIES_OPENCL,
@@ -20,7 +21,10 @@ enum ThreadOrganizationMode {
 
 enum ImageType {
   IMAGE_TYPE_JPEG,
-  IMAGE_TYPE_PNG
+};
+
+enum AccelerationStructureType {
+  ACCELERATION_STRUCTURE_TYPE_BVH,
 };
 
 struct ThreadOrganizationOpenCL {
@@ -39,6 +43,7 @@ struct RenderPropertiesOpenCL {
   ThreadOrganizationOpenCL* pThreadOrganization;
   void* pOutputBuffer;
   uint64_t outputBufferSize;
+  void* pAccelerationStructure;
 };
 
 struct BufferToImageProperties {
@@ -58,4 +63,11 @@ struct BufferToRawFileProperties {
   uint64_t bufferSize;
   uint64_t imageDimensions[3];
   const char* filename;
+};
+
+struct AccelerationStructureProperties {
+  StructureType sType;
+  void* pNext;
+  AccelerationStructureType accelerationStructureType;
+  void* pModel;
 };

@@ -54,6 +54,7 @@ RendererOpenCL::~RendererOpenCL() {
 
 void RendererOpenCL::render(void* pRenderProperties) {
   RenderPropertiesOpenCL* renderPropertiesOpenCL = (RenderPropertiesOpenCL*)pRenderProperties;
+  AccelerationStructure* accelerationStructure = (AccelerationStructure*)renderPropertiesOpenCL->pAccelerationStructure;
 
   if (renderPropertiesOpenCL->sType == STRUCTURE_TYPE_RENDER_PROPERTIES_OPENCL) {
     if (renderPropertiesOpenCL->kernelMode == KERNEL_MODE_LINEAR) {

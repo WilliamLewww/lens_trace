@@ -1,6 +1,7 @@
 #pragma once
 #define CL_TARGET_OPENCL_VERSION 300
 #include "renderer.h"
+#include "acceleration_structure.h"
 #include "structures.h"
 
 #include <stdio.h>

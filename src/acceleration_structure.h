@@ -1,5 +1,6 @@
 #pragma once
 
+#include "structures.h"
 #include "model.h"
 
 #include <algorithm>
@@ -53,6 +54,6 @@ private:
 
   int flattenBVHTree(LinearBVHNode* linearBVHNodes, BVHBuildNode* node, int* offset);
 public:
-  AccelerationStructure(Model* model);
+  AccelerationStructure(AccelerationStructureProperties accelerationStructureProperties);
   ~AccelerationStructure();
 };

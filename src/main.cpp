@@ -6,7 +6,15 @@
 
 int main(int argc, const char** argv) {
   Model* model = new Model("cube_scene.obj");
-  AccelerationStructure* accelerationStructure = new AccelerationStructure(model);
+
+  AccelerationStructureProperties accelerationStructureProperties = {
+    .sType = STRUCTURE_TYPE_ACCELERATION_STRUCTURE_PROPERTIES,
+    .pNext = NULL,
+    .accelerationStructureType = ACCELERATION_STRUCTURE_TYPE_BVH,
+    .pModel = model,
+  };
+
+  AccelerationStructure* accelerationStructure = new AccelerationStructure(accelerationStructureProperties);
 
   Engine* engine = new Engine(RENDER_PLATFORM_OPENCL);
 
@@ -28,7 +36,8 @@ int main(int argc, const char** argv) {
     .threadOrganizationMode = THREAD_ORGANIZATION_MODE_MAX_FIT,
     .pThreadOrganization = &threadOrganization,
     .pOutputBuffer = outputBuffer,
-    .outputBufferSize = outputBufferSize
+    .outputBufferSize = outputBufferSize,
+    .pAccelerationStructure = accelerationStructure
   };
 
   engine->render(&renderProperties);

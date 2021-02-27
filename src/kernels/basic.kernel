@@ -1,3 +1,26 @@
+typedef struct LinearBVHNodeTag {
+  float boundsMin[3];
+  float boundsMax[3];
+
+  union {
+    int primitivesOffset;
+    int secondChildOffset;
+  };
+
+  uint16 primitiveCount;
+  uint8 axis;
+  uint8 pad[1];
+} LinearBVHNode;
+
+typedef struct RayTag {
+  float origin[3];
+  float direction[3];
+} Ray;
+
+bool intersect(Ray ray, LinearBVHNode linearNode) {
+
+}
+
 __kernel void linearKernel(__global float* output, uint currentBlock, uint width, uint height, uint depth) {
   int blockIDY = get_global_id(1) + ((currentBlock / (width / get_global_size(0))) * get_global_size(1));
   int blockIDX = get_global_id(0) + ((currentBlock % (width / get_global_size(0))) * get_global_size(0));
