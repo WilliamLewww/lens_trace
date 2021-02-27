@@ -91,6 +91,9 @@ void RendererOpenCL::render(void* pRenderProperties) {
   printf("Thread Group Size: %lux%lu\n", this->threadGroupSize[0], this->threadGroupSize[1]);
   printf("Work Block Count: %lu\n", this->workBlockCount);
 
+  cl_mem nodeBufferDevice = clCreateBuffer(this->context, CL_MEM_READ_ONLY, accelerationStructure->getNodeBufferSize(), NULL, NULL);
+  clEnqueueWriteBuffer(this->commandQueue, nodeBufferDevice, CL_TRUE, 0, accelerationStructure->getNodeBufferSize(), accelerationStructure->getNodeBuffer(), 0, NULL, NULL);
+  
   cl_mem outputDevice = clCreateBuffer(this->context, CL_MEM_WRITE_ONLY, renderPropertiesOpenCL->outputBufferSize, NULL, NULL);
 
   cl_uint width = renderPropertiesOpenCL->imageDimensions[0];
@@ -99,11 +102,12 @@ void RendererOpenCL::render(void* pRenderProperties) {
 
   cl_event events[this->workBlockCount];
   for (cl_uint x = 0; x < this->workBlockCount; x++) {
-    clSetKernelArg(this->kernel, 0, sizeof(cl_mem), &outputDevice);
-    clSetKernelArg(this->kernel, 1, sizeof(cl_uint), &x);
-    clSetKernelArg(this->kernel, 2, sizeof(cl_uint), &width);
-    clSetKernelArg(this->kernel, 3, sizeof(cl_uint), &height);
-    clSetKernelArg(this->kernel, 4, sizeof(cl_uint), &depth);
+    clSetKernelArg(this->kernel, 0, sizeof(cl_mem), &nodeBufferDevice);
+    clSetKernelArg(this->kernel, 1, sizeof(cl_mem), &outputDevice);
+    clSetKernelArg(this->kernel, 2, sizeof(cl_uint), &x);
+    clSetKernelArg(this->kernel, 3, sizeof(cl_uint), &width);
+    clSetKernelArg(this->kernel, 4, sizeof(cl_uint), &height);
+    clSetKernelArg(this->kernel, 5, sizeof(cl_uint), &depth);
     clEnqueueNDRangeKernel(this->commandQueue, this->kernel, 2, NULL, this->workBlockSize, this->threadGroupSize, 0, NULL, &events[x]);
   }
   clWaitForEvents(this->workBlockCount, events);

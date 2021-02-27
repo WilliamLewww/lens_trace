@@ -56,4 +56,7 @@ private:
 public:
   AccelerationStructure(AccelerationStructureProperties accelerationStructureProperties);
   ~AccelerationStructure();
+
+  uint64_t getNodeBufferSize();
+  LinearBVHNode* getNodeBuffer();
 };

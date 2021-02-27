@@ -183,3 +183,11 @@ int AccelerationStructure::flattenBVHTree(LinearBVHNode* linearBVHNodes, BVHBuil
 
   return currentOffset;
 }
+
+uint64_t AccelerationStructure::getNodeBufferSize() {
+  return sizeof(LinearBVHNode) * this->totalNodes;
+}
+
+LinearBVHNode* AccelerationStructure::getNodeBuffer() {
+  return this->linearNodes;
+}
