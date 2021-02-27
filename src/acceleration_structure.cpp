@@ -53,6 +53,10 @@ AccelerationStructure::AccelerationStructure(Model* model) {
   int totalNodes = 0;
   std::vector<PrimitiveInfo*> orderedPrimitiveList;
   BVHBuildNode* root = recursiveBuild(primitiveInfoList, 0, primitiveList.size(), &totalNodes, orderedPrimitiveList);
+
+  LinearBVHNode* linearNodes = (LinearBVHNode*)malloc(sizeof(LinearBVHNode) * totalNodes);
+  int offset = 0;
+  flattenBVHTree(linearNodes, root, &offset);
 }
 
 AccelerationStructure::~AccelerationStructure() {
@@ -144,4 +148,26 @@ BVHBuildNode* AccelerationStructure::recursiveBuild(std::vector<PrimitiveInfo>& 
   }
 
   return node;
+}
+
+int AccelerationStructure::flattenBVHTree(LinearBVHNode* linearBVHNodes, BVHBuildNode* node, int* offset) {
+  LinearBVHNode* linearNode = &linearBVHNodes[*offset];
+  memcpy(linearNode->boundsMin, node->boundsMin, sizeof(float) * 3);
+  memcpy(linearNode->boundsMax, node->boundsMax, sizeof(float) * 3);
+
+  int currentOffset = *offset;
+  *offset += 1;
+
+  if (node->primitiveCount > 0) {
+    linearNode->primitivesOffset = node->firstPrimitiveOffset;
+    linearNode->primitiveCount = node->primitiveCount;
+  }
+  else {
+    linearNode->axis = node->splitAxis;
+    linearNode->primitiveCount = 0;
+    flattenBVHTree(linearBVHNodes, node->leftChild, offset);
+    linearNode->secondChildOffset = flattenBVHTree(linearBVHNodes, node->rightChild, offset);
+  }
+
+  return currentOffset;
 }

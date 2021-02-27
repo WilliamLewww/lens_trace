@@ -3,6 +3,7 @@
 #include "model.h"
 
 #include <algorithm>
+#include <string.h>
 
 struct PrimitiveInfo {
   int index;
@@ -26,9 +27,24 @@ struct BVHBuildNode {
   int primitiveCount;
 };
 
+struct LinearBVHNode {
+  float boundsMin[3];
+  float boundsMax[3];
+
+  union {
+    int primitivesOffset;
+    int secondChildOffset;
+  };
+
+  uint16_t primitiveCount;
+  uint8_t axis;
+  uint8_t pad[1];
+};
+
 class AccelerationStructure {
 private:
   BVHBuildNode* recursiveBuild(std::vector<PrimitiveInfo>& primitiveInfoList, int start, int end, int* totalNodes, std::vector<PrimitiveInfo*>& orderedPrimitiveList);
+  int flattenBVHTree(LinearBVHNode* linearBVHNodes, BVHBuildNode* node, int* offset);
 public:
   AccelerationStructure(Model* model);
   ~AccelerationStructure();
