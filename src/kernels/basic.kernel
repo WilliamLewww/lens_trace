@@ -7,9 +7,9 @@ typedef struct LinearBVHNodeTag {
     int secondChildOffset;
   };
 
-  uint16 primitiveCount;
-  uint8 axis;
-  uint8 pad[1];
+  ushort primitiveCount;
+  uchar axis;
+  uchar pad[1];
 } LinearBVHNode;
 
 typedef struct RayTag {
@@ -21,7 +21,7 @@ bool intersect(Ray ray, LinearBVHNode linearNode) {
 
 }
 
-__kernel void linearKernel(__global LinearBVHNode* accelerationStructure, __global float* output, uint currentBlock, uint width, uint height, uint depth) {
+__kernel void linearKernel(__global LinearBVHNode* linearNodes, __global float* output, uint currentBlock, uint width, uint height, uint depth) {
   int blockIDY = get_global_id(1) + ((currentBlock / (width / get_global_size(0))) * get_global_size(1));
   int blockIDX = get_global_id(0) + ((currentBlock % (width / get_global_size(0))) * get_global_size(0));
   int blockID = (blockIDY * width + blockIDX) * depth;
@@ -35,7 +35,7 @@ __kernel void linearKernel(__global LinearBVHNode* accelerationStructure, __glob
   output[blockID + 2] = blockID;
 }
 
-__kernel void tileKernel(__global LinearBVHNode* accelerationStructure, __global float* output, uint currentBlock, uint width, uint height, uint depth) {
+__kernel void tileKernel(__global LinearBVHNode* linearNodes, __global float* output, uint currentBlock, uint width, uint height, uint depth) {
   int localBlockID = get_group_id(1) * get_num_groups(0) + get_group_id(0);
   int localIDY = get_local_id(1) + ((localBlockID / (get_global_size(0) / get_local_size(0))) * get_local_size(1));
   int localIDX = get_local_id(0) + ((localBlockID % (get_global_size(0) / get_local_size(0))) * get_local_size(0));
