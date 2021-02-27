@@ -58,10 +58,6 @@ AccelerationStructure::AccelerationStructure(AccelerationStructureProperties acc
   flattenBVHTree(this->linearNodes, root, &offset);
 
   recursiveFree(root);
-
-  // for (int x = 0; x < totalNodes; x++) {
-  //   printf("%d\n", this->linearNodes[x].primitiveCount);
-  // }
 }
 
 AccelerationStructure::~AccelerationStructure() {
