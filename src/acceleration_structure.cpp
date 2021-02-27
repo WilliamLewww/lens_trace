@@ -57,6 +57,8 @@ AccelerationStructure::AccelerationStructure(Model* model) {
   LinearBVHNode* linearNodes = (LinearBVHNode*)malloc(sizeof(LinearBVHNode) * totalNodes);
   int offset = 0;
   flattenBVHTree(linearNodes, root, &offset);
+
+  recursiveFree(root);
 }
 
 AccelerationStructure::~AccelerationStructure() {
@@ -148,6 +150,17 @@ BVHBuildNode* AccelerationStructure::recursiveBuild(std::vector<PrimitiveInfo>& 
   }
 
   return node;
+}
+
+void AccelerationStructure::recursiveFree(BVHBuildNode* node) {
+  if (node == NULL) {
+    return;
+  }
+
+  recursiveFree(node->leftChild);
+  recursiveFree(node->rightChild);
+
+  delete node;
 }
 
 int AccelerationStructure::flattenBVHTree(LinearBVHNode* linearBVHNodes, BVHBuildNode* node, int* offset) {

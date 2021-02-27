@@ -44,6 +44,8 @@ struct LinearBVHNode {
 class AccelerationStructure {
 private:
   BVHBuildNode* recursiveBuild(std::vector<PrimitiveInfo>& primitiveInfoList, int start, int end, int* totalNodes, std::vector<PrimitiveInfo*>& orderedPrimitiveList);
+  void recursiveFree(BVHBuildNode* node);
+
   int flattenBVHTree(LinearBVHNode* linearBVHNodes, BVHBuildNode* node, int* offset);
 public:
   AccelerationStructure(Model* model);
