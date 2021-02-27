@@ -1,4 +1,7 @@
+#ifndef STB_IMAGE_WRITE_IMPLEMENTATION
 #define STB_IMAGE_WRITE_IMPLEMENTATION
+#endif
+
 #include "engine.h"
 
 Engine::Engine(RenderPlatform renderPlatform) {
@@ -36,5 +39,5 @@ void Engine::writeBufferToImage(BufferToImageProperties bufferToImageProperties)
 }
 
 void Engine::writeBufferToRawFile(BufferToRawFileProperties bufferToRawFileProperties) {
-  
+
 }

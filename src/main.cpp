@@ -1,8 +1,13 @@
 
 #include "engine.h"
+#include "model.h"
+#include "acceleration_structure.h"
 #include "structures.h"
 
 int main(int argc, const char** argv) {
+  Model* model = new Model("cube_scene.obj");
+  AccelerationStructure* accelerationStructure = new AccelerationStructure(model);
+
   Engine* engine = new Engine(RENDER_PLATFORM_OPENCL);
 
   uint64_t outputBufferSize = sizeof(float) * 2048 * 2048 * 3;
