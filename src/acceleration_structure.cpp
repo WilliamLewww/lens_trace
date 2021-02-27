@@ -5,7 +5,6 @@ AccelerationStructure::AccelerationStructure(Model* model) {
   std::vector<tinyobj::shape_t> shapes = model->getShapes();
 
   std::vector<std::vector<std::array<float, 3>>> primitiveList;
-  std::vector<PrimitiveInfo> primitiveInfoList;
 
   for (uint64_t s = 0; s < shapes.size(); s++) {
     uint64_t index_offset = 0;
@@ -47,16 +46,15 @@ AccelerationStructure::AccelerationStructure(Model* model) {
       .centroid = {centroidX, centroidY, centroidZ}
     };
 
-    primitiveInfoList.push_back(primitiveInfo);
+    this->primitiveInfoList.push_back(primitiveInfo);
   }
 
-  int totalNodes = 0;
-  std::vector<PrimitiveInfo*> orderedPrimitiveList;
-  BVHBuildNode* root = recursiveBuild(primitiveInfoList, 0, primitiveList.size(), &totalNodes, orderedPrimitiveList);
+  this->totalNodes = 0;
+  BVHBuildNode* root = recursiveBuild(this->primitiveInfoList, 0, primitiveList.size(), &this->totalNodes, this->orderedPrimitiveList);
 
-  LinearBVHNode* linearNodes = (LinearBVHNode*)malloc(sizeof(LinearBVHNode) * totalNodes);
+  this->linearNodes = (LinearBVHNode*)malloc(sizeof(LinearBVHNode) * this->totalNodes);
   int offset = 0;
-  flattenBVHTree(linearNodes, root, &offset);
+  flattenBVHTree(this->linearNodes, root, &offset);
 
   recursiveFree(root);
 }
