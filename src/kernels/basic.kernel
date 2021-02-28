@@ -12,6 +12,12 @@ typedef struct LinearBVHNodeTag {
   uchar pad[1];
 } LinearBVHNode;
 
+typedef struct PrimitiveTag {
+  float vertexA[3];
+  float vertexB[3];
+  float vertexC[3];
+} Primitive;
+
 typedef struct RayTag {
   float4 origin;
   float4 direction;
@@ -45,16 +51,46 @@ bool intersect(Ray ray, __global LinearBVHNode* nodes) {
   float4 invDir = (float4)(1.0 / ray.direction.x, 1.0 / ray.direction.y, 1.0 / ray.direction.z, 0);
   int dirIsNeg[3] = {invDir.x < 0, invDir.y < 0, invDir.z < 0};
 
-  for (int x = 0; x < 83; x++) {
-    if (intersectBounds(ray, invDir, dirIsNeg, nodes[x].boundsMin, nodes[x].boundsMax)) {
-      hit = true;
+  int toVisitOffset = 0, currentNodeIndex = 0;
+  int nodesToVisit[64];
+
+  while (true) {
+    __global const LinearBVHNode* node = &nodes[currentNodeIndex];
+
+    if (intersectBounds(ray, invDir, dirIsNeg, node->boundsMin, node->boundsMax)) {
+      if (node->primitiveCount > 0) {
+        for (int i = 0; i < node->primitiveCount; i++) {
+          if (true) {
+            hit = true;
+          }
+        }
+        if (toVisitOffset == 0) {
+          break;
+        }
+        currentNodeIndex = nodesToVisit[--toVisitOffset];
+      }
+      else {
+        if (dirIsNeg[node->axis]) {
+          nodesToVisit[toVisitOffset++] = currentNodeIndex + 1;
+          currentNodeIndex = node->secondChildOffset;
+        } else {
+          nodesToVisit[toVisitOffset++] = node->secondChildOffset;
+          currentNodeIndex = currentNodeIndex + 1;
+        }
+      }
+    }
+    else {
+      if (toVisitOffset == 0) {
+        break;
+      }
+      currentNodeIndex = nodesToVisit[--toVisitOffset];
     }
   }
 
   return hit;
 }
 
-__kernel void linearKernel(__global LinearBVHNode* linearNodes, __global float* output, uint currentBlock, uint width, uint height, uint depth) {
+__kernel void linearKernel(__global LinearBVHNode* linearNodes, __global Primitive* primitives, __global float* output, uint currentBlock, uint width, uint height, uint depth) {
   int blockIDY = get_global_id(1) + ((currentBlock / (width / get_global_size(0))) * get_global_size(1));
   int blockIDX = get_global_id(0) + ((currentBlock % (width / get_global_size(0))) * get_global_size(0));
   int blockID = (blockIDY * width + blockIDX) * depth;
@@ -80,19 +116,19 @@ __kernel void linearKernel(__global LinearBVHNode* linearNodes, __global float* 
   }
 }
 
-__kernel void tileKernel(__global LinearBVHNode* linearNodes, __global float* output, uint currentBlock, uint width, uint height, uint depth) {
-  int localBlockID = get_group_id(1) * get_num_groups(0) + get_group_id(0);
-  int localIDY = get_local_id(1) + ((localBlockID / (get_global_size(0) / get_local_size(0))) * get_local_size(1));
-  int localIDX = get_local_id(0) + ((localBlockID % (get_global_size(0) / get_local_size(0))) * get_local_size(0));
-  int blockIDY = localIDY + ((currentBlock / (width / get_global_size(0))) * get_global_size(1));
-  int blockIDX = localIDX + ((currentBlock % (width / get_global_size(0))) * get_global_size(0));
-  int blockID = (blockIDY * width + blockIDX) * depth;
+// __kernel void tileKernel(__global LinearBVHNode* linearNodes, __global float* output, uint currentBlock, uint width, uint height, uint depth) {
+//   int localBlockID = get_group_id(1) * get_num_groups(0) + get_group_id(0);
+//   int localIDY = get_local_id(1) + ((localBlockID / (get_global_size(0) / get_local_size(0))) * get_local_size(1));
+//   int localIDX = get_local_id(0) + ((localBlockID % (get_global_size(0) / get_local_size(0))) * get_local_size(0));
+//   int blockIDY = localIDY + ((currentBlock / (width / get_global_size(0))) * get_global_size(1));
+//   int blockIDX = localIDX + ((currentBlock % (width / get_global_size(0))) * get_global_size(0));
+//   int blockID = (blockIDY * width + blockIDX) * depth;
 
-  if (blockIDX >= width || blockIDY >= height) {
-    return;
-  }
+//   if (blockIDX >= width || blockIDY >= height) {
+//     return;
+//   }
 
-  output[blockID + 0] = blockID;
-  output[blockID + 1] = blockID;
-  output[blockID + 2] = blockID;
-}
+//   output[blockID + 0] = blockID;
+//   output[blockID + 1] = blockID;
+//   output[blockID + 2] = blockID;
+// }

@@ -103,11 +103,12 @@ void RendererOpenCL::render(void* pRenderProperties) {
   cl_event events[this->workBlockCount];
   for (cl_uint x = 0; x < this->workBlockCount; x++) {
     clSetKernelArg(this->kernel, 0, sizeof(cl_mem), &nodeBufferDevice);
-    clSetKernelArg(this->kernel, 1, sizeof(cl_mem), &outputDevice);
-    clSetKernelArg(this->kernel, 2, sizeof(cl_uint), &x);
-    clSetKernelArg(this->kernel, 3, sizeof(cl_uint), &width);
-    clSetKernelArg(this->kernel, 4, sizeof(cl_uint), &height);
-    clSetKernelArg(this->kernel, 5, sizeof(cl_uint), &depth);
+    clSetKernelArg(this->kernel, 1, sizeof(cl_mem), &nodeBufferDevice);
+    clSetKernelArg(this->kernel, 2, sizeof(cl_mem), &outputDevice);
+    clSetKernelArg(this->kernel, 3, sizeof(cl_uint), &x);
+    clSetKernelArg(this->kernel, 4, sizeof(cl_uint), &width);
+    clSetKernelArg(this->kernel, 5, sizeof(cl_uint), &height);
+    clSetKernelArg(this->kernel, 6, sizeof(cl_uint), &depth);
     clEnqueueNDRangeKernel(this->commandQueue, this->kernel, 2, NULL, this->workBlockSize, this->threadGroupSize, 0, NULL, &events[x]);
   }
   clWaitForEvents(this->workBlockCount, events);
