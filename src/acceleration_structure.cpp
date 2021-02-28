@@ -68,7 +68,14 @@ AccelerationStructure::AccelerationStructure(AccelerationStructureProperties acc
     currentVertex += 9;
   }
 
-  printf("%ld\n", this->totalNodes);
+  for (int x = 0; x < this->totalNodes; x++) {
+    printf("Node #%d:\n", x);
+    printf("  Bounds Min: %f %f %f\n", this->linearNodes[x].boundsMin[0], this->linearNodes[x].boundsMin[1], this->linearNodes[x].boundsMin[2]);
+    printf("  Bounds Max: %f %f %f\n", this->linearNodes[x].boundsMax[0], this->linearNodes[x].boundsMax[1], this->linearNodes[x].boundsMax[2]);
+    printf("  Primitive Count: %d\n", this->linearNodes[x].primitiveCount);
+    printf("  Primitives / Child Offset: %d\n", this->linearNodes[x].primitivesOffset);
+    printf("  Axis: %d\n", this->linearNodes[x].axis);
+  }
 }
 
 AccelerationStructure::~AccelerationStructure() {
@@ -79,16 +86,16 @@ BVHBuildNode* AccelerationStructure::recursiveBuild(std::vector<PrimitiveInfo>& 
   BVHBuildNode* node = new BVHBuildNode();
   (*totalNodes) += 1;
 
-  float boundsMin[3];
-  float boundsMax[3];
+  memcpy(node->boundsMin, primitiveInfoList[start].boundsMin, sizeof(float) * 3);
+  memcpy(node->boundsMax, primitiveInfoList[start].boundsMax, sizeof(float) * 3);
   for (int x = start; x < end; x++) {
-    node->boundsMin[0] = std::min(boundsMin[0], primitiveInfoList[x].boundsMin[0]);
-    node->boundsMin[1] = std::min(boundsMin[1], primitiveInfoList[x].boundsMin[1]);
-    node->boundsMin[2] = std::min(boundsMin[2], primitiveInfoList[x].boundsMin[2]);
+    node->boundsMin[0] = std::min(node->boundsMin[0], primitiveInfoList[x].boundsMin[0]);
+    node->boundsMin[1] = std::min(node->boundsMin[1], primitiveInfoList[x].boundsMin[1]);
+    node->boundsMin[2] = std::min(node->boundsMin[2], primitiveInfoList[x].boundsMin[2]);
 
-    node->boundsMax[0] = std::max(boundsMax[0], primitiveInfoList[x].boundsMax[0]);
-    node->boundsMax[1] = std::max(boundsMax[1], primitiveInfoList[x].boundsMax[1]);
-    node->boundsMax[2] = std::max(boundsMax[2], primitiveInfoList[x].boundsMax[2]);
+    node->boundsMax[0] = std::max(node->boundsMax[0], primitiveInfoList[x].boundsMax[0]);
+    node->boundsMax[1] = std::max(node->boundsMax[1], primitiveInfoList[x].boundsMax[1]);
+    node->boundsMax[2] = std::max(node->boundsMax[2], primitiveInfoList[x].boundsMax[2]);
   }
 
   int primitiveCount = end - start;
