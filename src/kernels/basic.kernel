@@ -115,19 +115,31 @@ __kernel void linearKernel(__global LinearBVHNode* linearNodes, __global Primiti
   }
 }
 
-// __kernel void tileKernel(__global LinearBVHNode* linearNodes, __global float* output, uint currentBlock, uint width, uint height, uint depth) {
-//   int localBlockID = get_group_id(1) * get_num_groups(0) + get_group_id(0);
-//   int localIDY = get_local_id(1) + ((localBlockID / (get_global_size(0) / get_local_size(0))) * get_local_size(1));
-//   int localIDX = get_local_id(0) + ((localBlockID % (get_global_size(0) / get_local_size(0))) * get_local_size(0));
-//   int blockIDY = localIDY + ((currentBlock / (width / get_global_size(0))) * get_global_size(1));
-//   int blockIDX = localIDX + ((currentBlock % (width / get_global_size(0))) * get_global_size(0));
-//   int blockID = (blockIDY * width + blockIDX) * depth;
+__kernel void tileKernel(__global LinearBVHNode* linearNodes, __global Primitive* primitives, __global float* output, uint currentBlock, uint width, uint height, uint depth) {
+  int localBlockID = get_group_id(1) * get_num_groups(0) + get_group_id(0);
+  int localIDY = get_local_id(1) + ((localBlockID / (get_global_size(0) / get_local_size(0))) * get_local_size(1));
+  int localIDX = get_local_id(0) + ((localBlockID % (get_global_size(0) / get_local_size(0))) * get_local_size(0));
+  int blockIDY = localIDY + ((currentBlock / (width / get_global_size(0))) * get_global_size(1));
+  int blockIDX = localIDX + ((currentBlock % (width / get_global_size(0))) * get_global_size(0));
+  int blockID = (blockIDY * width + blockIDX) * depth;
 
-//   if (blockIDX >= width || blockIDY >= height) {
-//     return;
-//   }
+  if (blockIDX >= width || blockIDY >= height) {
+    return;
+  }
 
-//   output[blockID + 0] = blockID;
-//   output[blockID + 1] = blockID;
-//   output[blockID + 2] = blockID;
-// }
+  Ray ray = {
+    .origin = (float4)(((float)blockIDX / width) - 0.5f, ((float)blockIDY / height) - 0.5f, -2, 1),
+    .direction = (float4)(0, 0, 1, 0)
+  };
+
+  if (intersect(ray, linearNodes)) {
+    output[blockID + 0] = 255;
+    output[blockID + 1] = 255;
+    output[blockID + 2] = 255;
+  }
+  else {
+    output[blockID + 0] = 0;
+    output[blockID + 1] = 0;
+    output[blockID + 2] = 0;
+  }
+}
