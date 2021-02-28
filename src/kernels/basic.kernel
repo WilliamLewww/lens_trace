@@ -51,9 +51,38 @@ bool intersect(Ray ray, __global LinearBVHNode* nodes) {
   float4 invDir = (float4)(1.0 / ray.direction.x, 1.0 / ray.direction.y, 1.0 / ray.direction.z, 0);
   int dirIsNeg[3] = {invDir.x < 0, invDir.y < 0, invDir.z < 0};
 
-  for (int x = 0; x < 159; x++) {
-    if (intersectBounds(ray, invDir, dirIsNeg, nodes[x].boundsMin, nodes[x].boundsMax)) {
-      hit = true;
+  int toVisitOffset = 0, currentNodeIndex = 0;
+  int nodesToVisit[64];
+  while (true) {
+    __global const LinearBVHNode* node = &nodes[currentNodeIndex];
+
+    if (intersectBounds(ray, invDir, dirIsNeg, node->boundsMin, node->boundsMax)) {
+      if (node->primitiveCount > 0) {
+        for (int i = 0; i < node->primitiveCount; i++) {
+          if (true) {
+            hit = true;
+          }
+        }
+        if (toVisitOffset == 0) {
+          break;
+        }
+        currentNodeIndex = nodesToVisit[--toVisitOffset];
+      }
+      else {
+        if (dirIsNeg[node->axis]) {
+          nodesToVisit[toVisitOffset++] = currentNodeIndex + 1;
+          currentNodeIndex = node->secondChildOffset;
+        } else {
+          nodesToVisit[toVisitOffset++] = node->secondChildOffset;
+          currentNodeIndex = currentNodeIndex + 1;
+        }
+      }
+    }
+    else {
+      if (toVisitOffset == 0) {
+        break;
+      }
+      currentNodeIndex = nodesToVisit[--toVisitOffset];
     }
   }
 
