@@ -48,6 +48,7 @@ private:
   std::vector<PrimitiveInfo*> orderedPrimitiveList;
   LinearBVHNode* linearNodes;
   int totalNodes;
+  float* primitives;
 
   BVHBuildNode* recursiveBuild(std::vector<PrimitiveInfo>& primitiveInfoList, int start, int end, int* totalNodes, std::vector<PrimitiveInfo*>& orderedPrimitiveList);
   void recursiveFree(BVHBuildNode* node);
@@ -59,4 +60,7 @@ public:
 
   uint64_t getNodeBufferSize();
   LinearBVHNode* getNodeBuffer();
+
+  uint64_t getPrimitiveBufferSize();
+  float* getPrimitiveBuffer();
 };

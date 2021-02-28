@@ -94,6 +94,9 @@ void RendererOpenCL::render(void* pRenderProperties) {
   cl_mem nodeBufferDevice = clCreateBuffer(this->context, CL_MEM_READ_ONLY, accelerationStructure->getNodeBufferSize(), NULL, NULL);
   clEnqueueWriteBuffer(this->commandQueue, nodeBufferDevice, CL_TRUE, 0, accelerationStructure->getNodeBufferSize(), accelerationStructure->getNodeBuffer(), 0, NULL, NULL);
   
+  cl_mem primitiveBufferDevice = clCreateBuffer(this->context, CL_MEM_READ_ONLY, accelerationStructure->getPrimitiveBufferSize(), NULL, NULL);
+  clEnqueueWriteBuffer(this->commandQueue, primitiveBufferDevice, CL_TRUE, 0, accelerationStructure->getPrimitiveBufferSize(), accelerationStructure->getPrimitiveBuffer(), 0, NULL, NULL);
+
   cl_mem outputDevice = clCreateBuffer(this->context, CL_MEM_WRITE_ONLY, renderPropertiesOpenCL->outputBufferSize, NULL, NULL);
 
   cl_uint width = renderPropertiesOpenCL->imageDimensions[0];
@@ -103,7 +106,7 @@ void RendererOpenCL::render(void* pRenderProperties) {
   cl_event events[this->workBlockCount];
   for (cl_uint x = 0; x < this->workBlockCount; x++) {
     clSetKernelArg(this->kernel, 0, sizeof(cl_mem), &nodeBufferDevice);
-    clSetKernelArg(this->kernel, 1, sizeof(cl_mem), &nodeBufferDevice);
+    clSetKernelArg(this->kernel, 1, sizeof(cl_mem), &primitiveBufferDevice);
     clSetKernelArg(this->kernel, 2, sizeof(cl_mem), &outputDevice);
     clSetKernelArg(this->kernel, 3, sizeof(cl_uint), &x);
     clSetKernelArg(this->kernel, 4, sizeof(cl_uint), &width);

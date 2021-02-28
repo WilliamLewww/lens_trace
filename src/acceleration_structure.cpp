@@ -58,6 +58,17 @@ AccelerationStructure::AccelerationStructure(AccelerationStructureProperties acc
   flattenBVHTree(this->linearNodes, root, &offset);
 
   recursiveFree(root);
+
+  int currentVertex = 0;
+  this->primitives = (float*)malloc(sizeof(float) * this->orderedPrimitiveList.size() * 3 * 3);
+  for (uint64_t x = 0; x < this->orderedPrimitiveList.size(); x++) {
+    memcpy(this->primitives + currentVertex + 0, this->orderedPrimitiveList[x]->vertexA, sizeof(float) * 3);
+    memcpy(this->primitives + currentVertex + 3, this->orderedPrimitiveList[x]->vertexB, sizeof(float) * 3);
+    memcpy(this->primitives + currentVertex + 6, this->orderedPrimitiveList[x]->vertexC, sizeof(float) * 3);
+    currentVertex += 9;
+  }
+
+  printf("%ld\n", this->totalNodes);
 }
 
 AccelerationStructure::~AccelerationStructure() {
@@ -93,6 +104,7 @@ BVHBuildNode* AccelerationStructure::recursiveBuild(std::vector<PrimitiveInfo>& 
     node->splitAxis = -1;
     node->firstPrimitiveOffset = firstPrimitiveOffset;
     node->primitiveCount = primitiveCount;
+    return node;
   }
   else {
     float centroidBoundsMin[3];
@@ -133,8 +145,10 @@ BVHBuildNode* AccelerationStructure::recursiveBuild(std::vector<PrimitiveInfo>& 
       node->splitAxis = -1;
       node->firstPrimitiveOffset = firstPrimitiveOffset;
       node->primitiveCount = primitiveCount;
+      return node;
     }
     else {
+      mid = (start + end) / 2;
       std::nth_element(&primitiveInfoList[start], &primitiveInfoList[mid], &primitiveInfoList[end - 1] + 1, [dim](const PrimitiveInfo& a, const PrimitiveInfo& b) {
         return a.centroid[dim] < b.centroid[dim];
       });
@@ -167,8 +181,7 @@ int AccelerationStructure::flattenBVHTree(LinearBVHNode* linearBVHNodes, BVHBuil
   memcpy(linearNode->boundsMin, node->boundsMin, sizeof(float) * 3);
   memcpy(linearNode->boundsMax, node->boundsMax, sizeof(float) * 3);
 
-  int currentOffset = *offset;
-  *offset += 1;
+  int currentOffset = (*offset)++;
 
   if (node->primitiveCount > 0) {
     linearNode->primitivesOffset = node->firstPrimitiveOffset;
@@ -190,4 +203,12 @@ uint64_t AccelerationStructure::getNodeBufferSize() {
 
 LinearBVHNode* AccelerationStructure::getNodeBuffer() {
   return this->linearNodes;
+}
+
+uint64_t AccelerationStructure::getPrimitiveBufferSize() {
+  return sizeof(float) * this->orderedPrimitiveList.size() * 3 * 3;
+}
+
+float* AccelerationStructure::getPrimitiveBuffer() {
+  return this->primitives;
 }
