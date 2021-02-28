@@ -13,12 +13,45 @@ typedef struct LinearBVHNodeTag {
 } LinearBVHNode;
 
 typedef struct RayTag {
-  float origin[3];
-  float direction[3];
+  float4 origin;
+  float4 direction;
 } Ray;
 
-bool intersect(Ray ray, LinearBVHNode linearNode) {
+__global float* getBounds(int dirIsNeg, __global float* boundsMin, __global float* boundsMax) {
+  return (dirIsNeg == 0) ? boundsMin : boundsMax;
+}
 
+bool intersectBounds(Ray ray, float4 invDir, int dirIsNeg[3], __global float* boundsMin, __global float* boundsMax) {
+  float tMin = (getBounds(dirIsNeg[0], boundsMin, boundsMax)[0] - ray.origin.x) * invDir.x;
+  float tMax = (getBounds(1 - dirIsNeg[0], boundsMin, boundsMax)[0] - ray.origin.x) * invDir.x;
+  float tyMin = (getBounds(dirIsNeg[1], boundsMin, boundsMax)[1] - ray.origin.y) * invDir.y;
+  float tyMax = (getBounds(1 - dirIsNeg[1], boundsMin, boundsMax)[1] - ray.origin.y) * invDir.y;
+
+  if (tMin > tyMax || tyMin > tMax) return false;
+  if (tyMin > tMin) tMin = tyMin;
+  if (tyMax < tMax) tMax = tyMax;
+
+  float tzMin = (getBounds(dirIsNeg[2], boundsMin, boundsMax)[2] - ray.origin.z) * invDir.z;
+  float tzMax = (getBounds(1 - dirIsNeg[2], boundsMin, boundsMax)[2] - ray.origin.z) * invDir.z;
+
+  if (tMin > tzMax || tzMin > tMax) return false;
+  if (tzMin > tMin) tMin = tzMin;
+  if (tzMax < tMax) tMax = tzMax;
+  return (tMax > 0);
+}
+
+bool intersect(Ray ray, __global LinearBVHNode* nodes) {
+  bool hit = false;
+  float4 invDir = (float4)(1.0 / ray.direction.x, 1.0 / ray.direction.y, 1.0 / ray.direction.z, 0);
+  int dirIsNeg[3] = {invDir.x < 0, invDir.y < 0, invDir.z < 0};
+
+  for (int x = 0; x < 83; x++) {
+    if (intersectBounds(ray, invDir, dirIsNeg, nodes[x].boundsMin, nodes[x].boundsMax)) {
+      hit = true;
+    }
+  }
+
+  return hit;
 }
 
 __kernel void linearKernel(__global LinearBVHNode* linearNodes, __global float* output, uint currentBlock, uint width, uint height, uint depth) {
@@ -30,9 +63,21 @@ __kernel void linearKernel(__global LinearBVHNode* linearNodes, __global float* 
     return;
   }
 
-  output[blockID + 0] = blockID;
-  output[blockID + 1] = blockID;
-  output[blockID + 2] = blockID;
+  Ray ray = {
+    .origin = (float4)(((float)blockIDX / width) - 0.5f, ((float)blockIDY / height) - 0.5f, -5, 1),
+    .direction = (float4)(0, 0, 1, 0)
+  };
+
+  if (intersect(ray, linearNodes)) {
+    output[blockID + 0] = 255;
+    output[blockID + 1] = 255;
+    output[blockID + 2] = 255;
+  }
+  else {
+    output[blockID + 0] = 0;
+    output[blockID + 1] = 0;
+    output[blockID + 2] = 0;
+  }
 }
 
 __kernel void tileKernel(__global LinearBVHNode* linearNodes, __global float* output, uint currentBlock, uint width, uint height, uint depth) {
