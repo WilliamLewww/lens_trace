@@ -103,6 +103,9 @@ void RendererOpenCL::render(void* pRenderProperties) {
   cl_uint height = renderPropertiesOpenCL->imageDimensions[1];
   cl_uint depth = renderPropertiesOpenCL->imageDimensions[2];
 
+  clock_t start = clock();
+  clock_t end;
+
   cl_event events[this->workBlockCount];
   for (cl_uint x = 0; x < this->workBlockCount; x++) {
     clSetKernelArg(this->kernel, 0, sizeof(cl_mem), &nodeBufferDevice);
@@ -115,6 +118,11 @@ void RendererOpenCL::render(void* pRenderProperties) {
     clEnqueueNDRangeKernel(this->commandQueue, this->kernel, 2, NULL, this->workBlockSize, this->threadGroupSize, 0, NULL, &events[x]);
   }
   clWaitForEvents(this->workBlockCount, events);
+
+  end = clock();
+
+  double timeSeconds = (double)(end - start) / (double)CLOCKS_PER_SEC;
+  printf("Kernel Execution Time: %lf\n", timeSeconds);
 
   clEnqueueReadBuffer(this->commandQueue, outputDevice, CL_TRUE, 0, renderPropertiesOpenCL->outputBufferSize, renderPropertiesOpenCL->pOutputBuffer, 0, NULL, NULL);
   clFinish(this->commandQueue);
