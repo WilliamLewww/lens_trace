@@ -25,7 +25,7 @@ typedef struct RayTag {
   float4 direction;
 } Ray;
 
-__global float* getBounds(int dirIsNeg, __global float boundsMin[3], __global float boundsMax[3]) {
+__global float* getBounds(int dirIsNeg, __global float* boundsMin, __global float* boundsMax) {
   return (dirIsNeg == 0) ? boundsMin : boundsMax;
 }
 
