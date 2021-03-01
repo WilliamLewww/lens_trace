@@ -2,69 +2,23 @@
 
 AccelerationStructure::AccelerationStructure(AccelerationStructureProperties accelerationStructureProperties) {
   Model* model = (Model*)accelerationStructureProperties.pModel;
-  tinyobj::attrib_t attrib = model->getAttrib();
-  std::vector<tinyobj::shape_t> shapes = model->getShapes();
 
-  std::vector<std::vector<std::array<float, 3>>> primitiveList;
-
-  for (uint64_t s = 0; s < shapes.size(); s++) {
-    uint64_t index_offset = 0;
-    for (uint64_t f = 0; f < shapes[s].mesh.num_face_vertices.size(); f++) {
-      int fv = shapes[s].mesh.num_face_vertices[f];
-
-      std::vector<std::array<float, 3>> vertexList;
-      for (uint64_t v = 0; v < fv; v++) {
-        tinyobj::index_t idx = shapes[s].mesh.indices[index_offset + v];
-        vertexList.push_back({attrib.vertices[3*idx.vertex_index+0], attrib.vertices[3*idx.vertex_index+1], attrib.vertices[3*idx.vertex_index+2]});
-      }
-      primitiveList.push_back(vertexList);
-
-      index_offset += fv;
-    }
-  }
-
-  for (uint64_t x = 0; x < primitiveList.size(); x++) {
-    float boundsMinX = std::min(std::min(primitiveList[x][0][0], primitiveList[x][1][0]), primitiveList[x][2][0]);
-    float boundsMinY = std::min(std::min(primitiveList[x][0][1], primitiveList[x][1][1]), primitiveList[x][2][1]);
-    float boundsMinZ = std::min(std::min(primitiveList[x][0][2], primitiveList[x][1][2]), primitiveList[x][2][2]);
-
-    float boundsMaxX = std::max(std::max(primitiveList[x][0][0], primitiveList[x][1][0]), primitiveList[x][2][0]);
-    float boundsMaxY = std::max(std::max(primitiveList[x][0][1], primitiveList[x][1][1]), primitiveList[x][2][1]);
-    float boundsMaxZ = std::max(std::max(primitiveList[x][0][2], primitiveList[x][1][2]), primitiveList[x][2][2]);
-
-    float centroidX = 0.5 * boundsMinX + 0.5 * boundsMaxX;
-    float centroidY = 0.5 * boundsMinY + 0.5 * boundsMaxY;
-    float centroidZ = 0.5 * boundsMinZ + 0.5 * boundsMaxZ;
-
-    PrimitiveInfo primitiveInfo = {
-      .index = (int)x,
-      .vertexA = {primitiveList[x][0][0], primitiveList[x][0][1], primitiveList[x][0][2]},
-      .vertexB = {primitiveList[x][1][0], primitiveList[x][1][1], primitiveList[x][1][2]},
-      .vertexC = {primitiveList[x][2][0], primitiveList[x][2][1], primitiveList[x][2][2]},
-
-      .boundsMin = {boundsMinX, boundsMinY, boundsMinZ},
-      .boundsMax = {boundsMaxX, boundsMaxY, boundsMaxZ},
-      .centroid = {centroidX, centroidY, centroidZ}
-    };
-
-    this->primitiveInfoList.push_back(primitiveInfo);
-  }
-
+  this->totalPrimitives = model->getPrimitiveInfoListP()->size();
   this->totalNodes = 0;
-  BVHBuildNode* root = recursiveBuild(this->primitiveInfoList, 0, primitiveList.size(), &this->totalNodes, this->orderedPrimitiveList);
+  std::vector<PrimitiveInfo*> orderedPrimitiveList;
+  BVHBuildNode* root = recursiveBuild(model->getPrimitiveInfoListP(), 0, model->getPrimitiveInfoListP()->size(), &this->totalNodes, orderedPrimitiveList);
 
-  this->linearNodeBuffer = (LinearBVHNode*)malloc(sizeof(LinearBVHNode) * this->totalNodes);
   int offset = 0;
+  this->linearNodeBuffer = (LinearBVHNode*)malloc(sizeof(LinearBVHNode) * this->totalNodes);
   flattenBVHTree(this->linearNodeBuffer, root, &offset);
-
   recursiveFree(root);
 
   int currentVertex = 0;
-  this->orderedVertexBuffer = (float*)malloc(sizeof(float) * this->orderedPrimitiveList.size() * 3 * 3);
-  for (uint64_t x = 0; x < this->orderedPrimitiveList.size(); x++) {
-    memcpy(this->orderedVertexBuffer + currentVertex + 0, this->orderedPrimitiveList[x]->vertexA, sizeof(float) * 3);
-    memcpy(this->orderedVertexBuffer + currentVertex + 3, this->orderedPrimitiveList[x]->vertexB, sizeof(float) * 3);
-    memcpy(this->orderedVertexBuffer + currentVertex + 6, this->orderedPrimitiveList[x]->vertexC, sizeof(float) * 3);
+  this->orderedVertexBuffer = (float*)malloc(sizeof(float) * orderedPrimitiveList.size() * 3 * 3);
+  for (uint64_t x = 0; x < orderedPrimitiveList.size(); x++) {
+    memcpy(this->orderedVertexBuffer + currentVertex + 0, orderedPrimitiveList[x]->vertexA, sizeof(float) * 3);
+    memcpy(this->orderedVertexBuffer + currentVertex + 3, orderedPrimitiveList[x]->vertexB, sizeof(float) * 3);
+    memcpy(this->orderedVertexBuffer + currentVertex + 6, orderedPrimitiveList[x]->vertexC, sizeof(float) * 3);
     currentVertex += 9;
   }
 }
@@ -73,7 +27,9 @@ AccelerationStructure::~AccelerationStructure() {
 
 }
 
-BVHBuildNode* AccelerationStructure::recursiveBuild(std::vector<PrimitiveInfo>& primitiveInfoList, int start, int end, int* totalNodes, std::vector<PrimitiveInfo*>& orderedPrimitiveList) {
+BVHBuildNode* AccelerationStructure::recursiveBuild(std::vector<PrimitiveInfo>* pPrimitiveInfoList, int start, int end, int* totalNodes, std::vector<PrimitiveInfo*>& orderedPrimitiveList) {
+  std::vector<PrimitiveInfo>& primitiveInfoList = *pPrimitiveInfoList;
+
   BVHBuildNode* node = new BVHBuildNode();
   (*totalNodes) += 1;
 
@@ -155,8 +111,8 @@ BVHBuildNode* AccelerationStructure::recursiveBuild(std::vector<PrimitiveInfo>& 
       node->firstPrimitiveOffset = -1;
       node->primitiveCount = 0;
 
-      node->leftChild = recursiveBuild(primitiveInfoList, start, mid, totalNodes, orderedPrimitiveList);
-      node->rightChild = recursiveBuild(primitiveInfoList, mid, end, totalNodes, orderedPrimitiveList);
+      node->leftChild = recursiveBuild(pPrimitiveInfoList, start, mid, totalNodes, orderedPrimitiveList);
+      node->rightChild = recursiveBuild(pPrimitiveInfoList, mid, end, totalNodes, orderedPrimitiveList);
     }
   }
 
@@ -204,7 +160,7 @@ void* AccelerationStructure::getNodeBuffer() {
 }
 
 uint64_t AccelerationStructure::getOrderedVertexBufferSize() {
-  return sizeof(float) * this->orderedPrimitiveList.size() * 3 * 3;
+  return sizeof(float) * this->totalPrimitives * 3 * 3;
 }
 
 void* AccelerationStructure::getOrderedVertexBuffer() {

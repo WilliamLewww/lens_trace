@@ -6,17 +6,6 @@
 #include <algorithm>
 #include <string.h>
 
-struct PrimitiveInfo {
-  int index;
-  float vertexA[3];
-  float vertexB[3];
-  float vertexC[3];
-
-  float boundsMin[3];
-  float boundsMax[3];
-  float centroid[3];
-};
-
 struct BVHBuildNode {
   float boundsMin[3];
   float boundsMax[3];
@@ -44,13 +33,13 @@ struct LinearBVHNode {
 
 class AccelerationStructure {
 private:
-  std::vector<PrimitiveInfo> primitiveInfoList;
-  std::vector<PrimitiveInfo*> orderedPrimitiveList;
-  LinearBVHNode* linearNodeBuffer;
-  float* orderedVertexBuffer;
   int totalNodes;
+  LinearBVHNode* linearNodeBuffer;
 
-  BVHBuildNode* recursiveBuild(std::vector<PrimitiveInfo>& primitiveInfoList, int start, int end, int* totalNodes, std::vector<PrimitiveInfo*>& orderedPrimitiveList);
+  int totalPrimitives;
+  float* orderedVertexBuffer;
+
+  BVHBuildNode* recursiveBuild(std::vector<PrimitiveInfo>* pPrimitiveInfoList, int start, int end, int* totalNodes, std::vector<PrimitiveInfo*>& orderedPrimitiveList);
   void recursiveFree(BVHBuildNode* node);
 
   int flattenBVHTree(LinearBVHNode* linearBVHNodes, BVHBuildNode* node, int* offset);

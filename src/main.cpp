@@ -1,4 +1,3 @@
-
 #include "engine.h"
 #include "model.h"
 #include "acceleration_structure.h"
