@@ -208,7 +208,7 @@ uint64_t AccelerationStructure::getNodeBufferSize() {
   return sizeof(LinearBVHNode) * this->totalNodes;
 }
 
-LinearBVHNode* AccelerationStructure::getNodeBuffer() {
+void* AccelerationStructure::getNodeBuffer() {
   return this->linearNodeBuffer;
 }
 
@@ -216,6 +216,6 @@ uint64_t AccelerationStructure::getOrderedVertexBufferSize() {
   return sizeof(float) * this->orderedPrimitiveList.size() * 3 * 3;
 }
 
-float* AccelerationStructure::getOrderedVertexBuffer() {
+void* AccelerationStructure::getOrderedVertexBuffer() {
   return this->orderedVertexBuffer;
 }

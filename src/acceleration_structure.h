@@ -47,9 +47,8 @@ private:
   std::vector<PrimitiveInfo> primitiveInfoList;
   std::vector<PrimitiveInfo*> orderedPrimitiveList;
   LinearBVHNode* linearNodeBuffer;
-  int totalNodes;
-
   float* orderedVertexBuffer;
+  int totalNodes;
 
   BVHBuildNode* recursiveBuild(std::vector<PrimitiveInfo>& primitiveInfoList, int start, int end, int* totalNodes, std::vector<PrimitiveInfo*>& orderedPrimitiveList);
   void recursiveFree(BVHBuildNode* node);
@@ -60,8 +59,8 @@ public:
   ~AccelerationStructure();
 
   uint64_t getNodeBufferSize();
-  LinearBVHNode* getNodeBuffer();
+  void* getNodeBuffer();
 
   uint64_t getOrderedVertexBufferSize();
-  float* getOrderedVertexBuffer();
+  void* getOrderedVertexBuffer();
 };
