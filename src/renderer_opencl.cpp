@@ -94,8 +94,8 @@ void RendererOpenCL::render(void* pRenderProperties) {
   cl_mem nodeBufferDevice = clCreateBuffer(this->context, CL_MEM_READ_ONLY, accelerationStructure->getNodeBufferSize(), NULL, NULL);
   clEnqueueWriteBuffer(this->commandQueue, nodeBufferDevice, CL_TRUE, 0, accelerationStructure->getNodeBufferSize(), accelerationStructure->getNodeBuffer(), 0, NULL, NULL);
   
-  cl_mem primitiveBufferDevice = clCreateBuffer(this->context, CL_MEM_READ_ONLY, accelerationStructure->getPrimitiveBufferSize(), NULL, NULL);
-  clEnqueueWriteBuffer(this->commandQueue, primitiveBufferDevice, CL_TRUE, 0, accelerationStructure->getPrimitiveBufferSize(), accelerationStructure->getPrimitiveBuffer(), 0, NULL, NULL);
+  cl_mem primitiveBufferDevice = clCreateBuffer(this->context, CL_MEM_READ_ONLY, accelerationStructure->getOrderedVertexBufferSize(), NULL, NULL);
+  clEnqueueWriteBuffer(this->commandQueue, primitiveBufferDevice, CL_TRUE, 0, accelerationStructure->getOrderedVertexBufferSize(), accelerationStructure->getOrderedVertexBuffer(), 0, NULL, NULL);
 
   cl_mem outputDevice = clCreateBuffer(this->context, CL_MEM_WRITE_ONLY, renderPropertiesOpenCL->outputBufferSize, NULL, NULL);
 

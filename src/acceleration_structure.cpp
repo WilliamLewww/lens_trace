@@ -53,28 +53,28 @@ AccelerationStructure::AccelerationStructure(AccelerationStructureProperties acc
   this->totalNodes = 0;
   BVHBuildNode* root = recursiveBuild(this->primitiveInfoList, 0, primitiveList.size(), &this->totalNodes, this->orderedPrimitiveList);
 
-  this->linearNodes = (LinearBVHNode*)malloc(sizeof(LinearBVHNode) * this->totalNodes);
+  this->linearNodeBuffer = (LinearBVHNode*)malloc(sizeof(LinearBVHNode) * this->totalNodes);
   int offset = 0;
-  flattenBVHTree(this->linearNodes, root, &offset);
+  flattenBVHTree(this->linearNodeBuffer, root, &offset);
 
   recursiveFree(root);
 
   int currentVertex = 0;
-  this->primitives = (float*)malloc(sizeof(float) * this->orderedPrimitiveList.size() * 3 * 3);
+  this->orderedVertexBuffer = (float*)malloc(sizeof(float) * this->orderedPrimitiveList.size() * 3 * 3);
   for (uint64_t x = 0; x < this->orderedPrimitiveList.size(); x++) {
-    memcpy(this->primitives + currentVertex + 0, this->orderedPrimitiveList[x]->vertexA, sizeof(float) * 3);
-    memcpy(this->primitives + currentVertex + 3, this->orderedPrimitiveList[x]->vertexB, sizeof(float) * 3);
-    memcpy(this->primitives + currentVertex + 6, this->orderedPrimitiveList[x]->vertexC, sizeof(float) * 3);
+    memcpy(this->orderedVertexBuffer + currentVertex + 0, this->orderedPrimitiveList[x]->vertexA, sizeof(float) * 3);
+    memcpy(this->orderedVertexBuffer + currentVertex + 3, this->orderedPrimitiveList[x]->vertexB, sizeof(float) * 3);
+    memcpy(this->orderedVertexBuffer + currentVertex + 6, this->orderedPrimitiveList[x]->vertexC, sizeof(float) * 3);
     currentVertex += 9;
   }
 
   for (int x = 0; x < this->totalNodes; x++) {
     printf("Node #%d:\n", x);
-    printf("  Bounds Min: %f %f %f\n", this->linearNodes[x].boundsMin[0], this->linearNodes[x].boundsMin[1], this->linearNodes[x].boundsMin[2]);
-    printf("  Bounds Max: %f %f %f\n", this->linearNodes[x].boundsMax[0], this->linearNodes[x].boundsMax[1], this->linearNodes[x].boundsMax[2]);
-    printf("  Primitive Count: %d\n", this->linearNodes[x].primitiveCount);
-    printf("  Primitives / Child Offset: %d\n", this->linearNodes[x].primitivesOffset);
-    printf("  Axis: %d\n", this->linearNodes[x].axis);
+    printf("  Bounds Min: %f %f %f\n", this->linearNodeBuffer[x].boundsMin[0], this->linearNodeBuffer[x].boundsMin[1], this->linearNodeBuffer[x].boundsMin[2]);
+    printf("  Bounds Max: %f %f %f\n", this->linearNodeBuffer[x].boundsMax[0], this->linearNodeBuffer[x].boundsMax[1], this->linearNodeBuffer[x].boundsMax[2]);
+    printf("  Primitive Count: %d\n", this->linearNodeBuffer[x].primitiveCount);
+    printf("  Primitives / Child Offset: %d\n", this->linearNodeBuffer[x].primitivesOffset);
+    printf("  Axis: %d\n", this->linearNodeBuffer[x].axis);
   }
 }
 
@@ -209,13 +209,13 @@ uint64_t AccelerationStructure::getNodeBufferSize() {
 }
 
 LinearBVHNode* AccelerationStructure::getNodeBuffer() {
-  return this->linearNodes;
+  return this->linearNodeBuffer;
 }
 
-uint64_t AccelerationStructure::getPrimitiveBufferSize() {
+uint64_t AccelerationStructure::getOrderedVertexBufferSize() {
   return sizeof(float) * this->orderedPrimitiveList.size() * 3 * 3;
 }
 
-float* AccelerationStructure::getPrimitiveBuffer() {
-  return this->primitives;
+float* AccelerationStructure::getOrderedVertexBuffer() {
+  return this->orderedVertexBuffer;
 }

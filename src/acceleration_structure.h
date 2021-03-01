@@ -46,9 +46,10 @@ class AccelerationStructure {
 private:
   std::vector<PrimitiveInfo> primitiveInfoList;
   std::vector<PrimitiveInfo*> orderedPrimitiveList;
-  LinearBVHNode* linearNodes;
+  LinearBVHNode* linearNodeBuffer;
   int totalNodes;
-  float* primitives;
+
+  float* orderedVertexBuffer;
 
   BVHBuildNode* recursiveBuild(std::vector<PrimitiveInfo>& primitiveInfoList, int start, int end, int* totalNodes, std::vector<PrimitiveInfo*>& orderedPrimitiveList);
   void recursiveFree(BVHBuildNode* node);
@@ -61,6 +62,6 @@ public:
   uint64_t getNodeBufferSize();
   LinearBVHNode* getNodeBuffer();
 
-  uint64_t getPrimitiveBufferSize();
-  float* getPrimitiveBuffer();
+  uint64_t getOrderedVertexBufferSize();
+  float* getOrderedVertexBuffer();
 };
