@@ -67,15 +67,6 @@ AccelerationStructure::AccelerationStructure(AccelerationStructureProperties acc
     memcpy(this->orderedVertexBuffer + currentVertex + 6, this->orderedPrimitiveList[x]->vertexC, sizeof(float) * 3);
     currentVertex += 9;
   }
-
-  for (int x = 0; x < this->totalNodes; x++) {
-    printf("Node #%d:\n", x);
-    printf("  Bounds Min: %f %f %f\n", this->linearNodeBuffer[x].boundsMin[0], this->linearNodeBuffer[x].boundsMin[1], this->linearNodeBuffer[x].boundsMin[2]);
-    printf("  Bounds Max: %f %f %f\n", this->linearNodeBuffer[x].boundsMax[0], this->linearNodeBuffer[x].boundsMax[1], this->linearNodeBuffer[x].boundsMax[2]);
-    printf("  Primitive Count: %d\n", this->linearNodeBuffer[x].primitiveCount);
-    printf("  Primitives / Child Offset: %d\n", this->linearNodeBuffer[x].primitivesOffset);
-    printf("  Axis: %d\n", this->linearNodeBuffer[x].axis);
-  }
 }
 
 AccelerationStructure::~AccelerationStructure() {
