@@ -1,3 +1,5 @@
+#pragma OPENCL EXTENSION cl_khr_fp64 : enable
+
 typedef struct LinearBVHNodeTag {
   float boundsMin[3];
   float boundsMax[3];
@@ -48,7 +50,7 @@ bool intersectTriangle(Ray ray, Primitive primitive) {
   return (t > EPSILON && t < 1.0f / EPSILON) * (a <= -EPSILON || a >= EPSILON) * (u >= 0.0f && u <= 1.0f) * (v >= 0.0f && u + v <= 1.0f);
 }
 
-bool intersectBounds(Ray ray, float4 invDir, int dirIsNeg[3], __global float* boundsMin, __global float* boundsMax) {
+bool intersectBounds(Ray ray, float4 invDir, int dirIsNeg[3], __global float boundsMin[3], __global float boundsMax[3]) {
   float tMin = (getBounds(dirIsNeg[0], boundsMin, boundsMax)[0] - ray.origin.x) * invDir.x;
   float tMax = (getBounds(1 - dirIsNeg[0], boundsMin, boundsMax)[0] - ray.origin.x) * invDir.x;
   float tyMin = (getBounds(dirIsNeg[1], boundsMin, boundsMax)[1] - ray.origin.y) * invDir.y;
