@@ -27,6 +27,27 @@ __global float* getBounds(int dirIsNeg, __global float* boundsMin, __global floa
   return (dirIsNeg == 0) ? boundsMin : boundsMax;
 }
 
+bool intersectTriangle(Ray ray, Primitive primitive) {
+  const float EPSILON = 0.0000001;
+  float4 vertexA = (float4)(primitive.vertexA[0], primitive.vertexA[1], primitive.vertexA[2], 1);
+  float4 vertexB = (float4)(primitive.vertexB[0], primitive.vertexB[1], primitive.vertexB[2], 1);
+  float4 vertexC = (float4)(primitive.vertexC[0], primitive.vertexC[1], primitive.vertexC[2], 1);
+
+  float4 edgeB = vertexB - vertexA;
+  float4 edgeC = vertexC - vertexA;
+
+  float4 h = cross(ray.direction, edgeC);
+  float a = dot(edgeB, h);
+  float f = 1.0f / a;
+  float4 s = ray.origin - vertexA;
+  float u = f * dot(s, h);
+  float4 q = cross(s, edgeB);
+  float v = f * dot(ray.direction, q);
+  float t = f * dot(edgeC, q);
+
+  return (t > EPSILON && t < 1.0f / EPSILON) * (a <= -EPSILON || a >= EPSILON) * (u >= 0.0f && u <= 1.0f) * (v >= 0.0f && u + v <= 1.0f);
+}
+
 bool intersectBounds(Ray ray, float4 invDir, int dirIsNeg[3], __global float* boundsMin, __global float* boundsMax) {
   float tMin = (getBounds(dirIsNeg[0], boundsMin, boundsMax)[0] - ray.origin.x) * invDir.x;
   float tMax = (getBounds(1 - dirIsNeg[0], boundsMin, boundsMax)[0] - ray.origin.x) * invDir.x;
@@ -46,7 +67,7 @@ bool intersectBounds(Ray ray, float4 invDir, int dirIsNeg[3], __global float* bo
   return (tMax > 0);
 }
 
-bool intersect(Ray ray, __global LinearBVHNode* nodes) {
+bool intersect(Ray ray, __global LinearBVHNode* nodes, __global Primitive* primitives) {
   bool hit = false;
   float4 invDir = (float4)(1.0 / ray.direction.x, 1.0 / ray.direction.y, 1.0 / ray.direction.z, 0);
   int dirIsNeg[3] = {invDir.x < 0, invDir.y < 0, invDir.z < 0};
@@ -59,7 +80,7 @@ bool intersect(Ray ray, __global LinearBVHNode* nodes) {
     if (intersectBounds(ray, invDir, dirIsNeg, node->boundsMin, node->boundsMax)) {
       if (node->primitiveCount > 0) {
         for (int i = 0; i < node->primitiveCount; i++) {
-          if (true) {
+          if (intersectTriangle(ray, primitives[node->primitivesOffset])) {
             hit = true;
           }
         }
@@ -103,7 +124,7 @@ __kernel void linearKernel(__global LinearBVHNode* linearNodes, __global Primiti
     .direction = (float4)(0, 0, 1, 0)
   };
 
-  if (intersect(ray, linearNodes)) {
+  if (intersect(ray, linearNodes, primitives)) {
     output[blockID + 0] = 255;
     output[blockID + 1] = 255;
     output[blockID + 2] = 255;
@@ -132,7 +153,7 @@ __kernel void tileKernel(__global LinearBVHNode* linearNodes, __global Primitive
     .direction = (float4)(0, 0, 1, 0)
   };
 
-  if (intersect(ray, linearNodes)) {
+  if (intersect(ray, linearNodes, primitives)) {
     output[blockID + 0] = 255;
     output[blockID + 1] = 255;
     output[blockID + 2] = 255;

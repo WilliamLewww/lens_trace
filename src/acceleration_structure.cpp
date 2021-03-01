@@ -38,9 +38,9 @@ AccelerationStructure::AccelerationStructure(AccelerationStructureProperties acc
 
     PrimitiveInfo primitiveInfo = {
       .index = (int)x,
-      .vertexA = {primitiveList[x][0][0], primitiveList[x][1][0], primitiveList[x][2][0]},
-      .vertexB = {primitiveList[x][0][1], primitiveList[x][1][1], primitiveList[x][2][1]},
-      .vertexC = {primitiveList[x][0][2], primitiveList[x][1][2], primitiveList[x][2][2]},
+      .vertexA = {primitiveList[x][0][0], primitiveList[x][0][1], primitiveList[x][0][2]},
+      .vertexB = {primitiveList[x][1][0], primitiveList[x][1][1], primitiveList[x][1][2]},
+      .vertexC = {primitiveList[x][2][0], primitiveList[x][2][1], primitiveList[x][2][2]},
 
       .boundsMin = {boundsMinX, boundsMinY, boundsMinZ},
       .boundsMax = {boundsMaxX, boundsMaxY, boundsMaxZ},
