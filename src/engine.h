@@ -9,7 +9,7 @@
 class Engine {
 private:
   RenderPlatform renderPlatform;
-  Renderer* renderer;
+  Renderer* pRenderer;
 public:
   Engine(RenderPlatform renderPlatform);
   ~Engine();

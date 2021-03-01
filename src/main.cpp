@@ -4,21 +4,21 @@
 #include "structures.h"
 
 int main(int argc, const char** argv) {
-  Model* model = new Model("low_poly_sphere.obj");
+  Model* pModel = new Model("low_poly_sphere.obj");
 
   AccelerationStructureProperties accelerationStructureProperties = {
     .sType = STRUCTURE_TYPE_ACCELERATION_STRUCTURE_PROPERTIES,
     .pNext = NULL,
     .accelerationStructureType = ACCELERATION_STRUCTURE_TYPE_BVH,
-    .pModel = model,
+    .pModel = pModel,
   };
 
-  AccelerationStructure* accelerationStructure = new AccelerationStructure(accelerationStructureProperties);
+  AccelerationStructure* pAccelerationStructure = new AccelerationStructure(accelerationStructureProperties);
 
-  Engine* engine = new Engine(RENDER_PLATFORM_OPENCL);
+  Engine* pEngine = new Engine(RENDER_PLATFORM_OPENCL);
 
   uint64_t outputBufferSize = sizeof(float) * 2048 * 2048 * 3;
-  void* outputBuffer = malloc(outputBufferSize);
+  void* pOutputBuffer = malloc(outputBufferSize);
 
   ThreadOrganizationOpenCL threadOrganization = {
     .sType = STRUCTURE_TYPE_THREAD_ORGANIZATION_OPENCL,
@@ -34,27 +34,29 @@ int main(int argc, const char** argv) {
     .imageDimensions = {2048, 2048, 3},
     .threadOrganizationMode = THREAD_ORGANIZATION_MODE_MAX_FIT,
     .pThreadOrganization = &threadOrganization,
-    .pOutputBuffer = outputBuffer,
+    .pOutputBuffer = pOutputBuffer,
     .outputBufferSize = outputBufferSize,
-    .pAccelerationStructure = accelerationStructure
+    .pAccelerationStructure = pAccelerationStructure
   };
 
-  engine->render(&renderProperties);
+  pEngine->render(&renderProperties);
 
   BufferToImageProperties bufferToImageProperties = {
     .sType = STRUCTURE_TYPE_BUFFER_TO_IMAGE_PROPERTIES,
     .pNext = NULL,
-    .pBuffer = outputBuffer,
+    .pBuffer = pOutputBuffer,
     .bufferSize = outputBufferSize,
     .imageDimensions = {2048, 2048, 3},
     .imageType = IMAGE_TYPE_JPEG,
     .filename = "dump/test.jpg"
   };
 
-  engine->writeBufferToImage(bufferToImageProperties);
+  pEngine->writeBufferToImage(bufferToImageProperties);
 
-  delete engine;
-  free(outputBuffer);
+  delete pModel;
+  delete pAccelerationStructure;
+  delete pEngine;
+  free(pOutputBuffer);
 
   return 0;
 }

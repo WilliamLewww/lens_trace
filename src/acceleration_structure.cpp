@@ -1,24 +1,24 @@
 #include "acceleration_structure.h"
 
 AccelerationStructure::AccelerationStructure(AccelerationStructureProperties accelerationStructureProperties) {
-  Model* model = (Model*)accelerationStructureProperties.pModel;
+  Model* pModel = (Model*)accelerationStructureProperties.pModel;
 
-  this->totalPrimitives = model->getPrimitiveInfoListP()->size();
+  this->totalPrimitives = pModel->getPrimitiveInfoListP()->size();
   this->totalNodes = 0;
   std::vector<PrimitiveInfo*> orderedPrimitiveList;
-  BVHBuildNode* root = recursiveBuild(model->getPrimitiveInfoListP(), 0, model->getPrimitiveInfoListP()->size(), &this->totalNodes, orderedPrimitiveList);
+  BVHBuildNode* pRoot = recursiveBuild(pModel->getPrimitiveInfoListP(), 0, pModel->getPrimitiveInfoListP()->size(), &this->totalNodes, orderedPrimitiveList);
 
   int offset = 0;
-  this->linearNodeBuffer = (LinearBVHNode*)malloc(sizeof(LinearBVHNode) * this->totalNodes);
-  flattenBVHTree(this->linearNodeBuffer, root, &offset);
-  recursiveFree(root);
+  this->pLinearNodeBuffer = (LinearBVHNode*)malloc(sizeof(LinearBVHNode) * this->totalNodes);
+  flattenBVHTree(this->pLinearNodeBuffer, pRoot, &offset);
+  recursiveFree(pRoot);
 
   int currentVertex = 0;
-  this->orderedVertexBuffer = (float*)malloc(sizeof(float) * orderedPrimitiveList.size() * 3 * 3);
+  this->pOrderedVertexBuffer = (float*)malloc(sizeof(float) * orderedPrimitiveList.size() * 3 * 3);
   for (uint64_t x = 0; x < orderedPrimitiveList.size(); x++) {
-    memcpy(this->orderedVertexBuffer + currentVertex + 0, orderedPrimitiveList[x]->vertexA, sizeof(float) * 3);
-    memcpy(this->orderedVertexBuffer + currentVertex + 3, orderedPrimitiveList[x]->vertexB, sizeof(float) * 3);
-    memcpy(this->orderedVertexBuffer + currentVertex + 6, orderedPrimitiveList[x]->vertexC, sizeof(float) * 3);
+    memcpy(this->pOrderedVertexBuffer + currentVertex + 0, orderedPrimitiveList[x]->vertexA, sizeof(float) * 3);
+    memcpy(this->pOrderedVertexBuffer + currentVertex + 3, orderedPrimitiveList[x]->vertexB, sizeof(float) * 3);
+    memcpy(this->pOrderedVertexBuffer + currentVertex + 6, orderedPrimitiveList[x]->vertexC, sizeof(float) * 3);
     currentVertex += 9;
   }
 }
@@ -27,11 +27,11 @@ AccelerationStructure::~AccelerationStructure() {
 
 }
 
-BVHBuildNode* AccelerationStructure::recursiveBuild(std::vector<PrimitiveInfo>* pPrimitiveInfoList, int start, int end, int* totalNodes, std::vector<PrimitiveInfo*>& orderedPrimitiveList) {
+BVHBuildNode* AccelerationStructure::recursiveBuild(std::vector<PrimitiveInfo>* pPrimitiveInfoList, int start, int end, int* pTotalNodes, std::vector<PrimitiveInfo*>& orderedPrimitiveList) {
   std::vector<PrimitiveInfo>& primitiveInfoList = *pPrimitiveInfoList;
 
   BVHBuildNode* node = new BVHBuildNode();
-  (*totalNodes) += 1;
+  (*pTotalNodes) += 1;
 
   memcpy(node->boundsMin, primitiveInfoList[start].boundsMin, sizeof(float) * 3);
   memcpy(node->boundsMax, primitiveInfoList[start].boundsMax, sizeof(float) * 3);
@@ -52,8 +52,8 @@ BVHBuildNode* AccelerationStructure::recursiveBuild(std::vector<PrimitiveInfo>* 
       orderedPrimitiveList.push_back(&primitiveInfoList[x]);
     }
 
-    node->leftChild = NULL;
-    node->rightChild = NULL;
+    node->pLeftChild = NULL;
+    node->pRightChild = NULL;
 
     node->splitAxis = -1;
     node->firstPrimitiveOffset = firstPrimitiveOffset;
@@ -93,8 +93,8 @@ BVHBuildNode* AccelerationStructure::recursiveBuild(std::vector<PrimitiveInfo>* 
         orderedPrimitiveList.push_back(&primitiveInfoList[x]);
       }
 
-      node->leftChild = NULL;
-      node->rightChild = NULL;
+      node->pLeftChild = NULL;
+      node->pRightChild = NULL;
 
       node->splitAxis = -1;
       node->firstPrimitiveOffset = firstPrimitiveOffset;
@@ -111,41 +111,41 @@ BVHBuildNode* AccelerationStructure::recursiveBuild(std::vector<PrimitiveInfo>* 
       node->firstPrimitiveOffset = -1;
       node->primitiveCount = 0;
 
-      node->leftChild = recursiveBuild(pPrimitiveInfoList, start, mid, totalNodes, orderedPrimitiveList);
-      node->rightChild = recursiveBuild(pPrimitiveInfoList, mid, end, totalNodes, orderedPrimitiveList);
+      node->pLeftChild = recursiveBuild(pPrimitiveInfoList, start, mid, pTotalNodes, orderedPrimitiveList);
+      node->pRightChild = recursiveBuild(pPrimitiveInfoList, mid, end, pTotalNodes, orderedPrimitiveList);
     }
   }
 
   return node;
 }
 
-void AccelerationStructure::recursiveFree(BVHBuildNode* node) {
-  if (node == NULL) {
+void AccelerationStructure::recursiveFree(BVHBuildNode* pNode) {
+  if (pNode == NULL) {
     return;
   }
 
-  recursiveFree(node->leftChild);
-  recursiveFree(node->rightChild);
+  recursiveFree(pNode->pLeftChild);
+  recursiveFree(pNode->pRightChild);
 
-  delete node;
+  delete pNode;
 }
 
-int AccelerationStructure::flattenBVHTree(LinearBVHNode* linearBVHNodes, BVHBuildNode* node, int* offset) {
-  LinearBVHNode* linearNode = &linearBVHNodes[*offset];
-  memcpy(linearNode->boundsMin, node->boundsMin, sizeof(float) * 3);
-  memcpy(linearNode->boundsMax, node->boundsMax, sizeof(float) * 3);
+int AccelerationStructure::flattenBVHTree(LinearBVHNode* pLinearBVHNodes, BVHBuildNode* pNode, int* pOffset) {
+  LinearBVHNode* pLinearNode = &pLinearBVHNodes[*pOffset];
+  memcpy(pLinearNode->boundsMin, pNode->boundsMin, sizeof(float) * 3);
+  memcpy(pLinearNode->boundsMax, pNode->boundsMax, sizeof(float) * 3);
 
-  int currentOffset = (*offset)++;
+  int currentOffset = (*pOffset)++;
 
-  if (node->primitiveCount > 0) {
-    linearNode->primitivesOffset = node->firstPrimitiveOffset;
-    linearNode->primitiveCount = node->primitiveCount;
+  if (pNode->primitiveCount > 0) {
+    pLinearNode->primitivesOffset = pNode->firstPrimitiveOffset;
+    pLinearNode->primitiveCount = pNode->primitiveCount;
   }
   else {
-    linearNode->axis = node->splitAxis;
-    linearNode->primitiveCount = 0;
-    flattenBVHTree(linearBVHNodes, node->leftChild, offset);
-    linearNode->secondChildOffset = flattenBVHTree(linearBVHNodes, node->rightChild, offset);
+    pLinearNode->axis = pNode->splitAxis;
+    pLinearNode->primitiveCount = 0;
+    flattenBVHTree(pLinearBVHNodes, pNode->pLeftChild, pOffset);
+    pLinearNode->secondChildOffset = flattenBVHTree(pLinearBVHNodes, pNode->pRightChild, pOffset);
   }
 
   return currentOffset;
@@ -156,7 +156,7 @@ uint64_t AccelerationStructure::getNodeBufferSize() {
 }
 
 void* AccelerationStructure::getNodeBuffer() {
-  return this->linearNodeBuffer;
+  return this->pLinearNodeBuffer;
 }
 
 uint64_t AccelerationStructure::getOrderedVertexBufferSize() {
@@ -164,5 +164,5 @@ uint64_t AccelerationStructure::getOrderedVertexBufferSize() {
 }
 
 void* AccelerationStructure::getOrderedVertexBuffer() {
-  return this->orderedVertexBuffer;
+  return this->pOrderedVertexBuffer;
 }

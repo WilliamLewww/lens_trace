@@ -21,12 +21,12 @@ Model::Model(std::string fileName) {
     for (uint64_t f = 0; f < this->shapes[s].mesh.num_face_vertices.size(); f++) {
       int fv = this->shapes[s].mesh.num_face_vertices[f];
 
-      std::vector<std::array<float, 3>> vertexList;
+      std::vector<std::array<float, 3>> vertexPositionList;
       for (uint64_t v = 0; v < fv; v++) {
         tinyobj::index_t idx = this->shapes[s].mesh.indices[index_offset + v];
-        vertexList.push_back({this->attrib.vertices[3*idx.vertex_index+0], this->attrib.vertices[3*idx.vertex_index+1], this->attrib.vertices[3*idx.vertex_index+2]});
+        vertexPositionList.push_back({this->attrib.vertices[3*idx.vertex_index+0], this->attrib.vertices[3*idx.vertex_index+1], this->attrib.vertices[3*idx.vertex_index+2]});
       }
-      facePositionList.push_back(vertexList);
+      facePositionList.push_back(vertexPositionList);
 
       index_offset += fv;
     }

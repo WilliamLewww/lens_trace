@@ -9,8 +9,8 @@
 struct BVHBuildNode {
   float boundsMin[3];
   float boundsMax[3];
-  BVHBuildNode* leftChild;
-  BVHBuildNode* rightChild;
+  BVHBuildNode* pLeftChild;
+  BVHBuildNode* pRightChild;
 
   int splitAxis;
   int firstPrimitiveOffset;
@@ -34,15 +34,15 @@ struct LinearBVHNode {
 class AccelerationStructure {
 private:
   int totalNodes;
-  LinearBVHNode* linearNodeBuffer;
+  LinearBVHNode* pLinearNodeBuffer;
 
   int totalPrimitives;
-  float* orderedVertexBuffer;
+  float* pOrderedVertexBuffer;
 
-  BVHBuildNode* recursiveBuild(std::vector<PrimitiveInfo>* pPrimitiveInfoList, int start, int end, int* totalNodes, std::vector<PrimitiveInfo*>& orderedPrimitiveList);
-  void recursiveFree(BVHBuildNode* node);
+  BVHBuildNode* recursiveBuild(std::vector<PrimitiveInfo>* pPrimitiveInfoList, int start, int end, int* pTotalNodes, std::vector<PrimitiveInfo*>& orderedPrimitiveList);
+  void recursiveFree(BVHBuildNode* pNode);
 
-  int flattenBVHTree(LinearBVHNode* linearBVHNodes, BVHBuildNode* node, int* offset);
+  int flattenBVHTree(LinearBVHNode* pLinearBVHNodes, BVHBuildNode* pNode, int* pOffset);
 public:
   AccelerationStructure(AccelerationStructureProperties accelerationStructureProperties);
   ~AccelerationStructure();
