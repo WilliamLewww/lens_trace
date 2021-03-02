@@ -27,7 +27,7 @@ Model::Model(std::string fileName) {
       for (uint64_t v = 0; v < fv; v++) {
         tinyobj::index_t idx = this->shapes[s].mesh.indices[index_offset + v];
         vertexPositionList.push_back({this->attrib.vertices[3*idx.vertex_index+0], this->attrib.vertices[3*idx.vertex_index+1], this->attrib.vertices[3*idx.vertex_index+2]});
-        vertexNormalList.push_back({this->attrib.vertices[3*idx.normal_index+0], this->attrib.vertices[3*idx.normal_index+1], this->attrib.vertices[3*idx.normal_index+2]});
+        vertexNormalList.push_back({this->attrib.normals[3*idx.normal_index+0], this->attrib.normals[3*idx.normal_index+1], this->attrib.normals[3*idx.normal_index+2]});
       }
       facePositionList.push_back(vertexPositionList);
       faceNormalList.push_back(vertexNormalList);

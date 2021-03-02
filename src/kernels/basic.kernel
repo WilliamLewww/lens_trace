@@ -29,6 +29,7 @@ typedef struct RayTag {
 } Ray;
 
 typedef struct RayPayloadTag {
+  int primitiveIndex;
   float t;
   float u;
   float v;
@@ -107,6 +108,7 @@ bool intersect(RayPayload* rayPayload, Ray ray, __global LinearBVHNode* nodes, _
       if (node->primitiveCount > 0) {
         for (int i = 0; i < node->primitiveCount; i++) {
           if (intersectTriangle(rayPayload, ray, primitives[node->primitivesOffset])) {
+            rayPayload->primitiveIndex = node->primitivesOffset;
             hit = true;
           }
         }
@@ -145,23 +147,28 @@ __kernel void linearKernel(__global LinearBVHNode* linearNodes, __global Primiti
     return;
   }
 
-  RayPayload rayPayload;
+  float3 outputColor = (float3)(0, 0, 0);
 
+  RayPayload rayPayload;
   Ray ray = {
     .origin = (float4)(((float)blockIDX / width) - 0.5f, ((float)blockIDY / height) - 0.5f, -2, 1),
     .direction = (float4)(0, 0, 1, 0)
   };
 
   if (intersect(&rayPayload, ray, linearNodes, primitives)) {
-    output[blockID + 0] = rayPayload.u * 255;
-    output[blockID + 1] = rayPayload.v * 255;
-    output[blockID + 2] = (1.0 - rayPayload.u - rayPayload.v) * 255;
+    float3 barycentrics = (float3)(1.0 - rayPayload.u - rayPayload.v, rayPayload.u, rayPayload.v);
+    float3 normalA = (float3)(primitives[rayPayload.primitiveIndex].normalA[0], primitives[rayPayload.primitiveIndex].normalA[1], primitives[rayPayload.primitiveIndex].normalA[2]);
+    float3 normalB = (float3)(primitives[rayPayload.primitiveIndex].normalB[0], primitives[rayPayload.primitiveIndex].normalB[1], primitives[rayPayload.primitiveIndex].normalB[2]);
+    float3 normalC = (float3)(primitives[rayPayload.primitiveIndex].normalC[0], primitives[rayPayload.primitiveIndex].normalC[1], primitives[rayPayload.primitiveIndex].normalC[2]);
+
+    float3 normal = fabs(normalize(normalA * barycentrics.x + normalB * barycentrics.y + normalC * barycentrics.z));
+
+    outputColor = (float3)(normal.x * 255, normal.y * 255, normal.z * 255);
   }
-  else {
-    output[blockID + 0] = 0;
-    output[blockID + 1] = 0;
-    output[blockID + 2] = 0;
-  }
+
+  output[blockID + 0] = outputColor.x;
+  output[blockID + 1] = outputColor.y;
+  output[blockID + 2] = outputColor.z;
 }
 
 __kernel void tileKernel(__global LinearBVHNode* linearNodes, __global Primitive* primitives, __global float* output, uint currentBlock, uint width, uint height, uint depth) {
