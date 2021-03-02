@@ -145,12 +145,12 @@ __kernel void linearKernel(__global LinearBVHNode* linearNodes, __global Primiti
     return;
   }
 
+  RayPayload rayPayload;
+
   Ray ray = {
     .origin = (float4)(((float)blockIDX / width) - 0.5f, ((float)blockIDY / height) - 0.5f, -2, 1),
     .direction = (float4)(0, 0, 1, 0)
   };
-
-  RayPayload rayPayload;
 
   if (intersect(&rayPayload, ray, linearNodes, primitives)) {
     output[blockID + 0] = rayPayload.u * 255;
@@ -176,17 +176,17 @@ __kernel void tileKernel(__global LinearBVHNode* linearNodes, __global Primitive
     return;
   }
 
+  RayPayload rayPayload;
+
   Ray ray = {
     .origin = (float4)(((float)blockIDX / width) - 0.5f, ((float)blockIDY / height) - 0.5f, -2, 1),
     .direction = (float4)(0, 0, 1, 0)
   };
 
-  RayPayload rayPayload;
-
   if (intersect(&rayPayload, ray, linearNodes, primitives)) {
-    output[blockID + 0] = 255;
-    output[blockID + 1] = 255;
-    output[blockID + 2] = 255;
+    output[blockID + 0] = rayPayload.u * 255;
+    output[blockID + 1] = rayPayload.v * 255;
+    output[blockID + 2] = (1.0 - rayPayload.u - rayPayload.v) * 255;
   }
   else {
     output[blockID + 0] = 0;
