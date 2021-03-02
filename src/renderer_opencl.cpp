@@ -3,7 +3,7 @@
 void printKernelBuildLog(cl_device_id deviceID, cl_program program) {
   char* pPrintBuffer = (char*)malloc(4096);
   uint64_t length;
-  clGetProgramBuildInfo(program, deviceID, CL_PROGRAM_BUILD_LOG, sizeof(pPrintBuffer), pPrintBuffer, &length);
+  clGetProgramBuildInfo(program, deviceID, CL_PROGRAM_BUILD_LOG, 4096, pPrintBuffer, &length);
   printf("%s\n",pPrintBuffer);
   free(pPrintBuffer);
 }

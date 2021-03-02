@@ -28,29 +28,50 @@ typedef struct RayTag {
   float4 direction;
 } Ray;
 
+typedef struct RayPayloadTag {
+  float t;
+  float u;
+  float v;
+} RayPayload;
+
 __global float* getBounds(int dirIsNeg, __global float* boundsMin, __global float* boundsMax) {
   return (dirIsNeg == 0) ? boundsMin : boundsMax;
 }
 
-bool intersectTriangle(Ray ray, Primitive primitive) {
+bool intersectTriangle(RayPayload* rayPayload, Ray ray, Primitive primitive) {
   const float EPSILON = 0.0000001;
   float4 vertexA = (float4)(primitive.vertexA[0], primitive.vertexA[1], primitive.vertexA[2], 1);
   float4 vertexB = (float4)(primitive.vertexB[0], primitive.vertexB[1], primitive.vertexB[2], 1);
   float4 vertexC = (float4)(primitive.vertexC[0], primitive.vertexC[1], primitive.vertexC[2], 1);
 
-  float4 edgeB = vertexB - vertexA;
-  float4 edgeC = vertexC - vertexA;
+  float4 v0v1 = vertexB - vertexA;
+  float4 v0v2 = vertexC - vertexA;
+  float4 pvec = cross(ray.direction, v0v2);
+  float det = dot(v0v1, pvec);
 
-  float4 h = cross(ray.direction, edgeC);
-  float a = dot(edgeB, h);
-  float f = 1.0f / a;
-  float4 s = ray.origin - vertexA;
-  float u = f * dot(s, h);
-  float4 q = cross(s, edgeB);
-  float v = f * dot(ray.direction, q);
-  float t = f * dot(edgeC, q);
+  if (fabs(det) < EPSILON) {
+    return false;
+  }
 
-  return (t > EPSILON && t < 1.0f / EPSILON) * (a <= -EPSILON || a >= EPSILON) * (u >= 0.0f && u <= 1.0f) * (v >= 0.0f && u + v <= 1.0f);
+  float invDet = 1 / det;
+
+  float4 tvec = ray.origin - vertexA;
+  float u = dot(tvec,pvec) * invDet;
+  if (u < 0 || u > 1) {
+    return false;
+  }
+
+  float4 qvec = cross(tvec, v0v1);
+  float v = dot(ray.direction, qvec) * invDet;
+  if (v < 0 || u + v > 1) {
+    return false;
+  }
+
+  rayPayload->t = dot(v0v2, qvec) * invDet;
+  rayPayload->u = u;
+  rayPayload->v = v;
+
+  return true;
 }
 
 bool intersectBounds(Ray ray, float4 invDir, int dirIsNeg[3], __global float boundsMin[3], __global float boundsMax[3]) {
@@ -72,7 +93,7 @@ bool intersectBounds(Ray ray, float4 invDir, int dirIsNeg[3], __global float bou
   return (tMax > 0);
 }
 
-bool intersect(Ray ray, __global LinearBVHNode* nodes, __global Primitive* primitives) {
+bool intersect(RayPayload* rayPayload, Ray ray, __global LinearBVHNode* nodes, __global Primitive* primitives) {
   bool hit = false;
   float4 invDir = (float4)(1.0 / ray.direction.x, 1.0 / ray.direction.y, 1.0 / ray.direction.z, 0);
   int dirIsNeg[3] = {invDir.x < 0, invDir.y < 0, invDir.z < 0};
@@ -85,7 +106,7 @@ bool intersect(Ray ray, __global LinearBVHNode* nodes, __global Primitive* primi
     if (intersectBounds(ray, invDir, dirIsNeg, node->boundsMin, node->boundsMax)) {
       if (node->primitiveCount > 0) {
         for (int i = 0; i < node->primitiveCount; i++) {
-          if (intersectTriangle(ray, primitives[node->primitivesOffset])) {
+          if (intersectTriangle(rayPayload, ray, primitives[node->primitivesOffset])) {
             hit = true;
           }
         }
@@ -129,10 +150,12 @@ __kernel void linearKernel(__global LinearBVHNode* linearNodes, __global Primiti
     .direction = (float4)(0, 0, 1, 0)
   };
 
-  if (intersect(ray, linearNodes, primitives)) {
-    output[blockID + 0] = 255;
-    output[blockID + 1] = 255;
-    output[blockID + 2] = 255;
+  RayPayload rayPayload;
+
+  if (intersect(&rayPayload, ray, linearNodes, primitives)) {
+    output[blockID + 0] = rayPayload.u * 255;
+    output[blockID + 1] = rayPayload.v * 255;
+    output[blockID + 2] = (1.0 - rayPayload.u - rayPayload.v) * 255;
   }
   else {
     output[blockID + 0] = 0;
@@ -158,7 +181,9 @@ __kernel void tileKernel(__global LinearBVHNode* linearNodes, __global Primitive
     .direction = (float4)(0, 0, 1, 0)
   };
 
-  if (intersect(ray, linearNodes, primitives)) {
+  RayPayload rayPayload;
+
+  if (intersect(&rayPayload, ray, linearNodes, primitives)) {
     output[blockID + 0] = 255;
     output[blockID + 1] = 255;
     output[blockID + 2] = 255;
