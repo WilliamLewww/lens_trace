@@ -18,6 +18,9 @@ typedef struct PrimitiveTag {
   float vertexA[3];
   float vertexB[3];
   float vertexC[3];
+  float normalA[3];
+  float normalB[3];
+  float normalC[3];
 } Primitive;
 
 typedef struct RayTag {

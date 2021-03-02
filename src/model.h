@@ -10,6 +10,10 @@ struct PrimitiveInfo {
   float vertexB[3];
   float vertexC[3];
 
+  float normalA[3];
+  float normalB[3];
+  float normalC[3];
+
   float boundsMin[3];
   float boundsMax[3];
   float centroid[3];

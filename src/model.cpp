@@ -15,6 +15,7 @@ Model::Model(std::string fileName) {
   this->checkError();
 
   std::vector<std::vector<std::array<float, 3>>> facePositionList;
+  std::vector<std::vector<std::array<float, 3>>> faceNormalList;
 
   for (uint64_t s = 0; s < this->shapes.size(); s++) {
     uint64_t index_offset = 0;
@@ -22,11 +23,14 @@ Model::Model(std::string fileName) {
       int fv = this->shapes[s].mesh.num_face_vertices[f];
 
       std::vector<std::array<float, 3>> vertexPositionList;
+      std::vector<std::array<float, 3>> vertexNormalList;
       for (uint64_t v = 0; v < fv; v++) {
         tinyobj::index_t idx = this->shapes[s].mesh.indices[index_offset + v];
         vertexPositionList.push_back({this->attrib.vertices[3*idx.vertex_index+0], this->attrib.vertices[3*idx.vertex_index+1], this->attrib.vertices[3*idx.vertex_index+2]});
+        vertexNormalList.push_back({this->attrib.vertices[3*idx.normal_index+0], this->attrib.vertices[3*idx.normal_index+1], this->attrib.vertices[3*idx.normal_index+2]});
       }
       facePositionList.push_back(vertexPositionList);
+      faceNormalList.push_back(vertexNormalList);
 
       index_offset += fv;
     }
@@ -55,6 +59,10 @@ Model::Model(std::string fileName) {
       .vertexA = {facePositionList[x][0][0], facePositionList[x][0][1], facePositionList[x][0][2]},
       .vertexB = {facePositionList[x][1][0], facePositionList[x][1][1], facePositionList[x][1][2]},
       .vertexC = {facePositionList[x][2][0], facePositionList[x][2][1], facePositionList[x][2][2]},
+
+      .normalA = {faceNormalList[x][0][0], faceNormalList[x][0][1], faceNormalList[x][0][2]},
+      .normalB = {faceNormalList[x][1][0], faceNormalList[x][1][1], faceNormalList[x][1][2]},
+      .normalC = {faceNormalList[x][2][0], faceNormalList[x][2][1], faceNormalList[x][2][2]},
 
       .boundsMin = {boundsMin[0], boundsMin[1], boundsMin[2]},
       .boundsMax = {boundsMax[0], boundsMax[1], boundsMax[2]},
