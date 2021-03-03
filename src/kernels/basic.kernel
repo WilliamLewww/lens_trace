@@ -75,9 +75,11 @@ bool intersectTriangle(RayPayload* rayPayload, Ray ray, Primitive primitive) {
     rayPayload->t = t;
     rayPayload->u = u;
     rayPayload->v = v;
+
+    return true;
   }
 
-  return true;
+  return false;
 }
 
 bool intersectBounds(Ray ray, float4 invDir, int dirIsNeg[3], __global float boundsMin[3], __global float boundsMax[3]) {
@@ -172,8 +174,8 @@ __kernel void linearKernel(__global LinearBVHNode* linearNodes, __global Primiti
 
     float3 normal = fabs(normalize(normalA * barycentrics.x + normalB * barycentrics.y + normalC * barycentrics.z));
 
-    // outputColor = (float3)(normal.x * 255, normal.y * 255, normal.z * 255);
-    outputColor = (float3)(barycentrics.x * 255, barycentrics.y * 255, barycentrics.z * 255);
+    outputColor = (float3)(normal.x * 255, normal.y * 255, normal.z * 255);
+    // outputColor = (float3)(barycentrics.x * 255, barycentrics.y * 255, barycentrics.z * 255);
   }
 
   output[blockID + 0] = outputColor.x;
