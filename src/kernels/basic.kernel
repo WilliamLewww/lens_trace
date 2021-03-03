@@ -151,15 +151,15 @@ __kernel void linearKernel(__global LinearBVHNode* linearNodes, __global Primiti
 
   float3 outputColor = (float3)(0, 0, 0);
 
-  float4 cameraPosition = (float4)(0, -0.25, -50, 1);
+  float4 cameraPosition = (float4)(0, 2.5, -50, 1);
   float4 filmPosition = (float4)(((float)blockIDX / width) - 0.5f, ((float)blockIDY / height) - 0.5f, 0, 1);
-  float4 aperaturePosition = (float4)(0.0, 0.0, cameraPosition.z + 5, 1);
+  float4 aperaturePosition = (float4)(0.0, 0.0, 5, 1);
 
   RayPayload rayPayload = {0, 0, FLT_MAX, 0, 0};
 
   Ray ray = {
     .origin = cameraPosition + filmPosition,
-    .direction = aperaturePosition - ray.origin
+    .direction = aperaturePosition - filmPosition
   };
 
   intersect(&rayPayload, ray, linearNodes, primitives);
@@ -195,15 +195,15 @@ __kernel void tileKernel(__global LinearBVHNode* linearNodes, __global Primitive
 
   float3 outputColor = (float3)(0, 0, 0);
 
-  float4 cameraPosition = (float4)(0, -0.25, -50, 1);
+  float4 cameraPosition = (float4)(0, 2.5, -50, 1);
   float4 filmPosition = (float4)(((float)blockIDX / width) - 0.5f, ((float)blockIDY / height) - 0.5f, 0, 1);
-  float4 aperaturePosition = (float4)(0.0, 0.0, cameraPosition.z + 5, 1);
+  float4 aperaturePosition = (float4)(0.0, 0.0, 5, 1);
 
   RayPayload rayPayload = {0, 0, FLT_MAX, 0, 0};
 
   Ray ray = {
     .origin = cameraPosition + filmPosition,
-    .direction = aperaturePosition - ray.origin
+    .direction = aperaturePosition - filmPosition
   };
 
   intersect(&rayPayload, ray, linearNodes, primitives);
