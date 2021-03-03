@@ -68,9 +68,13 @@ bool intersectTriangle(RayPayload* rayPayload, Ray ray, Primitive primitive) {
     return false;
   }
 
-  rayPayload->t = dot(v0v2, qvec) * invDet;
-  rayPayload->u = u;
-  rayPayload->v = v;
+  float t = dot(v0v2, qvec) * invDet;
+
+  if (t < rayPayload->t) {
+    rayPayload->t = t;
+    rayPayload->u = u;
+    rayPayload->v = v;
+  }
 
   return true;
 }
@@ -149,10 +153,15 @@ __kernel void linearKernel(__global LinearBVHNode* linearNodes, __global Primiti
 
   float3 outputColor = (float3)(0, 0, 0);
 
-  RayPayload rayPayload;
+  RayPayload rayPayload = {0, FLT_MAX, 0, 0};
+
+  float4 cameraPosition = (float4)(0, -0.25, -50, 1);
+  float4 filmPosition = (float4)(((float)blockIDX / width) - 0.5f, ((float)blockIDY / height) - 0.5f, 0, 1);
+  float4 aperaturePosition = (float4)(0.0, 0.0, cameraPosition.z + 5, 1);
+
   Ray ray = {
-    .origin = (float4)(((float)blockIDX / width) - 0.5f, ((float)blockIDY / height) - 0.5f, -2, 1),
-    .direction = (float4)(0, 0, 1, 0)
+    .origin = cameraPosition + filmPosition,
+    .direction = aperaturePosition - ray.origin
   };
 
   if (intersect(&rayPayload, ray, linearNodes, primitives)) {
@@ -163,7 +172,8 @@ __kernel void linearKernel(__global LinearBVHNode* linearNodes, __global Primiti
 
     float3 normal = fabs(normalize(normalA * barycentrics.x + normalB * barycentrics.y + normalC * barycentrics.z));
 
-    outputColor = (float3)(normal.x * 255, normal.y * 255, normal.z * 255);
+    // outputColor = (float3)(normal.x * 255, normal.y * 255, normal.z * 255);
+    outputColor = (float3)(barycentrics.x * 255, barycentrics.y * 255, barycentrics.z * 255);
   }
 
   output[blockID + 0] = outputColor.x;

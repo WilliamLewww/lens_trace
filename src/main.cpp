@@ -4,7 +4,7 @@
 #include "structures.h"
 
 int main(int argc, const char** argv) {
-  Model* pModel = new Model("low_poly_sphere.obj");
+  Model* pModel = new Model("cornell_box.obj");
 
   AccelerationStructureProperties accelerationStructureProperties = {
     .sType = STRUCTURE_TYPE_ACCELERATION_STRUCTURE_PROPERTIES,
