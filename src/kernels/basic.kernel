@@ -30,6 +30,7 @@ typedef struct RayTag {
 
 typedef struct RayPayloadTag {
   int primitiveIndex;
+  int hitType;
   float t;
   float u;
   float v;
@@ -98,8 +99,7 @@ bool intersectBounds(Ray ray, float4 invDir, int dirIsNeg[3], __global float bou
   return (tMax > 0);
 }
 
-bool intersect(RayPayload* rayPayload, Ray ray, __global LinearBVHNode* nodes, __global Primitive* primitives) {
-  bool hit = false;
+void intersect(RayPayload* rayPayload, Ray ray, __global LinearBVHNode* nodes, __global Primitive* primitives) {
   float4 invDir = (float4)(1.0 / ray.direction.x, 1.0 / ray.direction.y, 1.0 / ray.direction.z, 0);
   int dirIsNeg[3] = {invDir.x < 0, invDir.y < 0, invDir.z < 0};
 
@@ -113,7 +113,7 @@ bool intersect(RayPayload* rayPayload, Ray ray, __global LinearBVHNode* nodes, _
         for (int i = 0; i < node->primitiveCount; i++) {
           if (intersectTriangle(rayPayload, ray, primitives[node->primitivesOffset])) {
             rayPayload->primitiveIndex = node->primitivesOffset;
-            hit = true;
+            rayPayload->hitType = 1;
           }
         }
         if (toVisitOffset == 0) {
@@ -138,8 +138,6 @@ bool intersect(RayPayload* rayPayload, Ray ray, __global LinearBVHNode* nodes, _
       currentNodeIndex = nodesToVisit[--toVisitOffset];
     }
   }
-
-  return hit;
 }
 
 __kernel void linearKernel(__global LinearBVHNode* linearNodes, __global Primitive* primitives, __global float* output, uint currentBlock, uint width, uint height, uint depth) {
@@ -153,18 +151,20 @@ __kernel void linearKernel(__global LinearBVHNode* linearNodes, __global Primiti
 
   float3 outputColor = (float3)(0, 0, 0);
 
-  RayPayload rayPayload = {0, FLT_MAX, 0, 0};
-
   float4 cameraPosition = (float4)(0, -0.25, -50, 1);
   float4 filmPosition = (float4)(((float)blockIDX / width) - 0.5f, ((float)blockIDY / height) - 0.5f, 0, 1);
   float4 aperaturePosition = (float4)(0.0, 0.0, cameraPosition.z + 5, 1);
+
+  RayPayload rayPayload = {0, 0, FLT_MAX, 0, 0};
 
   Ray ray = {
     .origin = cameraPosition + filmPosition,
     .direction = aperaturePosition - ray.origin
   };
 
-  if (intersect(&rayPayload, ray, linearNodes, primitives)) {
+  intersect(&rayPayload, ray, linearNodes, primitives);
+
+  if (rayPayload.hitType == 1) {
     float3 barycentrics = (float3)(1.0 - rayPayload.u - rayPayload.v, rayPayload.u, rayPayload.v);
     float3 normalA = (float3)(primitives[rayPayload.primitiveIndex].normalA[0], primitives[rayPayload.primitiveIndex].normalA[1], primitives[rayPayload.primitiveIndex].normalA[2]);
     float3 normalB = (float3)(primitives[rayPayload.primitiveIndex].normalB[0], primitives[rayPayload.primitiveIndex].normalB[1], primitives[rayPayload.primitiveIndex].normalB[2]);
@@ -193,21 +193,34 @@ __kernel void tileKernel(__global LinearBVHNode* linearNodes, __global Primitive
     return;
   }
 
-  RayPayload rayPayload;
+  float3 outputColor = (float3)(0, 0, 0);
+
+  float4 cameraPosition = (float4)(0, -0.25, -50, 1);
+  float4 filmPosition = (float4)(((float)blockIDX / width) - 0.5f, ((float)blockIDY / height) - 0.5f, 0, 1);
+  float4 aperaturePosition = (float4)(0.0, 0.0, cameraPosition.z + 5, 1);
+
+  RayPayload rayPayload = {0, 0, FLT_MAX, 0, 0};
 
   Ray ray = {
-    .origin = (float4)(((float)blockIDX / width) - 0.5f, ((float)blockIDY / height) - 0.5f, -2, 1),
-    .direction = (float4)(0, 0, 1, 0)
+    .origin = cameraPosition + filmPosition,
+    .direction = aperaturePosition - ray.origin
   };
 
-  if (intersect(&rayPayload, ray, linearNodes, primitives)) {
-    output[blockID + 0] = rayPayload.u * 255;
-    output[blockID + 1] = rayPayload.v * 255;
-    output[blockID + 2] = (1.0 - rayPayload.u - rayPayload.v) * 255;
+  intersect(&rayPayload, ray, linearNodes, primitives);
+
+  if (rayPayload.hitType == 1) {
+    float3 barycentrics = (float3)(1.0 - rayPayload.u - rayPayload.v, rayPayload.u, rayPayload.v);
+    float3 normalA = (float3)(primitives[rayPayload.primitiveIndex].normalA[0], primitives[rayPayload.primitiveIndex].normalA[1], primitives[rayPayload.primitiveIndex].normalA[2]);
+    float3 normalB = (float3)(primitives[rayPayload.primitiveIndex].normalB[0], primitives[rayPayload.primitiveIndex].normalB[1], primitives[rayPayload.primitiveIndex].normalB[2]);
+    float3 normalC = (float3)(primitives[rayPayload.primitiveIndex].normalC[0], primitives[rayPayload.primitiveIndex].normalC[1], primitives[rayPayload.primitiveIndex].normalC[2]);
+
+    float3 normal = fabs(normalize(normalA * barycentrics.x + normalB * barycentrics.y + normalC * barycentrics.z));
+
+    // outputColor = (float3)(normal.x * 255, normal.y * 255, normal.z * 255);
+    outputColor = (float3)(barycentrics.x * 255, barycentrics.y * 255, barycentrics.z * 255);
   }
-  else {
-    output[blockID + 0] = 0;
-    output[blockID + 1] = 0;
-    output[blockID + 2] = 0;
-  }
+
+  output[blockID + 0] = outputColor.x;
+  output[blockID + 1] = outputColor.y;
+  output[blockID + 2] = outputColor.z;
 }
