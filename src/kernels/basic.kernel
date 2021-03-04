@@ -174,14 +174,21 @@ __kernel void linearKernel(__global LinearBVHNode* linearNodes, __global Primiti
   intersect(&rayPayload, ray, linearNodes, primitives);
 
   if (rayPayload.hitType == 1) {
+    __global Primitive* primitive = &primitives[rayPayload.primitiveIndex];
+    __global Material* material = &materials[primitive->materialIndex];
+
     float3 barycentrics = (float3)(1.0 - rayPayload.u - rayPayload.v, rayPayload.u, rayPayload.v);
-    float3 normalA = (float3)(primitives[rayPayload.primitiveIndex].normalA[0], primitives[rayPayload.primitiveIndex].normalA[1], primitives[rayPayload.primitiveIndex].normalA[2]);
-    float3 normalB = (float3)(primitives[rayPayload.primitiveIndex].normalB[0], primitives[rayPayload.primitiveIndex].normalB[1], primitives[rayPayload.primitiveIndex].normalB[2]);
-    float3 normalC = (float3)(primitives[rayPayload.primitiveIndex].normalC[0], primitives[rayPayload.primitiveIndex].normalC[1], primitives[rayPayload.primitiveIndex].normalC[2]);
+    float3 normalA = (float3)(primitive->normalA[0], primitive->normalA[1], primitive->normalA[2]);
+    float3 normalB = (float3)(primitive->normalB[0], primitive->normalB[1], primitive->normalB[2]);
+    float3 normalC = (float3)(primitive->normalC[0], primitive->normalC[1], primitive->normalC[2]);
 
     float3 normal = fabs(normalize(normalA * barycentrics.x + normalB * barycentrics.y + normalC * barycentrics.z));
 
-    outputColor = (float3)(normal.x * 255, normal.y * 255, normal.z * 255);
+    float a = material->diffuse[0];
+    float b = material->diffuse[1];
+    float c = material->diffuse[2];
+
+    outputColor = (float3)(a * 255, b * 255, c * 255);
     // outputColor = (float3)(barycentrics.x * 255, barycentrics.y * 255, barycentrics.z * 255);
   }
 
