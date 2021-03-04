@@ -16,6 +16,7 @@ Model::Model(std::string fileName) {
 
   std::vector<std::vector<std::array<float, 3>>> facePositionList;
   std::vector<std::vector<std::array<float, 3>>> faceNormalList;
+  std::vector<int> faceMaterialIndexList;
 
   for (uint64_t s = 0; s < this->shapes.size(); s++) {
     uint64_t index_offset = 0;
@@ -31,6 +32,7 @@ Model::Model(std::string fileName) {
       }
       facePositionList.push_back(vertexPositionList);
       faceNormalList.push_back(vertexNormalList);
+      faceMaterialIndexList.push_back(shapes[s].mesh.material_ids[f]);
 
       index_offset += fv;
     }
@@ -63,6 +65,8 @@ Model::Model(std::string fileName) {
       .normalA = {faceNormalList[x][0][0], faceNormalList[x][0][1], faceNormalList[x][0][2]},
       .normalB = {faceNormalList[x][1][0], faceNormalList[x][1][1], faceNormalList[x][1][2]},
       .normalC = {faceNormalList[x][2][0], faceNormalList[x][2][1], faceNormalList[x][2][2]},
+
+      .materialIndex = faceMaterialIndexList[x],
 
       .boundsMin = {boundsMin[0], boundsMin[1], boundsMin[2]},
       .boundsMax = {boundsMax[0], boundsMax[1], boundsMax[2]},

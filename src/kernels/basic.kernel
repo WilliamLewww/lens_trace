@@ -21,6 +21,7 @@ typedef struct PrimitiveTag {
   float normalA[3];
   float normalB[3];
   float normalC[3];
+  int materialIndex;
 } Primitive;
 
 typedef struct RayTag {

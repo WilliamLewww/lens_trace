@@ -14,6 +14,8 @@ struct PrimitiveInfo {
   float normalB[3];
   float normalC[3];
 
+  int materialIndex;
+
   float boundsMin[3];
   float boundsMax[3];
   float centroid[3];

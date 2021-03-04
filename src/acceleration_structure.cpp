@@ -14,7 +14,7 @@ AccelerationStructure::AccelerationStructure(AccelerationStructureProperties acc
   recursiveFree(pRoot);
 
   int currentVertex = 0;
-  this->pOrderedVertexBuffer = (float*)malloc(sizeof(float) * orderedPrimitiveList.size() * 6 * 3);
+  this->pOrderedVertexBuffer = (float*)malloc(orderedPrimitiveList.size() * ((sizeof(float) * 6 * 3) + (sizeof(int) * 1)));
   for (uint64_t x = 0; x < orderedPrimitiveList.size(); x++) {
     memcpy(this->pOrderedVertexBuffer + currentVertex + 0, orderedPrimitiveList[x]->vertexA, sizeof(float) * 3);
     memcpy(this->pOrderedVertexBuffer + currentVertex + 3, orderedPrimitiveList[x]->vertexB, sizeof(float) * 3);
@@ -22,7 +22,8 @@ AccelerationStructure::AccelerationStructure(AccelerationStructureProperties acc
     memcpy(this->pOrderedVertexBuffer + currentVertex + 9, orderedPrimitiveList[x]->normalA, sizeof(float) * 3);
     memcpy(this->pOrderedVertexBuffer + currentVertex + 12, orderedPrimitiveList[x]->normalB, sizeof(float) * 3);
     memcpy(this->pOrderedVertexBuffer + currentVertex + 15, orderedPrimitiveList[x]->normalC, sizeof(float) * 3);
-    currentVertex += 18;
+    memcpy(this->pOrderedVertexBuffer + currentVertex + 18, &orderedPrimitiveList[x]->materialIndex, sizeof(int));
+    currentVertex += 19;
   }
 }
 
@@ -163,7 +164,7 @@ void* AccelerationStructure::getNodeBuffer() {
 }
 
 uint64_t AccelerationStructure::getOrderedVertexBufferSize() {
-  return sizeof(float) * this->totalPrimitives * 6 * 3;
+  return this->totalPrimitives * ((sizeof(float) * 6 * 3) + (sizeof(int) * 1));
 }
 
 void* AccelerationStructure::getOrderedVertexBuffer() {
