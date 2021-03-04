@@ -20,6 +20,11 @@ enum KernelMode {
   KERNEL_MODE_TILE
 };
 
+enum RunMode {
+  RUN_MODE_REGULAR,
+  RUN_MODE_BENCHMARK
+};
+
 enum ThreadOrganizationMode {
   THREAD_ORGANIZATION_MODE_MAX_FIT,
   THREAD_ORGANIZATION_MODE_CUSTOM
@@ -44,6 +49,7 @@ struct RenderPropertiesOpenCL {
   StructureType sType;
   void* pNext;
   KernelMode kernelMode;
+  RunMode runMode;
   uint64_t imageDimensions[3];
   ThreadOrganizationMode threadOrganizationMode;
   ThreadOrganizationOpenCL* pThreadOrganization;
