@@ -13,17 +13,15 @@ AccelerationStructure::AccelerationStructure(AccelerationStructureProperties acc
   flattenBVHTree(this->pLinearNodeBuffer, pRoot, &offset);
   recursiveFree(pRoot);
 
-  int currentVertex = 0;
-  this->pOrderedVertexBuffer = (float*)malloc(orderedPrimitiveList.size() * ((sizeof(float) * 6 * 3) + (sizeof(int) * 1)));
+  this->pOrderedPrimitiveBuffer = (Primitive*)malloc(sizeof(Primitive) * this->totalPrimitives);
   for (uint64_t x = 0; x < orderedPrimitiveList.size(); x++) {
-    memcpy(this->pOrderedVertexBuffer + currentVertex + 0, orderedPrimitiveList[x]->vertexA, sizeof(float) * 3);
-    memcpy(this->pOrderedVertexBuffer + currentVertex + 3, orderedPrimitiveList[x]->vertexB, sizeof(float) * 3);
-    memcpy(this->pOrderedVertexBuffer + currentVertex + 6, orderedPrimitiveList[x]->vertexC, sizeof(float) * 3);
-    memcpy(this->pOrderedVertexBuffer + currentVertex + 9, orderedPrimitiveList[x]->normalA, sizeof(float) * 3);
-    memcpy(this->pOrderedVertexBuffer + currentVertex + 12, orderedPrimitiveList[x]->normalB, sizeof(float) * 3);
-    memcpy(this->pOrderedVertexBuffer + currentVertex + 15, orderedPrimitiveList[x]->normalC, sizeof(float) * 3);
-    memcpy(this->pOrderedVertexBuffer + currentVertex + 18, &orderedPrimitiveList[x]->materialIndex, sizeof(int));
-    currentVertex += 19;
+    memcpy(this->pOrderedPrimitiveBuffer[x].vertexA, orderedPrimitiveList[x]->vertexA, sizeof(float) * 3);
+    memcpy(this->pOrderedPrimitiveBuffer[x].vertexB, orderedPrimitiveList[x]->vertexB, sizeof(float) * 3);
+    memcpy(this->pOrderedPrimitiveBuffer[x].vertexC, orderedPrimitiveList[x]->vertexC, sizeof(float) * 3);
+    memcpy(this->pOrderedPrimitiveBuffer[x].normalA, orderedPrimitiveList[x]->normalA, sizeof(float) * 3);
+    memcpy(this->pOrderedPrimitiveBuffer[x].normalB, orderedPrimitiveList[x]->normalB, sizeof(float) * 3);
+    memcpy(this->pOrderedPrimitiveBuffer[x].normalC, orderedPrimitiveList[x]->normalC, sizeof(float) * 3);
+    memcpy(&this->pOrderedPrimitiveBuffer[x].materialIndex, &orderedPrimitiveList[x]->materialIndex, sizeof(int));
   }
 }
 
@@ -163,10 +161,10 @@ void* AccelerationStructure::getNodeBuffer() {
   return this->pLinearNodeBuffer;
 }
 
-uint64_t AccelerationStructure::getOrderedVertexBufferSize() {
-  return this->totalPrimitives * ((sizeof(float) * 6 * 3) + (sizeof(int) * 1));
+uint64_t AccelerationStructure::getOrderedPrimitiveBufferSize() {
+  return sizeof(Primitive) * this->totalPrimitives;
 }
 
-void* AccelerationStructure::getOrderedVertexBuffer() {
-  return this->pOrderedVertexBuffer;
+void* AccelerationStructure::getOrderedPrimitiveBuffer() {
+  return this->pOrderedPrimitiveBuffer;
 }

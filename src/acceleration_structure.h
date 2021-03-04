@@ -31,13 +31,23 @@ struct LinearBVHNode {
   uint8_t pad[1];
 };
 
+struct Primitive {
+  float vertexA[3];
+  float vertexB[3];
+  float vertexC[3];
+  float normalA[3];
+  float normalB[3];
+  float normalC[3];
+  int materialIndex;
+};
+
 class AccelerationStructure {
 private:
   int totalNodes;
   LinearBVHNode* pLinearNodeBuffer;
 
   int totalPrimitives;
-  float* pOrderedVertexBuffer;
+  Primitive* pOrderedPrimitiveBuffer;
 
   BVHBuildNode* recursiveBuild(std::vector<PrimitiveInfo>* pPrimitiveInfoList, int start, int end, int* pTotalNodes, std::vector<PrimitiveInfo*>& orderedPrimitiveList);
   void recursiveFree(BVHBuildNode* pNode);
@@ -50,6 +60,6 @@ public:
   uint64_t getNodeBufferSize();
   void* getNodeBuffer();
 
-  uint64_t getOrderedVertexBufferSize();
-  void* getOrderedVertexBuffer();
+  uint64_t getOrderedPrimitiveBufferSize();
+  void* getOrderedPrimitiveBuffer();
 };
