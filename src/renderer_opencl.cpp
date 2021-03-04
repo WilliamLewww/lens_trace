@@ -109,7 +109,7 @@ void RendererOpenCL::render(void* pRenderProperties) {
   cl_uint depth = pRenderPropertiesOpenCL->imageDimensions[2];
 
   if (pRenderPropertiesOpenCL->runMode == RUN_MODE_BENCHMARK) {
-    int runCount = 5000;
+    int runCount = 1000;
     clock_t start;
     clock_t end;
     double timeSeconds;

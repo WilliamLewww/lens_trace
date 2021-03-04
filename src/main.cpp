@@ -31,7 +31,7 @@ int main(int argc, const char** argv) {
     .sType = STRUCTURE_TYPE_RENDER_PROPERTIES_OPENCL,
     .pNext = NULL,
     .kernelMode = KERNEL_MODE_LINEAR,
-    .runMode = RUN_MODE_BENCHMARK,
+    .runMode = RUN_MODE_REGULAR,
     .imageDimensions = {2048, 2048, 3},
     .threadOrganizationMode = THREAD_ORGANIZATION_MODE_MAX_FIT,
     .pThreadOrganization = &threadOrganization,
