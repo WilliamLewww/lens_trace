@@ -36,7 +36,8 @@ int main(int argc, const char** argv) {
     .pThreadOrganization = &threadOrganization,
     .pOutputBuffer = pOutputBuffer,
     .outputBufferSize = outputBufferSize,
-    .pAccelerationStructure = pAccelerationStructure
+    .pAccelerationStructure = pAccelerationStructure,
+    .pModel = pModel
   };
 
   pEngine->render(&renderProperties);

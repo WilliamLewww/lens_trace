@@ -50,6 +50,7 @@ struct RenderPropertiesOpenCL {
   void* pOutputBuffer;
   uint64_t outputBufferSize;
   void* pAccelerationStructure;
+  void* pModel;
 };
 
 struct BufferToImageProperties {

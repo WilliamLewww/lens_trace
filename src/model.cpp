@@ -75,6 +75,13 @@ Model::Model(std::string fileName) {
 
     this->primitiveInfoList.push_back(primitiveInfo);
   }
+
+  this->materialBuffer = (Material*)malloc(sizeof(Material) * this->materials.size());
+  for (int x = 0; x < this->materials.size(); x++) {
+    memcpy(this->materialBuffer[x].diffuse, this->materials[x].diffuse, sizeof(float) * 3);
+    memcpy(&this->materialBuffer[x].ior, &this->materials[x].ior, sizeof(float));
+    memcpy(&this->materialBuffer[x].dissolve, &this->materials[x].dissolve, sizeof(float));
+  }
 }
 
 Model::~Model() {
@@ -107,4 +114,12 @@ std::vector<tinyobj::shape_t> Model::getShapes() {
 
 std::vector<PrimitiveInfo>* Model::getPrimitiveInfoListP() {
   return &this->primitiveInfoList;
+}
+
+uint64_t Model::getMaterialBufferSize() {
+  return sizeof(Material) * this->materials.size();
+}
+
+void* Model::getMaterialBuffer() {
+  return this->materialBuffer;
 }

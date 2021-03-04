@@ -21,9 +21,16 @@ struct PrimitiveInfo {
   float centroid[3];
 };
 
+struct Material {
+  float diffuse[3];
+  float ior;
+  float dissolve;
+};
+
 class Model {
 private:
   std::vector<PrimitiveInfo> primitiveInfoList;
+  Material* materialBuffer;
 
   std::string fileName;
   tinyobj::attrib_t attrib;
@@ -45,4 +52,7 @@ public:
   std::vector<tinyobj::shape_t> getShapes();
 
   std::vector<PrimitiveInfo>* getPrimitiveInfoListP();
+
+  uint64_t getMaterialBufferSize();
+  void* getMaterialBuffer();
 };

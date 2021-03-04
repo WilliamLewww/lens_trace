@@ -24,6 +24,12 @@ typedef struct PrimitiveTag {
   int materialIndex;
 } Primitive;
 
+typedef struct MaterialTag {
+  float diffuse[3];
+  float ior;
+  float dissolve;
+} Material;
+
 typedef struct RayTag {
   float4 origin;
   float4 direction;
@@ -143,7 +149,7 @@ void intersect(RayPayload* rayPayload, Ray ray, __global LinearBVHNode* nodes, _
   }
 }
 
-__kernel void linearKernel(__global LinearBVHNode* linearNodes, __global Primitive* primitives, __global float* output, uint currentBlock, uint width, uint height, uint depth) {
+__kernel void linearKernel(__global LinearBVHNode* linearNodes, __global Primitive* primitives, __global Material* materials, __global float* output, uint currentBlock, uint width, uint height, uint depth) {
   int blockIDY = get_global_id(1) + ((currentBlock / (width / get_global_size(0))) * get_global_size(1));
   int blockIDX = get_global_id(0) + ((currentBlock % (width / get_global_size(0))) * get_global_size(0));
   int blockID = (blockIDY * width + blockIDX) * depth;
