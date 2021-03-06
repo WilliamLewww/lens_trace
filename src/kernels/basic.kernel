@@ -213,6 +213,8 @@ float3 shadeRefraction(__global LinearBVHNode* linearNodes,
                        RayPayload cameraRayPayload,
                        Ray cameraRay) {
 
+  float3 outputColor = (float3)(0, 0, 0);
+
   __global Primitive* primitive = &primitives[cameraRayPayload.primitiveIndex];
   __global Material* material = &materials[primitive->materialIndex];
 
@@ -224,7 +226,7 @@ float3 shadeRefraction(__global LinearBVHNode* linearNodes,
   float3 normalA = (float3)(primitive->normalA[0], primitive->normalA[1], primitive->normalA[2]);
   float3 normalB = (float3)(primitive->normalB[0], primitive->normalB[1], primitive->normalB[2]);
   float3 normalC = (float3)(primitive->normalC[0], primitive->normalC[1], primitive->normalC[2]);
-  float4 normal = (float4)(normalA * barycentrics.x + normalB * barycentrics.y + normalC * barycentrics.z, 1.0);
+  float4 normal = (float4)(normalA * barycentrics.x + normalB * barycentrics.y + normalC * barycentrics.z, 0.0);
 
   float4 transmissionDirection = refract(cameraRay.direction, normal, 1.0, material->ior);
 
@@ -243,7 +245,7 @@ float3 shadeRefraction(__global LinearBVHNode* linearNodes,
   normalA = (float3)(primitive->normalA[0], primitive->normalA[1], primitive->normalA[2]);
   normalB = (float3)(primitive->normalB[0], primitive->normalB[1], primitive->normalB[2]);
   normalC = (float3)(primitive->normalC[0], primitive->normalC[1], primitive->normalC[2]);
-  normal = (float4)(normalA * barycentrics.x + normalB * barycentrics.y + normalC * barycentrics.z, 1.0);
+  normal = (float4)(normalA * barycentrics.x + normalB * barycentrics.y + normalC * barycentrics.z, 0.0);
 
   transmissionDirection = refract(transmissionDirection, -normal, material->ior, 1.0);
 
@@ -254,7 +256,11 @@ float3 shadeRefraction(__global LinearBVHNode* linearNodes,
   primitive = &primitives[rayPayload2.primitiveIndex];
   material = &materials[primitive->materialIndex];
 
-  return (float3)(material->diffuse[0], material->diffuse[1], material->diffuse[2]) * 255;
+  if (rayPayload2.hitType == 1) {
+    outputColor = (float3)(material->diffuse[0], material->diffuse[1], material->diffuse[2]) * 255;
+  }
+
+  return outputColor;
 }
 
 float3 shade(__global LinearBVHNode* linearNodes, 
