@@ -58,9 +58,9 @@ Model::Model(std::string fileName) {
     };
 
     PrimitiveInfo primitiveInfo = {
-      .vertexA = {facePositionList[x][0][0], facePositionList[x][0][1], facePositionList[x][0][2]},
-      .vertexB = {facePositionList[x][1][0], facePositionList[x][1][1], facePositionList[x][1][2]},
-      .vertexC = {facePositionList[x][2][0], facePositionList[x][2][1], facePositionList[x][2][2]},
+      .positionA = {facePositionList[x][0][0], facePositionList[x][0][1], facePositionList[x][0][2]},
+      .positionB = {facePositionList[x][1][0], facePositionList[x][1][1], facePositionList[x][1][2]},
+      .positionC = {facePositionList[x][2][0], facePositionList[x][2][1], facePositionList[x][2][2]},
 
       .normalA = {faceNormalList[x][0][0], faceNormalList[x][0][1], faceNormalList[x][0][2]},
       .normalB = {faceNormalList[x][1][0], faceNormalList[x][1][1], faceNormalList[x][1][2]},

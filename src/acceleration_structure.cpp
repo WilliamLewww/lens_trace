@@ -15,9 +15,9 @@ AccelerationStructure::AccelerationStructure(AccelerationStructureProperties acc
 
   this->pOrderedPrimitiveBuffer = (Primitive*)malloc(sizeof(Primitive) * this->totalPrimitives);
   for (uint64_t x = 0; x < orderedPrimitiveList.size(); x++) {
-    memcpy(this->pOrderedPrimitiveBuffer[x].vertexA, orderedPrimitiveList[x]->vertexA, sizeof(float) * 3);
-    memcpy(this->pOrderedPrimitiveBuffer[x].vertexB, orderedPrimitiveList[x]->vertexB, sizeof(float) * 3);
-    memcpy(this->pOrderedPrimitiveBuffer[x].vertexC, orderedPrimitiveList[x]->vertexC, sizeof(float) * 3);
+    memcpy(this->pOrderedPrimitiveBuffer[x].positionA, orderedPrimitiveList[x]->positionA, sizeof(float) * 3);
+    memcpy(this->pOrderedPrimitiveBuffer[x].positionB, orderedPrimitiveList[x]->positionB, sizeof(float) * 3);
+    memcpy(this->pOrderedPrimitiveBuffer[x].positionC, orderedPrimitiveList[x]->positionC, sizeof(float) * 3);
     memcpy(this->pOrderedPrimitiveBuffer[x].normalA, orderedPrimitiveList[x]->normalA, sizeof(float) * 3);
     memcpy(this->pOrderedPrimitiveBuffer[x].normalB, orderedPrimitiveList[x]->normalB, sizeof(float) * 3);
     memcpy(this->pOrderedPrimitiveBuffer[x].normalC, orderedPrimitiveList[x]->normalC, sizeof(float) * 3);

@@ -6,9 +6,9 @@
 #include <stdint.h>
 
 struct PrimitiveInfo {
-  float vertexA[3];
-  float vertexB[3];
-  float vertexC[3];
+  float positionA[3];
+  float positionB[3];
+  float positionC[3];
 
   float normalA[3];
   float normalB[3];

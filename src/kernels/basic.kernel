@@ -15,9 +15,9 @@ typedef struct LinearBVHNodeTag {
 } LinearBVHNode;
 
 typedef struct PrimitiveTag {
-  float vertexA[3];
-  float vertexB[3];
-  float vertexC[3];
+  float positionA[3];
+  float positionB[3];
+  float positionC[3];
   float normalA[3];
   float normalB[3];
   float normalC[3];
@@ -49,12 +49,12 @@ __global float* getBounds(int dirIsNeg, __global float* boundsMin, __global floa
 
 bool intersectTriangle(RayPayload* rayPayload, Ray ray, Primitive primitive) {
   const float EPSILON = 0.0000001;
-  float4 vertexA = (float4)(primitive.vertexA[0], primitive.vertexA[1], primitive.vertexA[2], 1);
-  float4 vertexB = (float4)(primitive.vertexB[0], primitive.vertexB[1], primitive.vertexB[2], 1);
-  float4 vertexC = (float4)(primitive.vertexC[0], primitive.vertexC[1], primitive.vertexC[2], 1);
+  float4 positionA = (float4)(primitive.positionA[0], primitive.positionA[1], primitive.positionA[2], 1);
+  float4 positionB = (float4)(primitive.positionB[0], primitive.positionB[1], primitive.positionB[2], 1);
+  float4 positionC = (float4)(primitive.positionC[0], primitive.positionC[1], primitive.positionC[2], 1);
 
-  float4 v0v1 = vertexB - vertexA;
-  float4 v0v2 = vertexC - vertexA;
+  float4 v0v1 = positionB - positionA;
+  float4 v0v2 = positionC - positionA;
   float4 pvec = cross(ray.direction, v0v2);
   float det = dot(v0v1, pvec);
 
@@ -64,7 +64,7 @@ bool intersectTriangle(RayPayload* rayPayload, Ray ray, Primitive primitive) {
 
   float invDet = 1 / det;
 
-  float4 tvec = ray.origin - vertexA;
+  float4 tvec = ray.origin - positionA;
   float u = dot(tvec,pvec) * invDet;
   if (u < 0 || u > 1) {
     return false;
@@ -149,32 +149,53 @@ void intersect(RayPayload* rayPayload, Ray ray, __global LinearBVHNode* nodes, _
   }
 }
 
+float3 shadeRefraction(__global LinearBVHNode* linearNodes, 
+                       __global Primitive* primitives, 
+                       __global Material* materials,
+                       RayPayload cameraRayPayload,
+                       Ray cameraRay) {
+
+  __global Primitive* primitive = &primitives[cameraRayPayload.primitiveIndex];
+  __global Material* material = &materials[primitive->materialIndex];
+
+  float3 barycentrics = (float3)(1.0 - cameraRayPayload.u - cameraRayPayload.v, cameraRayPayload.u, cameraRayPayload.v);
+  float3 positionA = (float3)(primitive->positionA[0], primitive->positionA[1], primitive->positionA[2]);
+  float3 positionB = (float3)(primitive->positionB[0], primitive->positionB[1], primitive->positionB[2]);
+  float3 positionC = (float3)(primitive->positionC[0], primitive->positionC[1], primitive->positionC[2]);
+  float4 position = (float4)(positionA * barycentrics.x + positionB * barycentrics.y + positionC * barycentrics.z, 1.0);
+
+  float4 cameraToSurface = normalize(position - cameraRay.origin);
+
+  return barycentrics * 255;
+}
+
+// float3 barycentrics = (float3)(1.0 - rayPayload.u - rayPayload.v, rayPayload.u, rayPayload.v);
+// float3 normalA = (float3)(primitive->normalA[0], primitive->normalA[1], primitive->normalA[2]);
+// float3 normalB = (float3)(primitive->normalB[0], primitive->normalB[1], primitive->normalB[2]);
+// float3 normalC = (float3)(primitive->normalC[0], primitive->normalC[1], primitive->normalC[2]);
+
+// float3 normal = fabs(normalize(normalA * barycentrics.x + normalB * barycentrics.y + normalC * barycentrics.z));
+
 float3 shade(__global LinearBVHNode* linearNodes, 
-                    __global Primitive* primitives, 
-                    __global Material* materials,
-                    Ray ray) {
+             __global Primitive* primitives, 
+             __global Material* materials,
+             Ray cameraRay) {
 
   float3 outputColor = (float3)(0, 0, 0);
 
-  RayPayload rayPayload = {0, 0, FLT_MAX, 0, 0};
-  intersect(&rayPayload, ray, linearNodes, primitives);
+  RayPayload cameraRayPayload = {0, 0, FLT_MAX, 0, 0};
+  intersect(&cameraRayPayload, cameraRay, linearNodes, primitives);
 
-  if (rayPayload.hitType == 1) {
-    __global Primitive* primitive = &primitives[rayPayload.primitiveIndex];
+  if (cameraRayPayload.hitType == 1) {
+    __global Primitive* primitive = &primitives[cameraRayPayload.primitiveIndex];
     __global Material* material = &materials[primitive->materialIndex];
 
-    float3 barycentrics = (float3)(1.0 - rayPayload.u - rayPayload.v, rayPayload.u, rayPayload.v);
-    float3 normalA = (float3)(primitive->normalA[0], primitive->normalA[1], primitive->normalA[2]);
-    float3 normalB = (float3)(primitive->normalB[0], primitive->normalB[1], primitive->normalB[2]);
-    float3 normalC = (float3)(primitive->normalC[0], primitive->normalC[1], primitive->normalC[2]);
-
-    float3 normal = fabs(normalize(normalA * barycentrics.x + normalB * barycentrics.y + normalC * barycentrics.z));
-
-    float a = material->diffuse[0];
-    float b = material->diffuse[1];
-    float c = material->diffuse[2];
-
-    outputColor = (float3)(a * 255, b * 255, c * 255);
+    if (material->dissolve < 1.0) {
+      outputColor = shadeRefraction(linearNodes, primitives, materials, cameraRayPayload, cameraRay);
+    }
+    else {
+      outputColor = (float3)(material->diffuse[0] * 255, material->diffuse[1] * 255, material->diffuse[2] * 255);
+    }
   }
 
   return outputColor;
