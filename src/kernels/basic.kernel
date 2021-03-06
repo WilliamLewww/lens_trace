@@ -43,6 +43,19 @@ typedef struct RayPayloadTag {
   float v;
 } RayPayload;
 
+float4 reflect(float4 incidentDirection, float4 normal) {
+  float cosI = -dot(normal, incidentDirection);
+  return incidentDirection + 2.0f * cosI * normal;
+}
+
+float4 refract(float4 incidentDirection, float4 normal, float firstIOR, float secondIOR) {
+  float n = firstIOR / secondIOR;
+  float cosI = -dot(normal, incidentDirection);
+  float sinT2 = n * n * (1.0 - cosI * cosI);
+  float cosT = sqrt(1.0 - sinT2);
+  return n * incidentDirection + (n * cosI - cosT) * normal;
+}
+
 __global float* getBounds(int dirIsNeg, __global float* boundsMin, __global float* boundsMax) {
   return (dirIsNeg == 0) ? boundsMin : boundsMax;
 }
@@ -149,6 +162,51 @@ void intersect(RayPayload* rayPayload, Ray ray, __global LinearBVHNode* nodes, _
   }
 }
 
+void intersectIgnorePrimitiveIndex(RayPayload* rayPayload, Ray ray, 
+                                   __global LinearBVHNode* nodes, 
+                                   __global Primitive* primitives, 
+                                   int ignorePrimitiveIndex) {
+
+  float4 invDir = (float4)(1.0 / ray.direction.x, 1.0 / ray.direction.y, 1.0 / ray.direction.z, 0);
+  int dirIsNeg[3] = {invDir.x < 0, invDir.y < 0, invDir.z < 0};
+
+  int toVisitOffset = 0, currentNodeIndex = 0;
+  int nodesToVisit[64];
+  while (true) {
+    __global const LinearBVHNode* node = &nodes[currentNodeIndex];
+
+    if (intersectBounds(ray, invDir, dirIsNeg, node->boundsMin, node->boundsMax)) {
+      if (node->primitiveCount > 0) {
+        for (int i = 0; i < node->primitiveCount; i++) {
+          if (node->primitivesOffset != ignorePrimitiveIndex && intersectTriangle(rayPayload, ray, primitives[node->primitivesOffset])) {
+            rayPayload->primitiveIndex = node->primitivesOffset;
+            rayPayload->hitType = 1;
+          }
+        }
+        if (toVisitOffset == 0) {
+          break;
+        }
+        currentNodeIndex = nodesToVisit[--toVisitOffset];
+      }
+      else {
+        if (dirIsNeg[node->axis]) {
+          nodesToVisit[toVisitOffset++] = currentNodeIndex + 1;
+          currentNodeIndex = node->secondChildOffset;
+        } else {
+          nodesToVisit[toVisitOffset++] = node->secondChildOffset;
+          currentNodeIndex = currentNodeIndex + 1;
+        }
+      }
+    }
+    else {
+      if (toVisitOffset == 0) {
+        break;
+      }
+      currentNodeIndex = nodesToVisit[--toVisitOffset];
+    }
+  }
+}
+
 float3 shadeRefraction(__global LinearBVHNode* linearNodes, 
                        __global Primitive* primitives, 
                        __global Material* materials,
@@ -163,18 +221,41 @@ float3 shadeRefraction(__global LinearBVHNode* linearNodes,
   float3 positionB = (float3)(primitive->positionB[0], primitive->positionB[1], primitive->positionB[2]);
   float3 positionC = (float3)(primitive->positionC[0], primitive->positionC[1], primitive->positionC[2]);
   float4 position = (float4)(positionA * barycentrics.x + positionB * barycentrics.y + positionC * barycentrics.z, 1.0);
+  float3 normalA = (float3)(primitive->normalA[0], primitive->normalA[1], primitive->normalA[2]);
+  float3 normalB = (float3)(primitive->normalB[0], primitive->normalB[1], primitive->normalB[2]);
+  float3 normalC = (float3)(primitive->normalC[0], primitive->normalC[1], primitive->normalC[2]);
+  float4 normal = (float4)(normalA * barycentrics.x + normalB * barycentrics.y + normalC * barycentrics.z, 1.0);
 
-  float4 cameraToSurface = normalize(position - cameraRay.origin);
+  float4 transmissionDirection = refract(cameraRay.direction, normal, 1.0, material->ior);
 
-  return barycentrics * 255;
+  RayPayload rayPayload = {0, 0, FLT_MAX, 0, 0};
+  Ray ray = {position, transmissionDirection};
+  intersectIgnorePrimitiveIndex(&rayPayload, ray, linearNodes, primitives, cameraRayPayload.primitiveIndex);
+
+  primitive = &primitives[rayPayload.primitiveIndex];
+  material = &materials[primitive->materialIndex];
+
+  barycentrics = (float3)(1.0 - rayPayload.u - rayPayload.v, rayPayload.u, rayPayload.v);
+  positionA = (float3)(primitive->positionA[0], primitive->positionA[1], primitive->positionA[2]);
+  positionB = (float3)(primitive->positionB[0], primitive->positionB[1], primitive->positionB[2]);
+  positionC = (float3)(primitive->positionC[0], primitive->positionC[1], primitive->positionC[2]);
+  position = (float4)(positionA * barycentrics.x + positionB * barycentrics.y + positionC * barycentrics.z, 1.0);
+  normalA = (float3)(primitive->normalA[0], primitive->normalA[1], primitive->normalA[2]);
+  normalB = (float3)(primitive->normalB[0], primitive->normalB[1], primitive->normalB[2]);
+  normalC = (float3)(primitive->normalC[0], primitive->normalC[1], primitive->normalC[2]);
+  normal = (float4)(normalA * barycentrics.x + normalB * barycentrics.y + normalC * barycentrics.z, 1.0);
+
+  transmissionDirection = refract(transmissionDirection, -normal, material->ior, 1.0);
+
+  RayPayload rayPayload2 = {0, 0, FLT_MAX, 0, 0};
+  Ray ray2 = {position, transmissionDirection};
+  intersectIgnorePrimitiveIndex(&rayPayload2, ray2, linearNodes, primitives, rayPayload.primitiveIndex);
+
+  primitive = &primitives[rayPayload2.primitiveIndex];
+  material = &materials[primitive->materialIndex];
+
+  return (float3)(material->diffuse[0], material->diffuse[1], material->diffuse[2]) * 255;
 }
-
-// float3 barycentrics = (float3)(1.0 - rayPayload.u - rayPayload.v, rayPayload.u, rayPayload.v);
-// float3 normalA = (float3)(primitive->normalA[0], primitive->normalA[1], primitive->normalA[2]);
-// float3 normalB = (float3)(primitive->normalB[0], primitive->normalB[1], primitive->normalB[2]);
-// float3 normalC = (float3)(primitive->normalC[0], primitive->normalC[1], primitive->normalC[2]);
-
-// float3 normal = fabs(normalize(normalA * barycentrics.x + normalB * barycentrics.y + normalC * barycentrics.z));
 
 float3 shade(__global LinearBVHNode* linearNodes, 
              __global Primitive* primitives, 
@@ -194,7 +275,7 @@ float3 shade(__global LinearBVHNode* linearNodes,
       outputColor = shadeRefraction(linearNodes, primitives, materials, cameraRayPayload, cameraRay);
     }
     else {
-      outputColor = (float3)(material->diffuse[0] * 255, material->diffuse[1] * 255, material->diffuse[2] * 255);
+      outputColor = (float3)(material->diffuse[0], material->diffuse[1], material->diffuse[2]) * 255;
     }
   }
 
@@ -223,11 +304,7 @@ __kernel void linearKernel(__global LinearBVHNode* linearNodes,
   float4 filmPosition = (float4)(((float)blockIDX / width) - 0.5f, ((float)blockIDY / height) - 0.5f, 0, 1);
   float4 aperaturePosition = (float4)(0.0, 0.0, 5, 1);
 
-  Ray ray = {
-    .origin = cameraPosition + filmPosition,
-    .direction = aperaturePosition - filmPosition
-  };
-
+  Ray ray = {cameraPosition + filmPosition, aperaturePosition - filmPosition};
   float3 outputColor = shade(linearNodes, primitives, materials, ray);
 
   output[blockID + 0] = outputColor.x;
@@ -259,11 +336,7 @@ __kernel void tileKernel(__global LinearBVHNode* linearNodes,
   float4 filmPosition = (float4)(((float)blockIDX / width) - 0.5f, ((float)blockIDY / height) - 0.5f, 0, 1);
   float4 aperaturePosition = (float4)(0.0, 0.0, 5, 1);
 
-  Ray ray = {
-    .origin = cameraPosition + filmPosition,
-    .direction = aperaturePosition - filmPosition
-  };
-
+  Ray ray = {cameraPosition + filmPosition, aperaturePosition - filmPosition};
   float3 outputColor = shade(linearNodes, primitives, materials, ray);
 
   output[blockID + 0] = outputColor.x;
