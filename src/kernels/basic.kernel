@@ -277,7 +277,7 @@ float3 shade(__global LinearBVHNode* linearNodes,
     __global Material* material = &materials[primitive->materialIndex];
 
     if (material->dissolve < 1.0) {
-      traceRayThroughLens(linearNodes, primitives, materials, &rayPayload, &cameraRay);
+      traceRayThroughLens(linearNodes, primitives, materials, &rayPayload, &ray);
 
       if (rayPayload.hitType == 1) {
         primitive = &primitives[rayPayload.primitiveIndex];

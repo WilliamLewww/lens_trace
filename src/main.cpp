@@ -30,7 +30,7 @@ int main(int argc, const char** argv) {
   RenderPropertiesOpenCL renderProperties = {
     .sType = STRUCTURE_TYPE_RENDER_PROPERTIES_OPENCL,
     .pNext = NULL,
-    .kernelMode = KERNEL_MODE_LINEAR,
+    .kernelMode = KERNEL_MODE_TILE,
     .runMode = RUN_MODE_REGULAR,
     .imageDimensions = {2048, 2048, 3},
     .threadOrganizationMode = THREAD_ORGANIZATION_MODE_MAX_FIT,
