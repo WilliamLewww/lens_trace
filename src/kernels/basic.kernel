@@ -1,5 +1,10 @@
 #pragma OPENCL EXTENSION cl_khr_fp64 : enable
 
+typedef struct CameraTag {
+  float position[3];
+  float yaw;
+} Camera;
+
 typedef struct LinearBVHNodeTag {
   float boundsMin[3];
   float boundsMax[3];
@@ -285,7 +290,7 @@ float3 shade(__global LinearBVHNode* linearNodes,
       }
     }
 
-    outputColor = (float3)(material->diffuse[0], material->diffuse[1], material->diffuse[2]) * 255;
+    outputColor = (float3)(material->diffuse[0], material->diffuse[1], material->diffuse[2]);
   }
 
   return outputColor;
@@ -295,7 +300,8 @@ float3 shade(__global LinearBVHNode* linearNodes,
 __kernel void linearKernel(__global LinearBVHNode* linearNodes, 
                            __global Primitive* primitives, 
                            __global Material* materials, 
-                           __global float* output, 
+                           __global Camera* camera,
+                           __global float* output,
                            uint currentBlock, 
                            uint width, 
                            uint height, 
@@ -309,11 +315,13 @@ __kernel void linearKernel(__global LinearBVHNode* linearNodes,
     return;
   }
 
-  float4 cameraPosition = (float4)(0, 2.5, -50, 1);
+  float4 cameraPosition = (float4)(camera->position[0], camera->position[1], camera->position[2], 1);
   float4 filmPosition = (float4)(((float)blockIDX / width) - 0.5f, ((float)blockIDY / height) - 0.5f, 0, 1);
   float4 aperaturePosition = (float4)(0.0, 0.0, 5, 1);
 
   Ray ray = {cameraPosition + filmPosition, aperaturePosition - filmPosition};
+  ray.direction.x = (cos(camera->yaw) * ray.direction.x) + (sin(camera->yaw) * ray.direction.z);
+  ray.direction.z = (-sin(camera->yaw) * ray.direction.x) + (cos(camera->yaw) * ray.direction.z);
   float3 outputColor = shade(linearNodes, primitives, materials, ray);
 
   output[blockID + 0] = outputColor.x;
@@ -323,7 +331,8 @@ __kernel void linearKernel(__global LinearBVHNode* linearNodes,
 
 __kernel void tileKernel(__global LinearBVHNode* linearNodes, 
                          __global Primitive* primitives, 
-                         __global Material* materials, 
+                         __global Material* materials,
+                         __global Camera* camera,
                          __global float* output, 
                          uint currentBlock, 
                          uint width, 
@@ -341,11 +350,13 @@ __kernel void tileKernel(__global LinearBVHNode* linearNodes,
     return;
   }
 
-  float4 cameraPosition = (float4)(0, 2.5, -50, 1);
+  float4 cameraPosition = (float4)(camera->position[0], camera->position[1], camera->position[2], 1);
   float4 filmPosition = (float4)(((float)blockIDX / width) - 0.5f, ((float)blockIDY / height) - 0.5f, 0, 1);
   float4 aperaturePosition = (float4)(0.0, 0.0, 5, 1);
 
   Ray ray = {cameraPosition + filmPosition, aperaturePosition - filmPosition};
+  ray.direction.x = (cos(camera->yaw) * ray.direction.x) + (sin(camera->yaw) * ray.direction.z);
+  ray.direction.z = (-sin(camera->yaw) * ray.direction.x) + (cos(camera->yaw) * ray.direction.z);
   float3 outputColor = shade(linearNodes, primitives, materials, ray);
 
   output[blockID + 0] = outputColor.x;

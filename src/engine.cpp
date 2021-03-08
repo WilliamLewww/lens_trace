@@ -31,7 +31,7 @@ void Engine::writeBufferToImage(BufferToImageProperties bufferToImageProperties)
 
     for (int x = 0; x < imageWidth * imageHeight * imageDepth; x++) {
       // pWriteBuffer[(imageWidth * imageHeight * (x % 3)) + (x / 3)] = pImageBuffer[x];
-      pWriteBuffer[x] = pImageBuffer[x];
+      pWriteBuffer[x] = pImageBuffer[x] * 255;
     }
 
     stbi_write_jpg(bufferToImageProperties.filename, imageWidth, imageHeight, imageDepth, pWriteBuffer, 100);

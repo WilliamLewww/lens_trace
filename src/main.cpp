@@ -1,9 +1,11 @@
 #include "engine.h"
 #include "model.h"
 #include "acceleration_structure.h"
+#include "camera.h"
 #include "structures.h"
 
 int main(int argc, const char** argv) {
+  Camera* pCamera = new Camera(0, 2.5, -50, 0);
   Model* pModel = new Model("cornell_box.obj");
 
   AccelerationStructureProperties accelerationStructureProperties = {
@@ -38,7 +40,8 @@ int main(int argc, const char** argv) {
     .pOutputBuffer = pOutputBuffer,
     .outputBufferSize = outputBufferSize,
     .pAccelerationStructure = pAccelerationStructure,
-    .pModel = pModel
+    .pModel = pModel,
+    .pCamera = pCamera
   };
 
   pEngine->render(&renderProperties);
@@ -55,6 +58,7 @@ int main(int argc, const char** argv) {
 
   pEngine->writeBufferToImage(bufferToImageProperties);
 
+  delete pCamera;
   delete pModel;
   delete pAccelerationStructure;
   delete pEngine;
