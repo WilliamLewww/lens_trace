@@ -14,5 +14,5 @@ RendererCUDA::~RendererCUDA() {
 }
 
 void RendererCUDA::render(void* pRenderProperties) {
-
+  linearKernel();
 }
