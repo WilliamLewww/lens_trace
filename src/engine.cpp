@@ -10,6 +10,10 @@ Engine::Engine(RenderPlatform renderPlatform) {
   if (renderPlatform == RENDER_PLATFORM_OPENCL) {
     this->pRenderer = new RendererOpenCL();
   }
+
+  if (renderPlatform == RENDER_PLATFORM_CUDA) {
+    this->pRenderer = new RendererCUDA();
+  }
 }
 
 Engine::~Engine() {

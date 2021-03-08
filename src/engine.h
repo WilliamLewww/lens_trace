@@ -1,6 +1,7 @@
 #pragma once
 
 #include "renderer_opencl.h"
+#include "renderer_cuda.h"
 
 #include "stb/stb_image_write.h"
 
