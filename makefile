@@ -1,3 +1,4 @@
+CUDA_BIN_PATH = /opt/cuda/bin
 OPENCL_SDK_PATH = /usr/local/OpenCL-SDK
 
 EXEC = main.out

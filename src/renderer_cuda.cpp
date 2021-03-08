@@ -1,5 +1,10 @@
 #include "renderer_cuda.h"
 
+extern "C" {
+  void linearKernel();
+  void tileKernel();
+}
+
 RendererCUDA::RendererCUDA() {
 
 }
