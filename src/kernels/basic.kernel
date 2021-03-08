@@ -297,15 +297,16 @@ float3 shade(__global LinearBVHNode* linearNodes,
 }
 
 
-__kernel void linearKernel(__global LinearBVHNode* linearNodes, 
-                           __global Primitive* primitives, 
-                           __global Material* materials, 
-                           __global Camera* camera,
-                           __global float* output,
-                           uint currentBlock, 
-                           uint width, 
-                           uint height, 
-                           uint depth) {
+__kernel 
+void linearKernel(__global LinearBVHNode* linearNodes, 
+                  __global Primitive* primitives, 
+                  __global Material* materials, 
+                  __global Camera* camera,
+                  __global float* output,
+                  uint currentBlock, 
+                  uint width, 
+                  uint height, 
+                  uint depth) {
 
   int blockIDY = get_global_id(1) + ((currentBlock / (width / get_global_size(0))) * get_global_size(1));
   int blockIDX = get_global_id(0) + ((currentBlock % (width / get_global_size(0))) * get_global_size(0));
@@ -329,15 +330,16 @@ __kernel void linearKernel(__global LinearBVHNode* linearNodes,
   output[blockID + 2] = outputColor.z;
 }
 
-__kernel void tileKernel(__global LinearBVHNode* linearNodes, 
-                         __global Primitive* primitives, 
-                         __global Material* materials,
-                         __global Camera* camera,
-                         __global float* output, 
-                         uint currentBlock, 
-                         uint width, 
-                         uint height, 
-                         uint depth) {
+__kernel 
+void tileKernel(__global LinearBVHNode* linearNodes, 
+                __global Primitive* primitives, 
+                __global Material* materials,
+                __global Camera* camera,
+                __global float* output, 
+                uint currentBlock, 
+                uint width, 
+                uint height, 
+                uint depth) {
 
   int localBlockID = get_group_id(1) * get_num_groups(0) + get_group_id(0);
   int localIDY = get_local_id(1) + ((localBlockID / (get_global_size(0) / get_local_size(0))) * get_local_size(1));

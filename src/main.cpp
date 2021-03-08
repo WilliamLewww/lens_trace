@@ -17,7 +17,7 @@ int main(int argc, const char** argv) {
 
   AccelerationStructure* pAccelerationStructure = new AccelerationStructure(accelerationStructureProperties);
 
-  Engine* pEngine = new Engine(RENDER_PLATFORM_OPENCL);
+  Engine* pEngine = new Engine(RENDER_PLATFORM_CUDA);
 
   uint64_t outputBufferSize = sizeof(float) * 2048 * 2048 * 3;
   void* pOutputBuffer = malloc(outputBufferSize);
@@ -32,7 +32,7 @@ int main(int argc, const char** argv) {
   RenderPropertiesOpenCL renderProperties = {
     .sType = STRUCTURE_TYPE_RENDER_PROPERTIES_OPENCL,
     .pNext = NULL,
-    .kernelMode = KERNEL_MODE_TILE,
+    .kernelMode = KERNEL_MODE_LINEAR,
     .runMode = RUN_MODE_REGULAR,
     .imageDimensions = {2048, 2048, 3},
     .threadOrganizationMode = THREAD_ORGANIZATION_MODE_MAX_FIT,
