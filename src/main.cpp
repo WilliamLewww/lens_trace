@@ -22,21 +22,10 @@ int main(int argc, const char** argv) {
   uint64_t outputBufferSize = sizeof(float) * 2048 * 2048 * 3;
   void* pOutputBuffer = malloc(outputBufferSize);
 
-  ThreadOrganizationOpenCL threadOrganization = {
-    .sType = STRUCTURE_TYPE_THREAD_ORGANIZATION_OPENCL,
+  RenderPropertiesCUDA renderProperties = {
+    .sType = STRUCTURE_TYPE_RENDER_PROPERTIES_CUDA,
     .pNext = NULL,
-    .workBlockSize = {64, 64},
-    .threadGroupSize = {32, 32}
-  };
-
-  RenderPropertiesOpenCL renderProperties = {
-    .sType = STRUCTURE_TYPE_RENDER_PROPERTIES_OPENCL,
-    .pNext = NULL,
-    .kernelMode = KERNEL_MODE_LINEAR,
-    .runMode = RUN_MODE_REGULAR,
     .imageDimensions = {2048, 2048, 3},
-    .threadOrganizationMode = THREAD_ORGANIZATION_MODE_MAX_FIT,
-    .pThreadOrganization = &threadOrganization,
     .pOutputBuffer = pOutputBuffer,
     .outputBufferSize = outputBufferSize,
     .pAccelerationStructure = pAccelerationStructure,

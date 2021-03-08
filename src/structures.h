@@ -4,6 +4,7 @@
 enum StructureType {
   STRUCTURE_TYPE_RENDER_PROPERTIES_OPENCL,
   STRUCTURE_TYPE_THREAD_ORGANIZATION_OPENCL,
+  STRUCTURE_TYPE_RENDER_PROPERTIES_CUDA,
   STRUCTURE_TYPE_BUFFER_TO_IMAGE_PROPERTIES,
   STRUCTURE_TYPE_BUFFER_TO_RAW_FILE_PROPERTIES,
   STRUCTURE_TYPE_ACCELERATION_STRUCTURE_PROPERTIES
@@ -53,6 +54,17 @@ struct RenderPropertiesOpenCL {
   uint64_t imageDimensions[3];
   ThreadOrganizationMode threadOrganizationMode;
   ThreadOrganizationOpenCL* pThreadOrganization;
+  void* pOutputBuffer;
+  uint64_t outputBufferSize;
+  void* pAccelerationStructure;
+  void* pModel;
+  void* pCamera;
+};
+
+struct RenderPropertiesCUDA {
+  StructureType sType;
+  void* pNext;
+  uint64_t imageDimensions[3];
   void* pOutputBuffer;
   uint64_t outputBufferSize;
   void* pAccelerationStructure;
