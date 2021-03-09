@@ -8,16 +8,7 @@ void printKernelBuildLog(cl_device_id deviceID, cl_program program) {
   free(pPrintBuffer);
 }
 
-void printDeviceName(cl_device_id deviceID) {
-  char* pDeviceNameBuffer = (char*)malloc(255);
-  clGetDeviceInfo(deviceID, CL_DEVICE_NAME, 255, pDeviceNameBuffer, NULL);
-  printf("%s\n", pDeviceNameBuffer);
-  free(pDeviceNameBuffer);
-}
-
 RendererOpenCL::RendererOpenCL() {
-  printf("OpenCL Renderer\n");
-  
   clGetPlatformIDs(1, &this->platformID, &this->platformCount);
   clGetDeviceIDs(this->platformID, CL_DEVICE_TYPE_GPU, 1, &this->deviceID, &this->deviceCount);
 
@@ -43,10 +34,11 @@ RendererOpenCL::RendererOpenCL() {
 
   this->program = clCreateProgramWithSource(this->context, 1, (const char**)&pKernelFileBuffer, NULL, NULL);
   free(pKernelFileBuffer);
-  clBuildProgram(this->program, 0, NULL, NULL, NULL, NULL);
 
-  printDeviceName(this->deviceID);
-  printKernelBuildLog(this->deviceID, this->program);
+  int error = clBuildProgram(this->program, 0, NULL, NULL, NULL, NULL);
+  if (error != CL_SUCCESS) {
+    printKernelBuildLog(this->deviceID, this->program);
+  }
 }
 
 RendererOpenCL::~RendererOpenCL() {
@@ -91,11 +83,6 @@ void RendererOpenCL::render(void* pRenderProperties) {
     }
   }
 
-  printf("Image Size: %lux%lux%lu\n", pRenderPropertiesOpenCL->imageDimensions[0], pRenderPropertiesOpenCL->imageDimensions[1], pRenderPropertiesOpenCL->imageDimensions[2]);
-  printf("Work Block Size: %lux%lu\n", this->workBlockSize[0], this->workBlockSize[1]);
-  printf("Thread Group Size: %lux%lu\n", this->threadGroupSize[0], this->threadGroupSize[1]);
-  printf("Work Block Count: %lu\n", this->workBlockCount);
-
   cl_mem nodeBufferDevice = clCreateBuffer(this->context, CL_MEM_READ_ONLY, pAccelerationStructure->getNodeBufferSize(), NULL, NULL);
   clEnqueueWriteBuffer(this->commandQueue, nodeBufferDevice, CL_TRUE, 0, pAccelerationStructure->getNodeBufferSize(), pAccelerationStructure->getNodeBuffer(), 0, NULL, NULL);
   
@@ -114,8 +101,6 @@ void RendererOpenCL::render(void* pRenderProperties) {
   cl_uint height = pRenderPropertiesOpenCL->imageDimensions[1];
   cl_uint depth = pRenderPropertiesOpenCL->imageDimensions[2];
 
-  clock_t start = clock();
-
   cl_event events[this->workBlockCount];
   for (cl_uint x = 0; x < this->workBlockCount; x++) {
     clSetKernelArg(this->kernel, 0, sizeof(cl_mem), &nodeBufferDevice);
@@ -130,11 +115,6 @@ void RendererOpenCL::render(void* pRenderProperties) {
     clEnqueueNDRangeKernel(this->commandQueue, this->kernel, 2, NULL, this->workBlockSize, this->threadGroupSize, 0, NULL, &events[x]);
   }
   clWaitForEvents(this->workBlockCount, events);
-
-  clock_t end = clock();
-
-  double timeSeconds = (double)(end - start) / (double)CLOCKS_PER_SEC;
-  printf("Kernel Execution Time: %lf\n", timeSeconds);
 
   clEnqueueReadBuffer(this->commandQueue, outputDevice, CL_TRUE, 0, pRenderPropertiesOpenCL->outputBufferSize, pRenderPropertiesOpenCL->pOutputBuffer, 0, NULL, NULL);
   clFinish(this->commandQueue);

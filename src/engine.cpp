@@ -41,7 +41,3 @@ void Engine::writeBufferToImage(BufferToImageProperties bufferToImageProperties)
     stbi_write_jpg(bufferToImageProperties.filename, imageWidth, imageHeight, imageDepth, pWriteBuffer, 100);
   }
 }
-
-void Engine::writeBufferToRawFile(BufferToRawFileProperties bufferToRawFileProperties) {
-
-}

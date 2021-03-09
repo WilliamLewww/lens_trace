@@ -7,7 +7,6 @@ enum StructureType {
   STRUCTURE_TYPE_RENDER_PROPERTIES_CUDA,
   STRUCTURE_TYPE_THREAD_ORGANIZATION_CUDA,
   STRUCTURE_TYPE_BUFFER_TO_IMAGE_PROPERTIES,
-  STRUCTURE_TYPE_BUFFER_TO_RAW_FILE_PROPERTIES,
   STRUCTURE_TYPE_ACCELERATION_STRUCTURE_PROPERTIES
 };
 
@@ -83,15 +82,6 @@ struct BufferToImageProperties {
   uint64_t bufferSize;
   uint64_t imageDimensions[3];
   ImageType imageType;
-  const char* filename;
-};
-
-struct BufferToRawFileProperties {
-  StructureType sType;
-  void* pNext;
-  void* pBuffer;
-  uint64_t bufferSize;
-  uint64_t imageDimensions[3];
   const char* filename;
 };
 
