@@ -309,8 +309,8 @@ void linearKernel(__global LinearBVHNode* linearNodes,
                   uint height, 
                   uint depth) {
 
-  int blockIDY = get_global_id(1) + ((currentBlock / (width / get_global_size(0))) * get_global_size(1));
-  int blockIDX = get_global_id(0) + ((currentBlock % (width / get_global_size(0))) * get_global_size(0));
+  int blockIDY = ((currentBlock / (width / get_global_size(0))) * get_global_size(1)) + get_global_id(1);
+  int blockIDX = ((currentBlock % (width / get_global_size(0))) * get_global_size(0)) + get_global_id(0);
   int blockID = (blockIDY * width + blockIDX) * depth;
 
   if (blockIDX >= width || blockIDY >= height) {
@@ -343,10 +343,10 @@ void tileKernel(__global LinearBVHNode* linearNodes,
                 uint depth) {
 
   int localBlockID = get_group_id(1) * get_num_groups(0) + get_group_id(0);
-  int localIDY = get_local_id(1) + ((localBlockID / (get_global_size(0) / get_local_size(0))) * get_local_size(1));
-  int localIDX = get_local_id(0) + ((localBlockID % (get_global_size(0) / get_local_size(0))) * get_local_size(0));
-  int blockIDY = localIDY + ((currentBlock / (width / get_global_size(0))) * get_global_size(1));
-  int blockIDX = localIDX + ((currentBlock % (width / get_global_size(0))) * get_global_size(0));
+  int localIDY = ((localBlockID / (get_global_size(0) / get_local_size(0))) * get_local_size(1)) + get_local_id(1);
+  int localIDX = ((localBlockID % (get_global_size(0) / get_local_size(0))) * get_local_size(0)) + get_local_id(0);
+  int blockIDY = ((currentBlock / (width / get_global_size(0))) * get_global_size(1)) + localIDY;
+  int blockIDX = ((currentBlock % (width / get_global_size(0))) * get_global_size(0)) + localIDX;
   int blockID = (blockIDY * width + blockIDX) * depth;
 
   if (blockIDX >= width || blockIDY >= height) {

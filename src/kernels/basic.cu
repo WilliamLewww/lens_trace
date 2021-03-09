@@ -329,8 +329,8 @@ void linearKernel(LinearBVHNode* linearNodes,
                   int height, 
                   int depth) {
 
-  int idx = blockIdx.x * blockDim.x + threadIdx.x;
   int idy = blockIdx.y * blockDim.y + threadIdx.y;
+  int idx = blockIdx.x * blockDim.x + threadIdx.x;
   int id = (idy * width + idx) * depth;
 
   if (idx >= width || idy >= height) {
@@ -361,8 +361,9 @@ void tileKernel(LinearBVHNode* linearNodes,
                 int height, 
                 int depth) {
 
-  int idx = blockIdx.x * blockDim.x + threadIdx.x;
-  int idy = blockIdx.y * blockDim.y + threadIdx.y;
+  int currentBlock = blockIdx.y * gridDim.x + blockIdx.x;
+  int idy = ((currentBlock / gridDim.x) * blockDim.y) + threadIdx.y;
+  int idx = ((currentBlock % gridDim.x) * blockDim.x) + threadIdx.x;
   int id = (idy * width + idx) * depth;
 
   if (idx >= width || idy >= height) {
