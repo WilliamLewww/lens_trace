@@ -17,13 +17,29 @@ int main(int argc, const char** argv) {
 
   AccelerationStructure* pAccelerationStructure = new AccelerationStructure(accelerationStructureProperties);
 
-  Engine* pEngine = new Engine(RENDER_PLATFORM_CUDA);
-
   uint64_t outputBufferSize = sizeof(float) * 2048 * 2048 * 3;
   void* pOutputBuffer = malloc(outputBufferSize);
 
-  RenderPropertiesCUDA renderProperties = {
-    .sType = STRUCTURE_TYPE_RENDER_PROPERTIES_CUDA,
+  // Engine* pEngine = new Engine(RENDER_PLATFORM_CUDA);
+
+  // RenderPropertiesCUDA renderProperties = {
+  //   .sType = STRUCTURE_TYPE_RENDER_PROPERTIES_CUDA,
+  //   .pNext = NULL,
+  //   .kernelMode = KERNEL_MODE_LINEAR,
+  //   .threadOrganizationMode = THREAD_ORGANIZATION_MODE_MAX_FIT,
+  //   .pThreadOrganization = NULL,
+  //   .imageDimensions = {2048, 2048, 3},
+  //   .pOutputBuffer = pOutputBuffer,
+  //   .outputBufferSize = outputBufferSize,
+  //   .pAccelerationStructure = pAccelerationStructure,
+  //   .pModel = pModel,
+  //   .pCamera = pCamera
+  // };
+
+  Engine* pEngine = new Engine(RENDER_PLATFORM_OPENCL);
+
+  RenderPropertiesOpenCL renderProperties = {
+    .sType = STRUCTURE_TYPE_RENDER_PROPERTIES_OPENCL,
     .pNext = NULL,
     .kernelMode = KERNEL_MODE_LINEAR,
     .threadOrganizationMode = THREAD_ORGANIZATION_MODE_MAX_FIT,
