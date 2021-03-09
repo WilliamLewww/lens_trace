@@ -49,38 +49,43 @@ RendererOpenCL::~RendererOpenCL() {
 
 void RendererOpenCL::render(void* pRenderProperties) {
   RenderPropertiesOpenCL* pRenderPropertiesOpenCL = (RenderPropertiesOpenCL*)pRenderProperties;
+
+  if (pRenderPropertiesOpenCL->sType != STRUCTURE_TYPE_RENDER_PROPERTIES_OPENCL) {
+    printf("ERROR: RenderPropertiesOpenCL sType\n");
+  }
+
   AccelerationStructure* pAccelerationStructure = (AccelerationStructure*)pRenderPropertiesOpenCL->pAccelerationStructure;
   Model* pModel = (Model*)pRenderPropertiesOpenCL->pModel;
   Camera* pCamera = (Camera*)pRenderPropertiesOpenCL->pCamera;
 
-  if (pRenderPropertiesOpenCL->sType == STRUCTURE_TYPE_RENDER_PROPERTIES_OPENCL) {
-    if (pRenderPropertiesOpenCL->kernelMode == KERNEL_MODE_LINEAR) {
-      this->kernel = clCreateKernel(this->program, "linearKernel", NULL);
-    }
-    if (pRenderPropertiesOpenCL->kernelMode == KERNEL_MODE_TILE) {
-      this->kernel = clCreateKernel(this->program, "tileKernel", NULL);
-    }
-    if (pRenderPropertiesOpenCL->threadOrganizationMode == THREAD_ORGANIZATION_MODE_MAX_FIT) {
-      this->workBlockSize[0] = 64 * (this->maxWorkItemSizes[0] / 64);
-      this->workBlockSize[1] = 64 * (this->maxWorkItemSizes[1] / 64);
+  if (pRenderPropertiesOpenCL->kernelMode == KERNEL_MODE_LINEAR) {
+    this->kernel = clCreateKernel(this->program, "linearKernel", NULL);
+  }
+  if (pRenderPropertiesOpenCL->kernelMode == KERNEL_MODE_TILE) {
+    this->kernel = clCreateKernel(this->program, "tileKernel", NULL);
+  }
+  if (pRenderPropertiesOpenCL->threadOrganizationMode == THREAD_ORGANIZATION_MODE_MAX_FIT) {
+    this->workBlockSize[0] = 64 * (this->maxWorkItemSizes[0] / 64);
+    this->workBlockSize[1] = 64 * (this->maxWorkItemSizes[1] / 64);
 
-      this->threadGroupSize[0] = 32;
-      this->threadGroupSize[1] = (this->maxWorkGroupSize / 32);
+    this->threadGroupSize[0] = 32;
+    this->threadGroupSize[1] = (this->maxWorkGroupSize / 32);
 
-      this->workBlockCount = (pRenderPropertiesOpenCL->imageDimensions[0] / this->workBlockSize[0]) * (pRenderPropertiesOpenCL->imageDimensions[1] / this->workBlockSize[1]);
+    this->workBlockCount = (pRenderPropertiesOpenCL->imageDimensions[0] / this->workBlockSize[0]) * (pRenderPropertiesOpenCL->imageDimensions[1] / this->workBlockSize[1]);
+  }
+  if (pRenderPropertiesOpenCL->threadOrganizationMode == THREAD_ORGANIZATION_MODE_CUSTOM) {
+    ThreadOrganizationOpenCL* pThreadOrganization = pRenderPropertiesOpenCL->pThreadOrganization;
+    if (pThreadOrganization->sType != STRUCTURE_TYPE_THREAD_ORGANIZATION_OPENCL) {
+      printf("ERROR: ThreadOrganizationOpenCL sType\n");
     }
-    if (pRenderPropertiesOpenCL->threadOrganizationMode == THREAD_ORGANIZATION_MODE_CUSTOM) {
-      ThreadOrganizationOpenCL* pThreadOrganization = pRenderPropertiesOpenCL->pThreadOrganization;
-      if (pThreadOrganization->sType == STRUCTURE_TYPE_THREAD_ORGANIZATION_OPENCL) {
-        this->workBlockSize[0] = pThreadOrganization->workBlockSize[0];
-        this->workBlockSize[1] = pThreadOrganization->workBlockSize[1];
 
-        this->threadGroupSize[0] = pThreadOrganization->threadGroupSize[0];
-        this->threadGroupSize[1] = pThreadOrganization->threadGroupSize[1];
+    this->workBlockSize[0] = pThreadOrganization->workBlockSize[0];
+    this->workBlockSize[1] = pThreadOrganization->workBlockSize[1];
 
-        this->workBlockCount = (pRenderPropertiesOpenCL->imageDimensions[0] / this->workBlockSize[0]) * (pRenderPropertiesOpenCL->imageDimensions[1] / this->workBlockSize[1]);
-      }
-    }
+    this->threadGroupSize[0] = pThreadOrganization->threadGroupSize[0];
+    this->threadGroupSize[1] = pThreadOrganization->threadGroupSize[1];
+
+    this->workBlockCount = (pRenderPropertiesOpenCL->imageDimensions[0] / this->workBlockSize[0]) * (pRenderPropertiesOpenCL->imageDimensions[1] / this->workBlockSize[1]);
   }
 
   cl_mem nodeBufferDevice = clCreateBuffer(this->context, CL_MEM_READ_ONLY, pAccelerationStructure->getNodeBufferSize(), NULL, NULL);
