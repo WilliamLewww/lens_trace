@@ -12,6 +12,9 @@ CUDA_OBJS := $(notdir $(CUDA_SRCS:%.cu=%.o))
 CFLAGS =-I$(OPENCL_SDK_PATH)/include/api -I$(CUDA_PATH)/include
 LDFLAGS =-L$(OPENCL_SDK_PATH)/build -L$(CUDA_PATH)/lib64 -lOpenCL -lcuda -lcudart
 
+GPU_C =75
+NVCCFLAGS =-gencode arch=compute_$(GPU_C),code=sm_$(GPU_C)
+
 $EXEC: $(CUDA_OBJS) $(OBJS)
 	g++ $(CFLAGS) -o bin/$(EXEC) build/*.o $(LDFLAGS)
 
@@ -19,4 +22,4 @@ $EXEC: $(CUDA_OBJS) $(OBJS)
 	g++ $(CFLAGS) -c $^ -o build/$@
 
 %.o: src/kernels/%.cu
-	$(CUDA_PATH)/bin/nvcc $(CFLAGS) -c $^ -o build/$@
+	$(CUDA_PATH)/bin/nvcc $(CFLAGS) $(NVCCFLAGS) -c $^ -o build/$@
