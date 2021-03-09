@@ -10,9 +10,8 @@ extern "C" {
                            void* cameraBuffer,
                            uint64_t cameraBufferSize,
                            void* outputBuffer, 
-                           int width, 
-                           int height, 
-                           int depth);
+                           uint64_t imageDimensions[3],
+                           uint64_t blockSize[2]);
 
   void tileKernelWrapper();
 }
@@ -31,18 +30,34 @@ void RendererCUDA::render(void* pRenderProperties) {
   Model* pModel = (Model*)pRenderPropertiesCUDA->pModel;
   Camera* pCamera = (Camera*)pRenderPropertiesCUDA->pCamera;
 
-  linearKernelWrapper(
-    pAccelerationStructure->getNodeBuffer(),
-    pAccelerationStructure->getNodeBufferSize(),
-    pAccelerationStructure->getOrderedPrimitiveBuffer(),
-    pAccelerationStructure->getOrderedPrimitiveBufferSize(),
-    pModel->getMaterialBuffer(),
-    pModel->getMaterialBufferSize(),
-    pCamera->getCameraBuffer(),
-    pCamera->getCameraBufferSize(),
-    pRenderPropertiesCUDA->pOutputBuffer,
-    pRenderPropertiesCUDA->imageDimensions[0], 
-    pRenderPropertiesCUDA->imageDimensions[1], 
-    pRenderPropertiesCUDA->imageDimensions[2]
-  );
+  uint64_t blockSize[2];
+
+  if (pRenderPropertiesCUDA->threadOrganizationMode == THREAD_ORGANIZATION_MODE_MAX_FIT) {
+    blockSize[0] = 32;
+    blockSize[1] = 32;
+  }
+  if (pRenderPropertiesCUDA->threadOrganizationMode == THREAD_ORGANIZATION_MODE_CUSTOM) {
+    ThreadOrganizationCUDA* pThreadOrganization = pRenderPropertiesCUDA->pThreadOrganization;
+    blockSize[0] = pThreadOrganization->blockSize[0];
+    blockSize[1] = pThreadOrganization->blockSize[1];
+  }
+
+  if (pRenderPropertiesCUDA->kernelMode == KERNEL_MODE_LINEAR) {
+    linearKernelWrapper(
+      pAccelerationStructure->getNodeBuffer(),
+      pAccelerationStructure->getNodeBufferSize(),
+      pAccelerationStructure->getOrderedPrimitiveBuffer(),
+      pAccelerationStructure->getOrderedPrimitiveBufferSize(),
+      pModel->getMaterialBuffer(),
+      pModel->getMaterialBufferSize(),
+      pCamera->getCameraBuffer(),
+      pCamera->getCameraBufferSize(),
+      pRenderPropertiesCUDA->pOutputBuffer,
+      pRenderPropertiesCUDA->imageDimensions,
+      blockSize
+    );
+  }
+  if (pRenderPropertiesCUDA->kernelMode == KERNEL_MODE_TILE) {
+
+  }
 }

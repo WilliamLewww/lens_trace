@@ -358,12 +358,11 @@ extern "C" void linearKernelWrapper(void* linearNodeBuffer,
                                     void* cameraBuffer,
                                     uint64_t cameraBufferSize,
                                     void* outputBuffer, 
-                                    int width, 
-                                    int height, 
-                                    int depth) {
+                                    uint64_t imageDimensions[3],
+                                    uint64_t blockSize[2]) {
 
-  dim3 block(32, 32);
-  dim3 grid((width + block.x - 1) / block.x, (height + block.y - 1) / block.y);
+  dim3 block(blockSize[0], blockSize[1]);
+  dim3 grid((imageDimensions[0] + block.x - 1) / block.x, (imageDimensions[1] + block.y - 1) / block.y);
 
   void* linearNodeBufferDevice;
   cudaMalloc(&linearNodeBufferDevice, linearNodeBufferSize);
@@ -382,7 +381,7 @@ extern "C" void linearKernelWrapper(void* linearNodeBuffer,
   cudaMemcpy(cameraBufferDevice, cameraBuffer, cameraBufferSize, cudaMemcpyHostToDevice);
 
   void* outputBufferDevice;
-  cudaMalloc(&outputBufferDevice, sizeof(float) * width * height * depth);
+  cudaMalloc(&outputBufferDevice, sizeof(float) * imageDimensions[0] * imageDimensions[1] * imageDimensions[2]);
 
   linearKernel<<<grid, block>>>(
     (LinearBVHNode*)linearNodeBufferDevice, 
@@ -390,9 +389,9 @@ extern "C" void linearKernelWrapper(void* linearNodeBuffer,
     (Material*)materialBufferDevice, 
     (Camera*)cameraBufferDevice, 
     (float*)outputBufferDevice, 
-    width, 
-    height, 
-    depth
+    imageDimensions[0], 
+    imageDimensions[1], 
+    imageDimensions[2]
   );
   cudaDeviceSynchronize();
 
@@ -401,7 +400,7 @@ extern "C" void linearKernelWrapper(void* linearNodeBuffer,
     printf("%s\n", cudaGetErrorString(error));
   }
 
-  cudaMemcpy(outputBuffer, outputBufferDevice, sizeof(float) * width * height * depth, cudaMemcpyDeviceToHost);
+  cudaMemcpy(outputBuffer, outputBufferDevice, sizeof(float) * imageDimensions[0] * imageDimensions[1] * imageDimensions[2], cudaMemcpyDeviceToHost);
   cudaFree(outputBufferDevice);
 }
 
