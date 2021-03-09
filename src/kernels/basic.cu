@@ -360,6 +360,14 @@ extern "C" void linearKernelWrapper(void* linearNodeBuffer,
                                     void* outputBuffer, 
                                     uint64_t imageDimensions[3],
                                     uint64_t blockSize[2]) {
+  printf("CUDA Renderer\n");
+
+  cudaDeviceProp prop;
+  cudaGetDeviceProperties(&prop, 0);
+  printf("%s\n\n", prop.name);
+
+  printf("Image Size: %lux%lux%lu\n", imageDimensions[0], imageDimensions[1], imageDimensions[2]);
+  printf("Block Size: %lux%lu\n", blockSize[0], blockSize[1]);
 
   dim3 block(blockSize[0], blockSize[1]);
   dim3 grid((imageDimensions[0] + block.x - 1) / block.x, (imageDimensions[1] + block.y - 1) / block.y);
@@ -383,6 +391,8 @@ extern "C" void linearKernelWrapper(void* linearNodeBuffer,
   void* outputBufferDevice;
   cudaMalloc(&outputBufferDevice, sizeof(float) * imageDimensions[0] * imageDimensions[1] * imageDimensions[2]);
 
+  clock_t start = clock();
+
   linearKernel<<<grid, block>>>(
     (LinearBVHNode*)linearNodeBufferDevice, 
     (Primitive*)primitiveBufferDevice, 
@@ -394,6 +404,11 @@ extern "C" void linearKernelWrapper(void* linearNodeBuffer,
     imageDimensions[2]
   );
   cudaDeviceSynchronize();
+
+  clock_t end = clock();
+
+  double timeSeconds = (double)(end - start) / (double)CLOCKS_PER_SEC;
+  printf("Kernel Execution Time: %lf\n", timeSeconds);
 
   cudaError_t error = cudaGetLastError();
   if (error != cudaSuccess) {

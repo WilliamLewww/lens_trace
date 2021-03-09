@@ -16,6 +16,8 @@ void printDeviceName(cl_device_id deviceID) {
 }
 
 RendererOpenCL::RendererOpenCL() {
+  printf("OpenCL Renderer\n");
+  
   clGetPlatformIDs(1, &this->platformID, &this->platformCount);
   clGetDeviceIDs(this->platformID, CL_DEVICE_TYPE_GPU, 1, &this->deviceID, &this->deviceCount);
 
