@@ -51,10 +51,28 @@ struct RayPayload {
   float v;
 };
 
+inline __device__ float3 operator*(float3 a, float b) { return make_float3(a.x * b, a.y * b, a.z * b); }
+inline __device__ float4 operator*(float a, float4 b) { return make_float4(a * b.x, a * b.y, a * b.z, a * b.w); }
+inline __device__ float3 operator+(float3 a, float3 b) { return make_float3(a.x + b.x, a.y + b.y, a.z + b.z); }
 inline __device__ float4 operator+(float4 a, float4 b) { return make_float4(a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w); }
 inline __device__ float4 operator-(float4 a, float4 b) { return make_float4(a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w); }
 inline __device__ float4 cross(float4 a, float4 b) { return make_float4(a.y*b.z - a.z*b.y, a.z*b.x - a.x*b.z, a.x*b.y - a.y*b.x, a.w); }
 inline __device__ float dot(float4 a, float4 b) { return a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w; }
+
+inline __device__ 
+float4 reflect(float4 incidentDirection, float4 normal) {
+  float cosI = -dot(normal, incidentDirection);
+  return incidentDirection + 2.0f * cosI * normal;
+}
+
+inline __device__
+float4 refract(float4 incidentDirection, float4 normal, float firstIOR, float secondIOR) {
+  float n = firstIOR / secondIOR;
+  float cosI = -dot(normal, incidentDirection);
+  float sinT2 = n * n * (1.0 - cosI * cosI);
+  float cosT = sqrt(1.0 - sinT2);
+  return n * incidentDirection + (n * cosI - cosT) * normal;
+}
 
 __device__
 const float* getBounds(int dirIsNeg, const float* boundsMin, const float* boundsMax) {
@@ -167,6 +185,108 @@ void intersect(RayPayload* rayPayload, Ray ray, LinearBVHNode* nodes, Primitive*
 }
 
 __device__
+void intersectIgnorePrimitiveIndex(RayPayload* rayPayload, 
+                                   Ray ray, 
+                                   LinearBVHNode* nodes, 
+                                   Primitive* primitives, 
+                                   int ignorePrimitiveIndex) {
+
+  float4 invDir = make_float4(1.0 / ray.direction.x, 1.0 / ray.direction.y, 1.0 / ray.direction.z, 0);
+  int dirIsNeg[3] = {invDir.x < 0, invDir.y < 0, invDir.z < 0};
+
+  int toVisitOffset = 0, currentNodeIndex = 0;
+  int nodesToVisit[64];
+  while (true) {
+    const LinearBVHNode* node = &nodes[currentNodeIndex];
+
+    if (intersectBounds(ray, invDir, dirIsNeg, node->boundsMin, node->boundsMax)) {
+      if (node->primitiveCount > 0) {
+        for (int i = 0; i < node->primitiveCount; i++) {
+          if (node->primitivesOffset != ignorePrimitiveIndex && intersectTriangle(rayPayload, ray, primitives[node->primitivesOffset])) {
+            rayPayload->primitiveIndex = node->primitivesOffset;
+            rayPayload->hitType = 1;
+          }
+        }
+        if (toVisitOffset == 0) {
+          break;
+        }
+        currentNodeIndex = nodesToVisit[--toVisitOffset];
+      }
+      else {
+        if (dirIsNeg[node->axis]) {
+          nodesToVisit[toVisitOffset++] = currentNodeIndex + 1;
+          currentNodeIndex = node->secondChildOffset;
+        } else {
+          nodesToVisit[toVisitOffset++] = node->secondChildOffset;
+          currentNodeIndex = currentNodeIndex + 1;
+        }
+      }
+    }
+    else {
+      if (toVisitOffset == 0) {
+        break;
+      }
+      currentNodeIndex = nodesToVisit[--toVisitOffset];
+    }
+  }
+}
+
+__device__
+void traceRayThroughLens(LinearBVHNode* linearNodes, 
+                         Primitive* primitives, 
+                         Material* materials,
+                         RayPayload* rayPayload,
+                         Ray* ray) {
+
+  float3 outputColor = make_float3(0, 0, 0);
+
+  Primitive* primitive = &primitives[rayPayload->primitiveIndex];
+  Material* material = &materials[primitive->materialIndex];
+
+  float3 barycentrics = make_float3(1.0 - rayPayload->u - rayPayload->v, rayPayload->u, rayPayload->v);
+  float3 positionA = make_float3(primitive->positionA[0], primitive->positionA[1], primitive->positionA[2]);
+  float3 positionB = make_float3(primitive->positionB[0], primitive->positionB[1], primitive->positionB[2]);
+  float3 positionC = make_float3(primitive->positionC[0], primitive->positionC[1], primitive->positionC[2]);
+  float3 position = positionA * barycentrics.x + positionB * barycentrics.y + positionC * barycentrics.z;
+  float3 normalA = make_float3(primitive->normalA[0], primitive->normalA[1], primitive->normalA[2]);
+  float3 normalB = make_float3(primitive->normalB[0], primitive->normalB[1], primitive->normalB[2]);
+  float3 normalC = make_float3(primitive->normalC[0], primitive->normalC[1], primitive->normalC[2]);
+  float3 normal = normalA * barycentrics.x + normalB * barycentrics.y + normalC * barycentrics.z;
+
+  float4 transmissionDirection = refract(ray->direction, make_float4(normal.x, normal.y, normal.z, 0.0), 1.0, material->ior);
+
+  RayPayload rayPayload2 = {0, 0, FLT_MAX, 0, 0};
+  Ray ray2 = {make_float4(position.x, position.y, position.z, 1.0), transmissionDirection};
+  intersectIgnorePrimitiveIndex(&rayPayload2, ray2, linearNodes, primitives, rayPayload->primitiveIndex);
+
+  primitive = &primitives[rayPayload2.primitiveIndex];
+  material = &materials[primitive->materialIndex];
+
+  barycentrics = make_float3(1.0 - rayPayload2.u - rayPayload2.v, rayPayload2.u, rayPayload2.v);
+  positionA = make_float3(primitive->positionA[0], primitive->positionA[1], primitive->positionA[2]);
+  positionB = make_float3(primitive->positionB[0], primitive->positionB[1], primitive->positionB[2]);
+  positionC = make_float3(primitive->positionC[0], primitive->positionC[1], primitive->positionC[2]);
+  position = positionA * barycentrics.x + positionB * barycentrics.y + positionC * barycentrics.z;
+  normalA = make_float3(primitive->normalA[0], primitive->normalA[1], primitive->normalA[2]);
+  normalB = make_float3(primitive->normalB[0], primitive->normalB[1], primitive->normalB[2]);
+  normalC = make_float3(primitive->normalC[0], primitive->normalC[1], primitive->normalC[2]);
+  normal = normalA * barycentrics.x + normalB * barycentrics.y + normalC * barycentrics.z;
+
+  transmissionDirection = refract(transmissionDirection, make_float4(-normal.x, -normal.y, -normal.z, 0.0), material->ior, 1.0);
+
+  rayPayload->primitiveIndex = 0;
+  rayPayload->hitType = 0;
+  rayPayload->t = FLT_MAX;
+  rayPayload->u = 0;
+  rayPayload->v = 0;
+
+  ray->origin = make_float4(position.x, position.y, position.z, 1.0);
+  ray->direction = transmissionDirection;
+
+  intersectIgnorePrimitiveIndex(rayPayload, *ray, linearNodes, primitives, rayPayload2.primitiveIndex);
+}
+
+__device__
 float3 shade(LinearBVHNode* linearNodes, 
              Primitive* primitives, 
              Material* materials,
@@ -181,6 +301,15 @@ float3 shade(LinearBVHNode* linearNodes,
   if (rayPayload.hitType == 1) {
     Primitive* primitive = &primitives[rayPayload.primitiveIndex];
     Material* material = &materials[primitive->materialIndex];
+
+    if (material->dissolve < 1.0) {
+      traceRayThroughLens(linearNodes, primitives, materials, &rayPayload, &ray);
+
+      if (rayPayload.hitType == 1) {
+        primitive = &primitives[rayPayload.primitiveIndex];
+        material = &materials[primitive->materialIndex];
+      }
+    }
 
     outputColor = make_float3(material->diffuse[0], material->diffuse[1], material->diffuse[2]);
   }
