@@ -1,7 +1,7 @@
 #include "renderer_cuda.h"
 
 extern "C" {
-  void linearKernelWrapper(void* linearNodeBuffer,
+  void kernelWrappers(void* linearNodeBuffer,
                            uint64_t linearNodeBufferSize,
                            void* primitiveBuffer,
                            uint64_t primitiveBufferSize,
@@ -11,9 +11,8 @@ extern "C" {
                            uint64_t cameraBufferSize,
                            void* outputBuffer, 
                            uint64_t imageDimensions[3],
-                           uint64_t blockSize[2]);
-
-  void tileKernelWrapper();
+                           uint64_t blockSize[2],
+                           KernelMode kernelMode);
 }
 
 RendererCUDA::RendererCUDA() {
@@ -42,22 +41,18 @@ void RendererCUDA::render(void* pRenderProperties) {
     blockSize[1] = pThreadOrganization->blockSize[1];
   }
 
-  if (pRenderPropertiesCUDA->kernelMode == KERNEL_MODE_LINEAR) {
-    linearKernelWrapper(
-      pAccelerationStructure->getNodeBuffer(),
-      pAccelerationStructure->getNodeBufferSize(),
-      pAccelerationStructure->getOrderedPrimitiveBuffer(),
-      pAccelerationStructure->getOrderedPrimitiveBufferSize(),
-      pModel->getMaterialBuffer(),
-      pModel->getMaterialBufferSize(),
-      pCamera->getCameraBuffer(),
-      pCamera->getCameraBufferSize(),
-      pRenderPropertiesCUDA->pOutputBuffer,
-      pRenderPropertiesCUDA->imageDimensions,
-      blockSize
-    );
-  }
-  if (pRenderPropertiesCUDA->kernelMode == KERNEL_MODE_TILE) {
-
-  }
+  kernelWrappers(
+    pAccelerationStructure->getNodeBuffer(),
+    pAccelerationStructure->getNodeBufferSize(),
+    pAccelerationStructure->getOrderedPrimitiveBuffer(),
+    pAccelerationStructure->getOrderedPrimitiveBufferSize(),
+    pModel->getMaterialBuffer(),
+    pModel->getMaterialBufferSize(),
+    pCamera->getCameraBuffer(),
+    pCamera->getCameraBufferSize(),
+    pRenderPropertiesCUDA->pOutputBuffer,
+    pRenderPropertiesCUDA->imageDimensions,
+    blockSize,
+    pRenderPropertiesCUDA->kernelMode
+  );
 }

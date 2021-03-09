@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdint.h>
 
+#include "../structures.h"
+
 #define FLT_MAX 10000000
 
 struct LinearBVHNode {
@@ -349,17 +351,50 @@ void linearKernel(LinearBVHNode* linearNodes,
   output[id + 2] = outputColor.z;
 }
 
-extern "C" void linearKernelWrapper(void* linearNodeBuffer,
-                                    uint64_t linearNodeBufferSize,
-                                    void* primitiveBuffer,
-                                    uint64_t primitiveBufferSize,
-                                    void* materialBuffer,
-                                    uint64_t materialBufferSize,
-                                    void* cameraBuffer,
-                                    uint64_t cameraBufferSize,
-                                    void* outputBuffer, 
-                                    uint64_t imageDimensions[3],
-                                    uint64_t blockSize[2]) {
+__global__
+void tileKernel(LinearBVHNode* linearNodes, 
+                Primitive* primitives,
+                Material* materials, 
+                Camera* camera,
+                float* output, 
+                int width, 
+                int height, 
+                int depth) {
+
+  int idx = blockIdx.x * blockDim.x + threadIdx.x;
+  int idy = blockIdx.y * blockDim.y + threadIdx.y;
+  int id = (idy * width + idx) * depth;
+
+  if (idx >= width || idy >= height) {
+    return;
+  }
+
+  float4 cameraPosition = make_float4(camera->position[0], camera->position[1], camera->position[2], 1);
+  float4 filmPosition = make_float4(((float)idx / width) - 0.5f, ((float)idy / height) - 0.5f, 0, 1);
+  float4 aperaturePosition = make_float4(0.0, 0.0, 5, 1);
+
+  Ray ray = {cameraPosition + filmPosition, aperaturePosition - filmPosition};
+  ray.direction.x = (cos(camera->yaw) * ray.direction.x) + (sin(camera->yaw) * ray.direction.z);
+  ray.direction.z = (-sin(camera->yaw) * ray.direction.x) + (cos(camera->yaw) * ray.direction.z);
+  float3 outputColor = shade(linearNodes, primitives, materials, ray);
+
+  output[id + 0] = outputColor.x;
+  output[id + 1] = outputColor.y;
+  output[id + 2] = outputColor.z;
+}
+
+extern "C" void kernelWrappers(void* linearNodeBuffer,
+                               uint64_t linearNodeBufferSize,
+                               void* primitiveBuffer,
+                               uint64_t primitiveBufferSize,
+                               void* materialBuffer,
+                               uint64_t materialBufferSize,
+                               void* cameraBuffer,
+                               uint64_t cameraBufferSize,
+                               void* outputBuffer, 
+                               uint64_t imageDimensions[3],
+                               uint64_t blockSize[2],
+                               KernelMode kernelMode) {
   printf("CUDA Renderer\n");
 
   cudaDeviceProp prop;
@@ -393,16 +428,31 @@ extern "C" void linearKernelWrapper(void* linearNodeBuffer,
 
   clock_t start = clock();
 
-  linearKernel<<<grid, block>>>(
-    (LinearBVHNode*)linearNodeBufferDevice, 
-    (Primitive*)primitiveBufferDevice, 
-    (Material*)materialBufferDevice, 
-    (Camera*)cameraBufferDevice, 
-    (float*)outputBufferDevice, 
-    imageDimensions[0], 
-    imageDimensions[1], 
-    imageDimensions[2]
-  );
+  if (kernelMode == KERNEL_MODE_LINEAR) {
+    linearKernel<<<grid, block>>>(
+      (LinearBVHNode*)linearNodeBufferDevice, 
+      (Primitive*)primitiveBufferDevice, 
+      (Material*)materialBufferDevice, 
+      (Camera*)cameraBufferDevice, 
+      (float*)outputBufferDevice, 
+      imageDimensions[0], 
+      imageDimensions[1], 
+      imageDimensions[2]
+    );
+  }
+
+  if (kernelMode == KERNEL_MODE_TILE) {
+    tileKernel<<<grid, block>>>(
+      (LinearBVHNode*)linearNodeBufferDevice, 
+      (Primitive*)primitiveBufferDevice, 
+      (Material*)materialBufferDevice, 
+      (Camera*)cameraBufferDevice, 
+      (float*)outputBufferDevice, 
+      imageDimensions[0], 
+      imageDimensions[1], 
+      imageDimensions[2]
+    );
+  }
   cudaDeviceSynchronize();
 
   clock_t end = clock();
@@ -417,8 +467,4 @@ extern "C" void linearKernelWrapper(void* linearNodeBuffer,
 
   cudaMemcpy(outputBuffer, outputBufferDevice, sizeof(float) * imageDimensions[0] * imageDimensions[1] * imageDimensions[2], cudaMemcpyDeviceToHost);
   cudaFree(outputBufferDevice);
-}
-
-extern "C" void tileKernelWrapper() {
-
 }

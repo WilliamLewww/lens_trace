@@ -20,10 +20,26 @@ int main(int argc, const char** argv) {
   uint64_t outputBufferSize = sizeof(float) * 2048 * 2048 * 3;
   void* pOutputBuffer = malloc(outputBufferSize);
 
-  // Engine* pEngine = new Engine(RENDER_PLATFORM_CUDA);
+  Engine* pEngine = new Engine(RENDER_PLATFORM_CUDA);
 
-  // RenderPropertiesCUDA renderProperties = {
-  //   .sType = STRUCTURE_TYPE_RENDER_PROPERTIES_CUDA,
+  RenderPropertiesCUDA renderProperties = {
+    .sType = STRUCTURE_TYPE_RENDER_PROPERTIES_CUDA,
+    .pNext = NULL,
+    .kernelMode = KERNEL_MODE_TILE,
+    .threadOrganizationMode = THREAD_ORGANIZATION_MODE_MAX_FIT,
+    .pThreadOrganization = NULL,
+    .imageDimensions = {2048, 2048, 3},
+    .pOutputBuffer = pOutputBuffer,
+    .outputBufferSize = outputBufferSize,
+    .pAccelerationStructure = pAccelerationStructure,
+    .pModel = pModel,
+    .pCamera = pCamera
+  };
+
+  // Engine* pEngine = new Engine(RENDER_PLATFORM_OPENCL);
+
+  // RenderPropertiesOpenCL renderProperties = {
+  //   .sType = STRUCTURE_TYPE_RENDER_PROPERTIES_OPENCL,
   //   .pNext = NULL,
   //   .kernelMode = KERNEL_MODE_LINEAR,
   //   .threadOrganizationMode = THREAD_ORGANIZATION_MODE_MAX_FIT,
@@ -35,22 +51,6 @@ int main(int argc, const char** argv) {
   //   .pModel = pModel,
   //   .pCamera = pCamera
   // };
-
-  Engine* pEngine = new Engine(RENDER_PLATFORM_OPENCL);
-
-  RenderPropertiesOpenCL renderProperties = {
-    .sType = STRUCTURE_TYPE_RENDER_PROPERTIES_OPENCL,
-    .pNext = NULL,
-    .kernelMode = KERNEL_MODE_LINEAR,
-    .threadOrganizationMode = THREAD_ORGANIZATION_MODE_MAX_FIT,
-    .pThreadOrganization = NULL,
-    .imageDimensions = {2048, 2048, 3},
-    .pOutputBuffer = pOutputBuffer,
-    .outputBufferSize = outputBufferSize,
-    .pAccelerationStructure = pAccelerationStructure,
-    .pModel = pModel,
-    .pCamera = pCamera
-  };
 
   pEngine->render(&renderProperties);
 
