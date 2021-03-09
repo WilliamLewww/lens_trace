@@ -112,58 +112,27 @@ void RendererOpenCL::render(void* pRenderProperties) {
   cl_uint height = pRenderPropertiesOpenCL->imageDimensions[1];
   cl_uint depth = pRenderPropertiesOpenCL->imageDimensions[2];
 
-  if (pRenderPropertiesOpenCL->runMode == RUN_MODE_BENCHMARK) {
-    int runCount = 1000;
-    clock_t start;
-    clock_t end;
-    double timeSeconds;
+  clock_t start = clock();
 
-    for (int runIndex = 0; runIndex < runCount; runIndex++) {
-      start = clock();
-
-      cl_event events[this->workBlockCount];
-      for (cl_uint x = 0; x < this->workBlockCount; x++) {
-        clSetKernelArg(this->kernel, 0, sizeof(cl_mem), &nodeBufferDevice);
-        clSetKernelArg(this->kernel, 1, sizeof(cl_mem), &primitiveBufferDevice);
-        clSetKernelArg(this->kernel, 2, sizeof(cl_mem), &materialBufferDevice);
-        clSetKernelArg(this->kernel, 3, sizeof(cl_mem), &cameraBufferDevice);
-        clSetKernelArg(this->kernel, 4, sizeof(cl_mem), &outputDevice);
-        clSetKernelArg(this->kernel, 5, sizeof(cl_uint), &x);
-        clSetKernelArg(this->kernel, 6, sizeof(cl_uint), &width);
-        clSetKernelArg(this->kernel, 7, sizeof(cl_uint), &height);
-        clSetKernelArg(this->kernel, 8, sizeof(cl_uint), &depth);
-        clEnqueueNDRangeKernel(this->commandQueue, this->kernel, 2, NULL, this->workBlockSize, this->threadGroupSize, 0, NULL, &events[x]);
-      }
-      clWaitForEvents(this->workBlockCount, events);
-
-      end = clock();
-      timeSeconds += (double)(end - start) / (double)CLOCKS_PER_SEC;
-    }
-    printf("Average Kernel Execution Time: %lf\n", timeSeconds / runCount);
+  cl_event events[this->workBlockCount];
+  for (cl_uint x = 0; x < this->workBlockCount; x++) {
+    clSetKernelArg(this->kernel, 0, sizeof(cl_mem), &nodeBufferDevice);
+    clSetKernelArg(this->kernel, 1, sizeof(cl_mem), &primitiveBufferDevice);
+    clSetKernelArg(this->kernel, 2, sizeof(cl_mem), &materialBufferDevice);
+    clSetKernelArg(this->kernel, 3, sizeof(cl_mem), &cameraBufferDevice);
+    clSetKernelArg(this->kernel, 4, sizeof(cl_mem), &outputDevice);
+    clSetKernelArg(this->kernel, 5, sizeof(cl_uint), &x);
+    clSetKernelArg(this->kernel, 6, sizeof(cl_uint), &width);
+    clSetKernelArg(this->kernel, 7, sizeof(cl_uint), &height);
+    clSetKernelArg(this->kernel, 8, sizeof(cl_uint), &depth);
+    clEnqueueNDRangeKernel(this->commandQueue, this->kernel, 2, NULL, this->workBlockSize, this->threadGroupSize, 0, NULL, &events[x]);
   }
-  else {
-    clock_t start = clock();
+  clWaitForEvents(this->workBlockCount, events);
 
-    cl_event events[this->workBlockCount];
-    for (cl_uint x = 0; x < this->workBlockCount; x++) {
-      clSetKernelArg(this->kernel, 0, sizeof(cl_mem), &nodeBufferDevice);
-      clSetKernelArg(this->kernel, 1, sizeof(cl_mem), &primitiveBufferDevice);
-      clSetKernelArg(this->kernel, 2, sizeof(cl_mem), &materialBufferDevice);
-      clSetKernelArg(this->kernel, 3, sizeof(cl_mem), &cameraBufferDevice);
-      clSetKernelArg(this->kernel, 4, sizeof(cl_mem), &outputDevice);
-      clSetKernelArg(this->kernel, 5, sizeof(cl_uint), &x);
-      clSetKernelArg(this->kernel, 6, sizeof(cl_uint), &width);
-      clSetKernelArg(this->kernel, 7, sizeof(cl_uint), &height);
-      clSetKernelArg(this->kernel, 8, sizeof(cl_uint), &depth);
-      clEnqueueNDRangeKernel(this->commandQueue, this->kernel, 2, NULL, this->workBlockSize, this->threadGroupSize, 0, NULL, &events[x]);
-    }
-    clWaitForEvents(this->workBlockCount, events);
+  clock_t end = clock();
 
-    clock_t end = clock();
-
-    double timeSeconds = (double)(end - start) / (double)CLOCKS_PER_SEC;
-    printf("Kernel Execution Time: %lf\n", timeSeconds);
-  }
+  double timeSeconds = (double)(end - start) / (double)CLOCKS_PER_SEC;
+  printf("Kernel Execution Time: %lf\n", timeSeconds);
 
   clEnqueueReadBuffer(this->commandQueue, outputDevice, CL_TRUE, 0, pRenderPropertiesOpenCL->outputBufferSize, pRenderPropertiesOpenCL->pOutputBuffer, 0, NULL, NULL);
   clFinish(this->commandQueue);
