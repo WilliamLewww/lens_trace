@@ -275,7 +275,7 @@ float3 shade(__global LinearBVHNode* linearNodes,
 
   RayPayload rayPayload = {0, 0, FLT_MAX, 0, 0};
   Ray ray = cameraRay;
-  intersect(&rayPayload, cameraRay, linearNodes, primitives);
+  intersect(&rayPayload, ray, linearNodes, primitives);
 
   if (rayPayload.hitType == 1) {
     __global Primitive* primitive = &primitives[rayPayload.primitiveIndex];

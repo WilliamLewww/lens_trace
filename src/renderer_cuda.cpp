@@ -45,8 +45,4 @@ void RendererCUDA::render(void* pRenderProperties) {
     pRenderPropertiesCUDA->imageDimensions[1], 
     pRenderPropertiesCUDA->imageDimensions[2]
   );
-
-  for (int x = 0; x < 10; x++) {
-    printf("%f\n", ((float*)(pRenderPropertiesCUDA->pOutputBuffer))[x]);
-  }
 }
