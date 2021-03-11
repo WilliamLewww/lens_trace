@@ -85,7 +85,7 @@ Model::Model(std::string fileName) {
 }
 
 Model::~Model() {
-
+  free(this->materialBuffer);
 }
 
 std::string Model::getFileName() {

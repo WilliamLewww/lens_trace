@@ -13,7 +13,7 @@ Camera::Camera(float positionX, float positionY, float positionZ, float yaw) {
 }
 
 Camera::~Camera() {
-
+  free(this->cameraBuffer);
 }
 
 void* Camera::getCameraBuffer() {

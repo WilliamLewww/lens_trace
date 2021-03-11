@@ -26,7 +26,7 @@ AccelerationStructure::AccelerationStructure(AccelerationStructureProperties acc
 }
 
 AccelerationStructure::~AccelerationStructure() {
-
+  free(this->pLinearNodeBuffer);
 }
 
 BVHBuildNode* AccelerationStructure::recursiveBuild(std::vector<PrimitiveInfo>* pPrimitiveInfoList, int start, int end, int* pTotalNodes, std::vector<PrimitiveInfo*>& orderedPrimitiveList) {

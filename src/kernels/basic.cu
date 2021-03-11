@@ -453,4 +453,8 @@ extern "C" void kernelWrappers(void* linearNodeBuffer,
 
   cudaMemcpy(outputBuffer, outputBufferDevice, sizeof(float) * imageDimensions[0] * imageDimensions[1] * imageDimensions[2], cudaMemcpyDeviceToHost);
   cudaFree(outputBufferDevice);
+  cudaFree(cameraBufferDevice);
+  cudaFree(materialBufferDevice);
+  cudaFree(primitiveBufferDevice);
+  cudaFree(linearNodeBufferDevice);
 }
