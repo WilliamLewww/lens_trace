@@ -54,7 +54,7 @@ void RendererOpenCL::render(void* pRenderProperties) {
     printf("ERROR: RenderPropertiesOpenCL sType\n");
   }
 
-  AccelerationStructure* pAccelerationStructure = (AccelerationStructure*)pRenderPropertiesOpenCL->pAccelerationStructure;
+  AccelerationStructureExplicit* pAccelerationStructureExplicit = (AccelerationStructureExplicit*)pRenderPropertiesOpenCL->pAccelerationStructureExplicit;
   Model* pModel = (Model*)pRenderPropertiesOpenCL->pModel;
   Camera* pCamera = (Camera*)pRenderPropertiesOpenCL->pCamera;
 
@@ -88,11 +88,11 @@ void RendererOpenCL::render(void* pRenderProperties) {
     this->workBlockCount = (pRenderPropertiesOpenCL->imageDimensions[0] / this->workBlockSize[0]) * (pRenderPropertiesOpenCL->imageDimensions[1] / this->workBlockSize[1]);
   }
 
-  cl_mem nodeBufferDevice = clCreateBuffer(this->context, CL_MEM_READ_ONLY, pAccelerationStructure->getNodeBufferSize(), NULL, NULL);
-  clEnqueueWriteBuffer(this->commandQueue, nodeBufferDevice, CL_TRUE, 0, pAccelerationStructure->getNodeBufferSize(), pAccelerationStructure->getNodeBuffer(), 0, NULL, NULL);
+  cl_mem nodeBufferDevice = clCreateBuffer(this->context, CL_MEM_READ_ONLY, pAccelerationStructureExplicit->getNodeBufferSize(), NULL, NULL);
+  clEnqueueWriteBuffer(this->commandQueue, nodeBufferDevice, CL_TRUE, 0, pAccelerationStructureExplicit->getNodeBufferSize(), pAccelerationStructureExplicit->getNodeBuffer(), 0, NULL, NULL);
   
-  cl_mem primitiveBufferDevice = clCreateBuffer(this->context, CL_MEM_READ_ONLY, pAccelerationStructure->getOrderedPrimitiveBufferSize(), NULL, NULL);
-  clEnqueueWriteBuffer(this->commandQueue, primitiveBufferDevice, CL_TRUE, 0, pAccelerationStructure->getOrderedPrimitiveBufferSize(), pAccelerationStructure->getOrderedPrimitiveBuffer(), 0, NULL, NULL);
+  cl_mem primitiveBufferDevice = clCreateBuffer(this->context, CL_MEM_READ_ONLY, pAccelerationStructureExplicit->getOrderedPrimitiveBufferSize(), NULL, NULL);
+  clEnqueueWriteBuffer(this->commandQueue, primitiveBufferDevice, CL_TRUE, 0, pAccelerationStructureExplicit->getOrderedPrimitiveBufferSize(), pAccelerationStructureExplicit->getOrderedPrimitiveBuffer(), 0, NULL, NULL);
 
   cl_mem materialBufferDevice = clCreateBuffer(this->context, CL_MEM_READ_ONLY, pModel->getMaterialBufferSize(), NULL, NULL);
   clEnqueueWriteBuffer(this->commandQueue, materialBufferDevice, CL_TRUE, 0, pModel->getMaterialBufferSize(), pModel->getMaterialBuffer(), 0, NULL, NULL);

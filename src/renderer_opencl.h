@@ -2,7 +2,7 @@
 #define CL_TARGET_OPENCL_VERSION 300
 
 #include "renderer.h"
-#include "acceleration_structure.h"
+#include "acceleration_structure_explicit.h"
 #include "camera.h"
 #include "structures.h"
 

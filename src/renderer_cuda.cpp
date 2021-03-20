@@ -30,7 +30,7 @@ void RendererCUDA::render(void* pRenderProperties) {
     printf("ERROR: RenderPropertiesCUDA sType\n");
   }
 
-  AccelerationStructure* pAccelerationStructure = (AccelerationStructure*)pRenderPropertiesCUDA->pAccelerationStructure;
+  AccelerationStructureExplicit* pAccelerationStructureExplicit = (AccelerationStructureExplicit*)pRenderPropertiesCUDA->pAccelerationStructureExplicit;
   Model* pModel = (Model*)pRenderPropertiesCUDA->pModel;
   Camera* pCamera = (Camera*)pRenderPropertiesCUDA->pCamera;
 
@@ -50,10 +50,10 @@ void RendererCUDA::render(void* pRenderProperties) {
   }
 
   kernelWrappers(
-    pAccelerationStructure->getNodeBuffer(),
-    pAccelerationStructure->getNodeBufferSize(),
-    pAccelerationStructure->getOrderedPrimitiveBuffer(),
-    pAccelerationStructure->getOrderedPrimitiveBufferSize(),
+    pAccelerationStructureExplicit->getNodeBuffer(),
+    pAccelerationStructureExplicit->getNodeBufferSize(),
+    pAccelerationStructureExplicit->getOrderedPrimitiveBuffer(),
+    pAccelerationStructureExplicit->getOrderedPrimitiveBufferSize(),
     pModel->getMaterialBuffer(),
     pModel->getMaterialBufferSize(),
     pCamera->getCameraBuffer(),

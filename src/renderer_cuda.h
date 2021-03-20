@@ -1,7 +1,7 @@
 #pragma once
 
 #include "renderer.h"
-#include "acceleration_structure.h"
+#include "acceleration_structure_explicit.h"
 #include "camera.h"
 #include "structures.h"
 

@@ -1,7 +1,7 @@
-#include "acceleration_structure.h"
+#include "acceleration_structure_explicit.h"
 
-AccelerationStructure::AccelerationStructure(AccelerationStructureProperties accelerationStructureProperties) {
-  Model* pModel = (Model*)accelerationStructureProperties.pModel;
+AccelerationStructureExplicit::AccelerationStructureExplicit(AccelerationStructureExplicitProperties accelerationStructureExplicitProperties) {
+  Model* pModel = (Model*)accelerationStructureExplicitProperties.pModel;
 
   this->totalPrimitives = pModel->getPrimitiveInfoListP()->size();
   this->totalNodes = 0;
@@ -25,11 +25,11 @@ AccelerationStructure::AccelerationStructure(AccelerationStructureProperties acc
   }
 }
 
-AccelerationStructure::~AccelerationStructure() {
+AccelerationStructureExplicit::~AccelerationStructureExplicit() {
   free(this->pLinearNodeBuffer);
 }
 
-BVHBuildNode* AccelerationStructure::recursiveBuild(std::vector<PrimitiveInfo>* pPrimitiveInfoList, int start, int end, int* pTotalNodes, std::vector<PrimitiveInfo*>& orderedPrimitiveList) {
+BVHBuildNode* AccelerationStructureExplicit::recursiveBuild(std::vector<PrimitiveInfo>* pPrimitiveInfoList, int start, int end, int* pTotalNodes, std::vector<PrimitiveInfo*>& orderedPrimitiveList) {
   std::vector<PrimitiveInfo>& primitiveInfoList = *pPrimitiveInfoList;
 
   BVHBuildNode* node = new BVHBuildNode();
@@ -121,7 +121,7 @@ BVHBuildNode* AccelerationStructure::recursiveBuild(std::vector<PrimitiveInfo>* 
   return node;
 }
 
-void AccelerationStructure::recursiveFree(BVHBuildNode* pNode) {
+void AccelerationStructureExplicit::recursiveFree(BVHBuildNode* pNode) {
   if (pNode == NULL) {
     return;
   }
@@ -132,7 +132,7 @@ void AccelerationStructure::recursiveFree(BVHBuildNode* pNode) {
   delete pNode;
 }
 
-int AccelerationStructure::flattenBVHTree(LinearBVHNode* pLinearBVHNodes, BVHBuildNode* pNode, int* pOffset) {
+int AccelerationStructureExplicit::flattenBVHTree(LinearBVHNode* pLinearBVHNodes, BVHBuildNode* pNode, int* pOffset) {
   LinearBVHNode* pLinearNode = &pLinearBVHNodes[*pOffset];
   memcpy(pLinearNode->boundsMin, pNode->boundsMin, sizeof(float) * 3);
   memcpy(pLinearNode->boundsMax, pNode->boundsMax, sizeof(float) * 3);
@@ -153,18 +153,18 @@ int AccelerationStructure::flattenBVHTree(LinearBVHNode* pLinearBVHNodes, BVHBui
   return currentOffset;
 }
 
-uint64_t AccelerationStructure::getNodeBufferSize() {
+uint64_t AccelerationStructureExplicit::getNodeBufferSize() {
   return sizeof(LinearBVHNode) * this->totalNodes;
 }
 
-void* AccelerationStructure::getNodeBuffer() {
+void* AccelerationStructureExplicit::getNodeBuffer() {
   return this->pLinearNodeBuffer;
 }
 
-uint64_t AccelerationStructure::getOrderedPrimitiveBufferSize() {
+uint64_t AccelerationStructureExplicit::getOrderedPrimitiveBufferSize() {
   return sizeof(Primitive) * this->totalPrimitives;
 }
 
-void* AccelerationStructure::getOrderedPrimitiveBuffer() {
+void* AccelerationStructureExplicit::getOrderedPrimitiveBuffer() {
   return this->pOrderedPrimitiveBuffer;
 }

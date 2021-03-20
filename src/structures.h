@@ -30,7 +30,7 @@ enum ImageType {
   IMAGE_TYPE_JPEG,
 };
 
-enum AccelerationStructureType {
+enum AccelerationStructureExplicitType {
   ACCELERATION_STRUCTURE_TYPE_BVH,
 };
 
@@ -56,7 +56,7 @@ struct RenderPropertiesOpenCL {
   uint64_t imageDimensions[3];
   void* pOutputBuffer;
   uint64_t outputBufferSize;
-  void* pAccelerationStructure;
+  void* pAccelerationStructureExplicit;
   void* pModel;
   void* pCamera;
 };
@@ -70,7 +70,7 @@ struct RenderPropertiesCUDA {
   uint64_t imageDimensions[3];
   void* pOutputBuffer;
   uint64_t outputBufferSize;
-  void* pAccelerationStructure;
+  void* pAccelerationStructureExplicit;
   void* pModel;
   void* pCamera;
 };
@@ -85,9 +85,9 @@ struct BufferToImageProperties {
   const char* filename;
 };
 
-struct AccelerationStructureProperties {
+struct AccelerationStructureExplicitProperties {
   StructureType sType;
   void* pNext;
-  AccelerationStructureType accelerationStructureType;
+  AccelerationStructureExplicitType accelerationStructureExplicitType;
   void* pModel;
 };

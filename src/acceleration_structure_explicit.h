@@ -41,7 +41,7 @@ struct Primitive {
   int materialIndex;
 };
 
-class AccelerationStructure {
+class AccelerationStructureExplicit {
 private:
   int totalNodes;
   LinearBVHNode* pLinearNodeBuffer;
@@ -54,8 +54,8 @@ private:
 
   int flattenBVHTree(LinearBVHNode* pLinearBVHNodes, BVHBuildNode* pNode, int* pOffset);
 public:
-  AccelerationStructure(AccelerationStructureProperties accelerationStructureProperties);
-  ~AccelerationStructure();
+  AccelerationStructureExplicit(AccelerationStructureExplicitProperties accelerationStructureExplicitProperties);
+  ~AccelerationStructureExplicit();
 
   uint64_t getNodeBufferSize();
   void* getNodeBuffer();
