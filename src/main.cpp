@@ -19,7 +19,33 @@ int main(int argc, const char** argv) {
   };
   AccelerationStructureExplicit* pAccelerationStructureExplicit = new AccelerationStructureExplicit(accelerationStructureExplicitProperties);
 
-  Engine* pEngine = new Engine(RENDER_PLATFORM_OPTIX);
+  Engine* pEngine = new Engine(RENDER_PLATFORM_CUDA);
+
+  RenderPropertiesCUDA renderProperties = {
+    .sType = STRUCTURE_TYPE_RENDER_PROPERTIES_CUDA,
+    .pNext = NULL,
+    .kernelMode = KERNEL_MODE_LINEAR,
+    .threadOrganizationMode = THREAD_ORGANIZATION_MODE_MAX_FIT,
+    .pThreadOrganization = NULL,
+    .imageDimensions = {2048, 2048, 3},
+    .pOutputBuffer = pOutputBuffer,
+    .outputBufferSize = outputBufferSize,
+    .pAccelerationStructureExplicit = pAccelerationStructureExplicit,
+    .pModel = pModel,
+    .pCamera = pCamera
+  };
+  pEngine->render(&renderProperties);
+
+  BufferToImageProperties bufferToImageProperties = {
+    .sType = STRUCTURE_TYPE_BUFFER_TO_IMAGE_PROPERTIES,
+    .pNext = NULL,
+    .pBuffer = pOutputBuffer,
+    .bufferSize = outputBufferSize,
+    .imageDimensions = {2048, 2048, 3},
+    .imageType = IMAGE_TYPE_JPEG,
+    .filename = "dump/test.jpg"
+  };
+  pEngine->writeBufferToImage(bufferToImageProperties);
 
   delete pCamera;
   delete pModel;
