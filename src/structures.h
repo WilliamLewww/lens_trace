@@ -13,7 +13,7 @@ enum StructureType {
 enum RenderPlatform {
   RENDER_PLATFORM_OPENCL,
   RENDER_PLATFORM_CUDA,
-  RENDER_PLATFORM_VULKAN
+  RENDER_PLATFORM_OPTIX
 };
 
 enum KernelMode {
