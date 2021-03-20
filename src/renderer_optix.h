@@ -8,11 +8,11 @@
 #include <stdio.h>
 #include <time.h>
 
-class RendererOptix : public Renderer {
+class RendererOptiX : public Renderer {
 private:
 public:
-  RendererOptix();
-  ~RendererOptix();
+  RendererOptiX();
+  ~RendererOptiX();
 
   void render(void* pRenderProperties);
 };

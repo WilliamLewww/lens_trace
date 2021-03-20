@@ -1,5 +1,6 @@
 CUDA_PATH = /opt/cuda
 OPENCL_SDK_PATH = /usr/local/OpenCL-SDK
+OPTIX_SDK_PATH = /opt/NVIDIA_OptiX-SDK-7.2.0-linux64-x86_64
 
 EXEC = main.out
 
@@ -9,7 +10,7 @@ OBJS := $(notdir $(SRCS:%.cpp=%.o))
 CUDA_SRCS := $(wildcard src/kernels/*.cu)
 CUDA_OBJS := $(notdir $(CUDA_SRCS:%.cu=%.o))
 
-CFLAGS =-I$(OPENCL_SDK_PATH)/include/api -I$(CUDA_PATH)/include
+CFLAGS =-I$(OPENCL_SDK_PATH)/include/api -I$(CUDA_PATH)/include -I$(OPTIX_SDK_PATH)/include
 LDFLAGS =-L$(OPENCL_SDK_PATH)/build -L$(CUDA_PATH)/lib64 -lOpenCL -lcuda -lcudart
 
 GPU_C =75

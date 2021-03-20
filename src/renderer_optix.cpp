@@ -1,13 +1,13 @@
 #include "renderer_optix.h"
 
-RendererOptix::RendererOptix() {
+RendererOptiX::RendererOptiX() {
 
 }
 
-RendererOptix::~RendererOptix() {
+RendererOptiX::~RendererOptiX() {
 
 }
 
-void RendererOptix::render(void* pRenderProperties) {
+void RendererOptiX::render(void* pRenderProperties) {
   
 }
