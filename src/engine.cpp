@@ -14,6 +14,10 @@ Engine::Engine(RenderPlatform renderPlatform) {
   if (renderPlatform == RENDER_PLATFORM_CUDA) {
     this->pRenderer = new RendererCUDA();
   }
+
+  if (renderPlatform == RENDER_PLATFORM_OPTIX) {
+    this->pRenderer = new RendererOptix();
+  }
 }
 
 Engine::~Engine() {
