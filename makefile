@@ -1,6 +1,6 @@
 CUDA_PATH = /opt/cuda
 OPENCL_SDK_PATH = /usr/local/OpenCL-SDK
-OPTIX_SDK_PATH = /opt/NVIDIA_OptiX-SDK-7.2.0-linux64-x86_64
+OPTIX_SDK_PATH = /usr/local/OptiX_SDK/NVIDIA_OptiX-SDK-7.2.0-linux64-x86_64
 
 EXEC = main.out
 
