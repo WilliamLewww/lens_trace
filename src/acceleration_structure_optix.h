@@ -3,4 +3,6 @@
 class AccelerationStructureOptix {
 private:
 public:
+  AccelerationStructureOptix();
+  ~AccelerationStructureOptix();
 };
