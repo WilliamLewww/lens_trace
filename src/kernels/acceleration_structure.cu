@@ -5,7 +5,9 @@
 #include <optix_stubs.h>
 
 extern "C" void createAccelerationStructure(void* vertexBuffer, uint32_t vertexCount, void* indexBuffer, uint32_t indexCount) {
+  cudaFree(0);
   optixInit();
+
   OptixDeviceContextOptions options = {};
   CUcontext cuCtx = 0;
   OptixDeviceContext context = NULL;
@@ -57,7 +59,7 @@ extern "C" void createAccelerationStructure(void* vertexBuffer, uint32_t vertexC
   };
 
   OptixAccelBufferSizes accelBufferSizes = {};
-  optixAccelComputeMemoryUsage(context, &accelBuildOptions, &buildInput, 2, &accelBufferSizes);
+  optixAccelComputeMemoryUsage(context, &accelBuildOptions, &buildInput, 1, &accelBufferSizes);
 
   CUdeviceptr accelerationStructureBufferDevice = 0;
   CUdeviceptr scratchBufferDevice = 0;
@@ -65,7 +67,7 @@ extern "C" void createAccelerationStructure(void* vertexBuffer, uint32_t vertexC
   cudaMalloc((void**)&scratchBufferDevice, accelBufferSizes.tempSizeInBytes);
 
   OptixTraversableHandle outputHandle = 0;
-  OptixResult result = optixAccelBuild(
+  optixAccelBuild(
     context, 
     0, 
     &accelBuildOptions, 
@@ -79,8 +81,4 @@ extern "C" void createAccelerationStructure(void* vertexBuffer, uint32_t vertexC
     NULL, 
     0
   );
-
-  if (result != OPTIX_SUCCESS) {
-    printf("ERROR\n");
-  }
 }

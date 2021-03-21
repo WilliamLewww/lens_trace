@@ -1,8 +1,9 @@
 #pragma once
+#include "model.h"
 
 class AccelerationStructureOptix {
 private:
 public:
-  AccelerationStructureOptix();
+  AccelerationStructureOptix(Model* pModel);
   ~AccelerationStructureOptix();
 };

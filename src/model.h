@@ -55,4 +55,10 @@ public:
 
   uint64_t getMaterialBufferSize();
   void* getMaterialBuffer();
+
+  float* getVertices();
+  uint32_t getVertexCount();
+
+  tinyobj::index_t getIndex(uint32_t index);
+  uint32_t getIndexCount();
 };
