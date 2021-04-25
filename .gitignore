@@ -1,5 +1,4 @@
-dump/*
-!dump/.gitkeep
+build
 
 # Prerequisites
 *.d
