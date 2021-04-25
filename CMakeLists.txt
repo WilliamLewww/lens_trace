@@ -13,11 +13,10 @@ add_library(program
 include_directories(include)
 
 add_executable(LensTrace src/main.cpp)
-target_link_libraries(LensTrace -lOpenCL)
+target_link_libraries(LensTrace OpenCL::OpenCL)
 target_link_libraries(LensTrace program)
 
 file(COPY res DESTINATION .)
-
 file(GLOB RUNTIME_COMPILED_KERNELS
   "kernels/runtime_compiled/*"
 )
