@@ -9,7 +9,7 @@ int main(int argc, const char** argv) {
   void* pOutputBuffer = malloc(outputBufferSize);
 
   Camera* pCamera = new Camera(0, 2.5, -50, 0);
-  Model* pModel = new Model("cornell_box.obj");
+  Model* pModel = new Model("resources/models/cornell_box.obj");
 
   AccelerationStructureExplicitProperties accelerationStructureExplicitProperties = {
     .sType = STRUCTURE_TYPE_ACCELERATION_STRUCTURE_PROPERTIES,
