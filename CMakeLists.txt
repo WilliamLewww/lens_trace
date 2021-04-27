@@ -20,9 +20,4 @@ add_custom_target(copy_resources
     COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_LIST_DIR}/resources ${CMAKE_CURRENT_BINARY_DIR}/resources
 )
 
-add_custom_target(copy_kernels
-    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_LIST_DIR}/runtime_kernels ${CMAKE_CURRENT_BINARY_DIR}/kernels
-)
-
 add_dependencies(LensTrace copy_resources)
-add_dependencies(LensTrace copy_kernels)
