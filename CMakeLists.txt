@@ -13,15 +13,19 @@ add_library(lensTrace
 include_directories(LensTrace lens_trace/include)
 add_executable(LensTrace lens_trace/src/main.cpp)
 
-if (CUDA_FOUND)
+if(CUDA_FOUND)
   enable_language(CUDA)
   target_compile_definitions(lensTrace PRIVATE -DCUDA_ENABLED)
-endif ()
+endif()
 
-if (OPENCL_FOUND)
+if(OpenCL_FOUND)
   target_compile_definitions(lensTrace PRIVATE -DOPENCL_ENABLED)
-  target_link_libraries(LensTrace OpenCL::OpenCL)
-endif ()
+  target_link_libraries(LensTrace ${OpenCL_LIBRARIES})
+endif()
+
+if(NOT CUDA_FOUND AND NOT OpenCL_FOUND)
+  message(FATAL_ERROR "Could not find CUDA or OpenCL. Exiting")
+endif()
 
 target_link_libraries(LensTrace lensTrace)
 
