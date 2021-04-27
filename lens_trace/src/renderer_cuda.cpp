@@ -1,3 +1,5 @@
+#ifdef CUDA_ENABLED
+
 #include "renderer_cuda.h"
 
 extern "C" {
@@ -49,7 +51,6 @@ void RendererCUDA::render(void* pRenderProperties) {
     blockSize[1] = pThreadOrganization->blockSize[1];
   }
 
-#ifdef CUDA_ENABLED
   kernelWrappers(
     pAccelerationStructureExplicit->getNodeBuffer(),
     pAccelerationStructureExplicit->getNodeBufferSize(),
@@ -64,5 +65,6 @@ void RendererCUDA::render(void* pRenderProperties) {
     blockSize,
     pRenderPropertiesCUDA->kernelMode
   );
-#endif
 }
+
+#endif

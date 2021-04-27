@@ -7,13 +7,17 @@
 Engine::Engine(RenderPlatform renderPlatform) {
   this->renderPlatform = renderPlatform;
 
+#ifdef OPENCL_ENABLED
   if (renderPlatform == RENDER_PLATFORM_OPENCL) {
     this->pRenderer = new RendererOpenCL();
   }
+#endif
 
+#ifdef CUDA_ENABLED
   if (renderPlatform == RENDER_PLATFORM_CUDA) {
     this->pRenderer = new RendererCUDA();
   }
+#endif
 
   if (renderPlatform == RENDER_PLATFORM_OPTIX) {
     this->pRenderer = new RendererOptiX();

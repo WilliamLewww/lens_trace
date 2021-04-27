@@ -1,3 +1,5 @@
+#ifdef OPENCL_ENABLED
+
 #include "renderer_opencl.h"
 
 void printKernelBuildLog(cl_device_id deviceID, cl_program program) {
@@ -127,3 +129,5 @@ void RendererOpenCL::render(void* pRenderProperties) {
   clReleaseMemObject(outputDevice);
   clReleaseKernel(this->kernel);
 }
+
+#endif
