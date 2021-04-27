@@ -4,6 +4,10 @@ project(LENS_TRACE LANGUAGES CXX)
 find_package(CUDA)
 find_package(OpenCL)
 
+if(NOT CUDA_FOUND AND NOT OpenCL_FOUND)
+  message(FATAL_ERROR "Could not find CUDA or OpenCL. Exiting")
+endif()
+
 file(GLOB SOURCES "lens_trace/src/*.cpp" "lens_trace/src/kernels/*.cu")
 
 add_library(lensTrace
@@ -21,10 +25,6 @@ endif()
 if(OpenCL_FOUND)
   target_compile_definitions(lensTrace PRIVATE -DOPENCL_ENABLED)
   target_link_libraries(LensTrace ${OpenCL_LIBRARIES})
-endif()
-
-if(NOT CUDA_FOUND AND NOT OpenCL_FOUND)
-  message(FATAL_ERROR "Could not find CUDA or OpenCL. Exiting")
 endif()
 
 target_link_libraries(LensTrace lensTrace)
