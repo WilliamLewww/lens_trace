@@ -1,7 +1,7 @@
 cmake_minimum_required (VERSION 2.8.12)
 project(LENS_TRACE LANGUAGES CXX)
 
-file(GLOB SOURCES "lens_trace/src/*.cpp" "lens_trace/kernels/*.cu")
+file(GLOB SOURCES "lens_trace/src/*.cpp" "lens_trace/src/kernels/*.cu")
 
 add_library(lensTrace
   ${SOURCES}
