@@ -1,8 +1,5 @@
 cmake_minimum_required (VERSION 2.8.12)
-project(LENS_TRACE LANGUAGES CXX CUDA)
-
-find_package(CUDA REQUIRED)
-find_package(OpenCL REQUIRED)
+project(LENS_TRACE LANGUAGES CXX)
 
 file(GLOB SOURCES "lens_trace/src/*.cpp" "lens_trace/kernels/*.cu")
 
@@ -10,9 +7,17 @@ add_library(lensTrace
   ${SOURCES}
 )
 
-include_directories(lens_trace/include)
+find_package(CUDA)
+if (CUDA_FOUND)
+  enable_language(CUDA)
+  target_compile_definitions (lensTrace PRIVATE -DCUDA_ENABLED)
+endif ()
 
+find_package(OpenCL REQUIRED)
+
+include_directories(lens_trace/include)
 add_executable(LensTrace lens_trace/src/main.cpp)
+
 target_link_libraries(LensTrace OpenCL::OpenCL)
 target_link_libraries(LensTrace lensTrace)
 

@@ -2,17 +2,17 @@
 
 extern "C" {
   void kernelWrappers(void* linearNodeBuffer,
-                           uint64_t linearNodeBufferSize,
-                           void* primitiveBuffer,
-                           uint64_t primitiveBufferSize,
-                           void* materialBuffer,
-                           uint64_t materialBufferSize,
-                           void* cameraBuffer,
-                           uint64_t cameraBufferSize,
-                           void* outputBuffer, 
-                           uint64_t imageDimensions[3],
-                           uint64_t blockSize[2],
-                           KernelMode kernelMode);
+                      uint64_t linearNodeBufferSize,
+                      void* primitiveBuffer,
+                      uint64_t primitiveBufferSize,
+                      void* materialBuffer,
+                      uint64_t materialBufferSize,
+                      void* cameraBuffer,
+                      uint64_t cameraBufferSize,
+                      void* outputBuffer, 
+                      uint64_t imageDimensions[3],
+                      uint64_t blockSize[2],
+                      KernelMode kernelMode);
 }
 
 RendererCUDA::RendererCUDA() {
@@ -49,6 +49,7 @@ void RendererCUDA::render(void* pRenderProperties) {
     blockSize[1] = pThreadOrganization->blockSize[1];
   }
 
+#ifdef CUDA_ENABLED
   kernelWrappers(
     pAccelerationStructureExplicit->getNodeBuffer(),
     pAccelerationStructureExplicit->getNodeBufferSize(),
@@ -63,4 +64,5 @@ void RendererCUDA::render(void* pRenderProperties) {
     blockSize,
     pRenderPropertiesCUDA->kernelMode
   );
+#endif
 }
