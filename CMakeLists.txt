@@ -10,7 +10,7 @@ endif()
 
 file(GLOB SOURCES "lens_trace/src/*.cpp" "lens_trace/src/kernels/*.cu")
 
-add_library(lensTrace
+add_library(lenstrace SHARED
   ${SOURCES}
 )
 
@@ -19,15 +19,15 @@ add_executable(LensTrace lens_trace/src/main.cpp)
 
 if(CUDA_FOUND)
   enable_language(CUDA)
-  target_compile_definitions(lensTrace PRIVATE -DCUDA_ENABLED)
+  target_compile_definitions(lenstrace PRIVATE -DCUDA_ENABLED)
 endif()
 
 if(OpenCL_FOUND)
-  target_compile_definitions(lensTrace PRIVATE -DOPENCL_ENABLED)
+  target_compile_definitions(lenstrace PRIVATE -DOPENCL_ENABLED)
   target_link_libraries(LensTrace ${OpenCL_LIBRARIES})
 endif()
 
-target_link_libraries(LensTrace lensTrace)
+target_link_libraries(LensTrace lenstrace)
 
 add_custom_target(copy_resources
   COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_LIST_DIR}/resources ${CMAKE_CURRENT_BINARY_DIR}/resources
