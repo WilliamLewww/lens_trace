@@ -1,3 +1,5 @@
+#ifdef OPTIX_ENABLED
+
 #include "acceleration_structure_optix.h"
 
 extern "C" {
@@ -18,3 +20,5 @@ AccelerationStructureOptix::AccelerationStructureOptix(Model* pModel) {
 AccelerationStructureOptix::~AccelerationStructureOptix() {
 
 }
+
+#endif

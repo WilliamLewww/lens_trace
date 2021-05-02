@@ -1,3 +1,5 @@
+#ifdef OPTIX_ENABLED
+
 #pragma once
 #include "model.h"
 
@@ -7,3 +9,5 @@ public:
   AccelerationStructureOptix(Model* pModel);
   ~AccelerationStructureOptix();
 };
+
+#endif
