@@ -19,9 +19,11 @@ Engine::Engine(RenderPlatform renderPlatform) {
   }
 #endif
 
+#ifdef OPTIX_ENABLED
   if (renderPlatform == RENDER_PLATFORM_OPTIX) {
     this->pRenderer = new RendererOptiX();
   }
+#endif
 }
 
 Engine::~Engine() {
