@@ -3,6 +3,11 @@ project(LENS_TRACE LANGUAGES CXX)
 
 find_package(CUDA)
 find_package(OpenCL)
+find_package(GTest)
+
+if(GTest_FOUND)
+  enable_testing()
+endif()
 
 if(NOT CUDA_FOUND AND NOT OpenCL_FOUND)
   message(FATAL_ERROR "Could not find CUDA or OpenCL. Exiting")
@@ -13,8 +18,8 @@ file(GLOB SOURCES "lens_trace/src/*.cpp" "lens_trace/src/kernels/*.cu")
 add_library(lenstrace SHARED
   ${SOURCES}
 )
+include_directories(lenstrace lens_trace/include)
 
-include_directories(LensTrace lens_trace/include)
 add_executable(LensTrace lens_trace/src/main.cpp)
 
 if(CUDA_FOUND)
@@ -27,6 +32,24 @@ if(OpenCL_FOUND)
   target_compile_definitions(lenstrace PRIVATE -DOPENCL_ENABLED)
   target_compile_definitions(LensTrace PRIVATE -DOPENCL_ENABLED)
   target_link_libraries(lenstrace ${OpenCL_LIBRARIES})
+endif()
+
+if(GTest_FOUND AND BUILD_TESTING)
+  set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/tests)
+  if(CUDA_FOUND)
+    include_directories(CUDA_RENDERER_TEST lens_trace/include)
+    add_executable(CUDA_RENDERER_TEST tests/cuda_renderer_test.cc)
+    target_compile_definitions(CUDA_RENDERER_TEST PRIVATE -DCUDA_ENABLED)
+    target_link_libraries(CUDA_RENDERER_TEST GTest::gtest GTest::gtest_main lenstrace)
+    add_test(CUDA_TESTS tests/CUDA_RENDERER_TEST)
+  endif()
+  if(OPENCL_FOUND)
+    include_directories(OPENCL_RENDERER_TEST lens_trace/include)
+    add_executable(OPENCL_RENDERER_TEST tests/opencl_renderer_test.cc)
+    target_compile_definitions(OPENCL_RENDERER_TEST PRIVATE -DOPENCL_ENABLED)
+    target_link_libraries(OPENCL_RENDERER_TEST GTest::gtest GTest::gtest_main lenstrace)
+    add_test(OPENCL_TESTS tests/OPENCL_RENDERER_TEST)
+  endif()
 endif()
 
 target_link_libraries(LensTrace lenstrace)
