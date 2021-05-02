@@ -6,21 +6,21 @@ SceneParser::SceneParser(std::string filename) {
   
   if (jf["engine"] != nullptr) {
     if (jf["engine"]["render_platform"] != nullptr) {
-      if (jf["engine"]["render_platform"] == RENDER_PLATFORM_OPENCL)
+      if (jf["engine"]["render_platform"] == "RENDER_PLATFORM_OPENCL")
         this->engineParsed.renderPlatform = RENDER_PLATFORM_OPENCL;
-      if (jf["engine"]["render_platform"] == RENDER_PLATFORM_CUDA)
+      if (jf["engine"]["render_platform"] == "RENDER_PLATFORM_CUDA")
         this->engineParsed.renderPlatform = RENDER_PLATFORM_CUDA;
     }
     if (jf["engine"]["kernel_mode"] != nullptr) {
-      if (jf["engine"]["kernel_mode"] == KERNEL_MODE_LINEAR)
+      if (jf["engine"]["kernel_mode"] == "KERNEL_MODE_LINEAR")
         this->engineParsed.kernelMode = KERNEL_MODE_LINEAR;
-      if (jf["engine"]["kernel_mode"] == KERNEL_MODE_TILE)
+      if (jf["engine"]["kernel_mode"] == "KERNEL_MODE_TILE")
         this->engineParsed.kernelMode = KERNEL_MODE_TILE;
     }
     if (jf["engine"]["thread_organization_mode"] != nullptr) {
-      if (jf["engine"]["thread_organization_mode"] == THREAD_ORGANIZATION_MODE_MAX_FIT)
+      if (jf["engine"]["thread_organization_mode"] == "THREAD_ORGANIZATION_MODE_MAX_FIT")
         this->engineParsed.threadOrganizationMode = THREAD_ORGANIZATION_MODE_MAX_FIT;
-      if (jf["engine"]["thread_organization_mode"] == THREAD_ORGANIZATION_MODE_CUSTOM)
+      if (jf["engine"]["thread_organization_mode"] == "THREAD_ORGANIZATION_MODE_CUSTOM")
         this->engineParsed.threadOrganizationMode = THREAD_ORGANIZATION_MODE_CUSTOM;
     }
     if (jf["engine"]["image_dimensions"] != nullptr) {
