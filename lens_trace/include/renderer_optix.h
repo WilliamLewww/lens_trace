@@ -1,3 +1,5 @@
+#ifdef OPTIX_ENABLED
+
 #pragma once
 
 #include "renderer.h"
@@ -16,3 +18,5 @@ public:
 
   void render(void* pRenderProperties);
 };
+
+#endif

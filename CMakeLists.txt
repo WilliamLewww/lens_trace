@@ -24,7 +24,7 @@ endif()
 
 if(OpenCL_FOUND)
   target_compile_definitions(lenstrace PRIVATE -DOPENCL_ENABLED)
-  target_link_libraries(LensTrace ${OpenCL_LIBRARIES})
+  target_link_libraries(lenstrace ${OpenCL_LIBRARIES})
 endif()
 
 target_link_libraries(LensTrace lenstrace)
