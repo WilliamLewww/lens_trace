@@ -1,4 +1,4 @@
-name: Ubuntu (OpenCL && CUDA)
+name: Ubuntu (OpenCL & CUDA)
 
 on:
   push:
@@ -21,7 +21,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     
-    - name: Install OpenCL && CUDA
+    - name: Install OpenCL & CUDA
       run: sudo apt update && sudo apt install nvidia-cuda-toolkit
 
     - name: Configure CMake
