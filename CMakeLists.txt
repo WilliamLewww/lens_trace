@@ -20,10 +20,12 @@ add_executable(LensTrace lens_trace/src/main.cpp)
 if(CUDA_FOUND)
   enable_language(CUDA)
   target_compile_definitions(lenstrace PRIVATE -DCUDA_ENABLED)
+  target_compile_definitions(LensTrace PRIVATE -DCUDA_ENABLED)
 endif()
 
 if(OpenCL_FOUND)
   target_compile_definitions(lenstrace PRIVATE -DOPENCL_ENABLED)
+  target_compile_definitions(LensTrace PRIVATE -DOPENCL_ENABLED)
   target_link_libraries(lenstrace ${OpenCL_LIBRARIES})
 endif()
 
