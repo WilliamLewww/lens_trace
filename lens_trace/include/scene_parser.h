@@ -17,6 +17,9 @@ struct EngineParsed {
   RenderPlatform renderPlatform = RENDER_PLATFORM_OPENCL;
   KernelMode kernelMode = KERNEL_MODE_LINEAR;
   ThreadOrganizationMode threadOrganizationMode = THREAD_ORGANIZATION_MODE_MAX_FIT;
+  uint64_t workBlockSize[2] = {32, 32};
+  uint64_t threadGroupSize[2] = {32, 32};
+  uint64_t blockSize[2] = {32, 32};
   uint64_t imageDimensions[3] = {2048, 2048, 3};
 };
 

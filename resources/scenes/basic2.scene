@@ -1,8 +1,9 @@
 {
   "engine": {
-    "render_platform": "RENDER_PLATFORM_OPENCL",
+    "render_platform": "RENDER_PLATFORM_CUDA",
     "kernel_mode": "KERNEL_MODE_LINEAR",
-    "thread_organization_mode": "THREAD_ORGANIZATION_MODE_MAX_FIT",
+    "thread_organization_mode": "THREAD_ORGANIZATION_MODE_CUSTOM",
+    "block_size": [8, 8],
     "image_dimensions": [2048, 2048, 3]
   },
   "camera": {

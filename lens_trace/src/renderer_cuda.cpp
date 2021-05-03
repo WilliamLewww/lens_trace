@@ -39,7 +39,7 @@ void RendererCUDA::render(void* pRenderProperties) {
   uint64_t blockSize[2];
   if (pRenderPropertiesCUDA->threadOrganizationMode == THREAD_ORGANIZATION_MODE_MAX_FIT) {
     blockSize[0] = 32;
-    blockSize[1] = 32;
+    blockSize[1] = 1;
   }
   if (pRenderPropertiesCUDA->threadOrganizationMode == THREAD_ORGANIZATION_MODE_CUSTOM) {
     ThreadOrganizationCUDA* pThreadOrganization = pRenderPropertiesCUDA->pThreadOrganization;

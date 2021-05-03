@@ -20,8 +20,19 @@ SceneParser::SceneParser(std::string filename) {
     if (jf["engine"]["thread_organization_mode"] != nullptr) {
       if (jf["engine"]["thread_organization_mode"] == "THREAD_ORGANIZATION_MODE_MAX_FIT")
         this->engineParsed.threadOrganizationMode = THREAD_ORGANIZATION_MODE_MAX_FIT;
-      if (jf["engine"]["thread_organization_mode"] == "THREAD_ORGANIZATION_MODE_CUSTOM")
+      if (jf["engine"]["thread_organization_mode"] == "THREAD_ORGANIZATION_MODE_CUSTOM") {
         this->engineParsed.threadOrganizationMode = THREAD_ORGANIZATION_MODE_CUSTOM;
+        if (jf["engine"]["render_platform"] == "RENDER_PLATFORM_OPENCL") {
+          this->engineParsed.workBlockSize[0] = jf["engine"]["work_block_size"][0];
+          this->engineParsed.workBlockSize[1] = jf["engine"]["work_block_size"][1];
+          this->engineParsed.threadGroupSize[0] = jf["engine"]["thread_group_size"][0];
+          this->engineParsed.threadGroupSize[1] = jf["engine"]["thread_group_size"][1];
+        }
+        if (jf["engine"]["render_platform"] == "RENDER_PLATFORM_CUDA") {
+          this->engineParsed.blockSize[0] = jf["engine"]["block_size"][0];
+          this->engineParsed.blockSize[1] = jf["engine"]["block_size"][1];
+        }
+      }
     }
     if (jf["engine"]["image_dimensions"] != nullptr) {
       this->engineParsed.imageDimensions[0] = jf["engine"]["image_dimensions"][0];
@@ -99,6 +110,17 @@ void SceneParser::renderScene() {
       .pCamera = pCamera
     };
 
+    if (this->engineParsed.threadOrganizationMode == THREAD_ORGANIZATION_MODE_CUSTOM) {
+      ThreadOrganizationOpenCL threadOrganization = {
+        .sType = STRUCTURE_TYPE_THREAD_ORGANIZATION_OPENCL,
+        .pNext = NULL,
+        .workBlockSize = {this->engineParsed.workBlockSize[0], this->engineParsed.workBlockSize[1]},
+        .threadGroupSize = {this->engineParsed.threadGroupSize[0], this->engineParsed.threadGroupSize[1]},
+      };
+
+      renderProperties.pThreadOrganization = &threadOrganization;
+    }
+
     pEngine->render(&renderProperties);
   }
 
@@ -116,6 +138,16 @@ void SceneParser::renderScene() {
       .pModel = pModel,
       .pCamera = pCamera
     };
+
+    if (this->engineParsed.threadOrganizationMode == THREAD_ORGANIZATION_MODE_CUSTOM) {
+      ThreadOrganizationCUDA threadOrganization = {
+        .sType = STRUCTURE_TYPE_THREAD_ORGANIZATION_CUDA,
+        .pNext = NULL,
+        .blockSize = {this->engineParsed.blockSize[0], this->engineParsed.blockSize[1]}
+      };
+
+      renderProperties.pThreadOrganization = &threadOrganization;
+    }
 
     pEngine->render(&renderProperties);
   }
