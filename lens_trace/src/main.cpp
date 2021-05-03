@@ -6,7 +6,7 @@
 #include "scene_parser.h"
 
 int main(int argc, const char** argv) {
-  SceneParser* sceneParser = new SceneParser("resources/scenes/basic.scene");
+  SceneParser* sceneParser = new SceneParser(argv[1]);
   sceneParser->renderScene();
   delete(sceneParser);
 
