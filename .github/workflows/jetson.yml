@@ -1,4 +1,4 @@
-name: Jetson Nano
+name: Jetson
 
 on:
   push:
