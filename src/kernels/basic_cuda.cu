@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdint.h>
 
-#include "structures.h"
+#include "lens_trace/structures.h"
 
 #define FLT_MAX 10000000
 

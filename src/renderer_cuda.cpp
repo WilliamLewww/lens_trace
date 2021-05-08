@@ -1,6 +1,6 @@
 #ifdef CUDA_ENABLED
 
-#include "renderer_cuda.h"
+#include "lens_trace/renderer_cuda.h"
 
 extern "C" {
   void kernelWrappers(void* linearNodeBuffer,

@@ -2,7 +2,7 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #endif
 
-#include "engine.h"
+#include "lens_trace/engine.h"
 
 Engine::Engine(RenderPlatform renderPlatform) {
   this->renderPlatform = renderPlatform;

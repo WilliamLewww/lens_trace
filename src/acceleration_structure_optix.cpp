@@ -1,6 +1,6 @@
 #ifdef OPTIX_ENABLED
 
-#include "acceleration_structure_optix.h"
+#include "lens_trace/acceleration_structure_optix.h"
 
 extern "C" {
   void createAccelerationStructure(void* vertexBuffer, uint32_t vertexCount, void* indexBuffer, uint32_t indexCount);

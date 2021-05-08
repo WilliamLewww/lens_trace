@@ -1,4 +1,4 @@
-#include "camera.h"
+#include "lens_trace/camera.h"
 
 Camera::Camera(float positionX, float positionY, float positionZ, float yaw) {
   this->position[0] = positionX;
