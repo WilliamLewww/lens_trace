@@ -1,4 +1,4 @@
-#include "acceleration_structure_explicit.h"
+#include "lens_trace/acceleration_structure_explicit.h"
 
 AccelerationStructureExplicit::AccelerationStructureExplicit(AccelerationStructureExplicitProperties accelerationStructureExplicitProperties) {
   Model* pModel = (Model*)accelerationStructureExplicitProperties.pModel;

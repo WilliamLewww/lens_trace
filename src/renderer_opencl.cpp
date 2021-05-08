@@ -1,6 +1,6 @@
 #ifdef OPENCL_ENABLED
 
-#include "renderer_opencl.h"
+#include "lens_trace/renderer_opencl.h"
 
 void printKernelBuildLog(cl_device_id deviceID, cl_program program) {
   char* pPrintBuffer = (char*)malloc(4096);

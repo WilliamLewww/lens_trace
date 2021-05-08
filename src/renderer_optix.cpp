@@ -1,6 +1,6 @@
 #ifdef OPTIX_ENABLED
 
-#include "renderer_optix.h"
+#include "lens_trace/renderer_optix.h"
 
 RendererOptiX::RendererOptiX() {
 

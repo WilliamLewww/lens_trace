@@ -2,7 +2,7 @@
 #define TINYOBJLOADER_IMPLEMENTATION
 #endif
 
-#include "model.h"
+#include "lens_trace/model.h"
 
 Model::Model(std::string fileName) {
   this->fileName = fileName;

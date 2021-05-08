@@ -1,5 +1,5 @@
 cmake_minimum_required (VERSION 2.8.12)
-project(LENS_TRACE LANGUAGES CXX)
+project(lens_trace LANGUAGES CXX)
 
 find_package(CUDA)
 find_package(OpenCL)
@@ -14,14 +14,14 @@ if(NOT CUDA_FOUND AND NOT OpenCL_FOUND)
   message(FATAL_ERROR "Could not find CUDA or OpenCL. Exiting")
 endif()
 
-file(GLOB SOURCES "lens_trace/src/*.cpp" "lens_trace/src/kernels/*.cu")
+file(GLOB SOURCES "src/*.cpp" "src/kernels/*.cu")
 
 add_library(lenstrace SHARED
   ${SOURCES}
 )
-include_directories(lenstrace lens_trace/include)
+include_directories(lenstrace include)
 
-add_executable(LensTrace lens_trace/src/main.cpp)
+add_executable(LensTrace src/main.cpp)
 
 if(CUDA_FOUND)
   enable_language(CUDA)
@@ -38,7 +38,7 @@ endif()
 if(GTest_FOUND AND BUILD_TESTING)
   set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/tests)
   if(CUDA_FOUND)
-    include_directories(CUDA_RENDERER_TEST lens_trace/include)
+    include_directories(CUDA_RENDERER_TEST include)
     include_directories(CUDA_RENDERER_TEST ${GTEST_INCLUDE_DIRS})
     add_executable(CUDA_RENDERER_TEST tests/cuda_renderer_test.cc)
     target_compile_definitions(CUDA_RENDERER_TEST PRIVATE -DCUDA_ENABLED)
@@ -46,7 +46,7 @@ if(GTest_FOUND AND BUILD_TESTING)
     add_test(CUDA_TESTS tests/CUDA_RENDERER_TEST)
   endif()
   if(OPENCL_FOUND)
-    include_directories(OPENCL_RENDERER_TEST lens_trace/include)
+    include_directories(OPENCL_RENDERER_TEST include)
     include_directories(OPENCL_RENDERER_TEST ${GTEST_INCLUDE_DIRS})
     add_executable(OPENCL_RENDERER_TEST tests/opencl_renderer_test.cc)
     target_compile_definitions(OPENCL_RENDERER_TEST PRIVATE -DOPENCL_ENABLED)
@@ -62,3 +62,15 @@ add_custom_target(copy_resources
 )
 
 add_dependencies(LensTrace copy_resources)
+
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/liblenstrace.so DESTINATION lib/${PROJECT_NAME})
+
+file(GLOB LENS_TRACE_INCLUDE "include/lens_trace/*.h")
+file(GLOB NLOHMANN_INCLUDE "include/nlohmann/*.hpp")
+file(GLOB STB_INCLUDE "include/stb/*.h")
+file(GLOB TINYOBJLOADER_INCLUDE "include/tinyobjloader/*.h")
+
+install(FILES ${LENS_TRACE_INCLUDE} DESTINATION include/${PROJECT_NAME}/lens_trace)
+install(FILES ${NLOHMANN_INCLUDE} DESTINATION include/${PROJECT_NAME}/nlohmann)
+install(FILES ${STB_INCLUDE} DESTINATION include/${PROJECT_NAME}/stb)
+install(FILES ${TINYOBJLOADER_INCLUDE} DESTINATION include/${PROJECT_NAME}/tinyobjloader)

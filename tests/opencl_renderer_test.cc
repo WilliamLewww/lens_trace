@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include "renderer_opencl.h"
+#include "lens_trace/renderer_opencl.h"
 
 TEST (CreateEngineTEST, ValidEngine) {
   RendererOpenCL* renderer = new RendererOpenCL();

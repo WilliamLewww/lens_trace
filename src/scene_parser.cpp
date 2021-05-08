@@ -1,4 +1,4 @@
-#include "scene_parser.h"
+#include "lens_trace/scene_parser.h"
 
 SceneParser::SceneParser(std::string filename) {
   std::ifstream ifs(filename);
