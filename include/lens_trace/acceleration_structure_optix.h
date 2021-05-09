@@ -1,7 +1,7 @@
 #ifdef OPTIX_ENABLED
 
 #pragma once
-#include "model.h"
+#include "lens_trace/model.h"
 
 class AccelerationStructureOptix {
 private:

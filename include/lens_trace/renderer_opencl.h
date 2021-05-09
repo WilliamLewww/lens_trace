@@ -3,10 +3,10 @@
 #pragma once
 #define CL_TARGET_OPENCL_VERSION 300
 
-#include "renderer.h"
-#include "acceleration_structure_explicit.h"
-#include "camera.h"
-#include "structures.h"
+#include "lens_trace/renderer.h"
+#include "lens_trace/acceleration_structure_explicit.h"
+#include "lens_trace/camera.h"
+#include "lens_trace/structures.h"
 
 #include <stdio.h>
 #include <time.h>

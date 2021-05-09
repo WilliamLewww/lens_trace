@@ -1,7 +1,7 @@
 #pragma once
 
-#include "structures.h"
-#include "model.h"
+#include "lens_trace/structures.h"
+#include "lens_trace/model.h"
 
 #include <algorithm>
 #include <string.h>

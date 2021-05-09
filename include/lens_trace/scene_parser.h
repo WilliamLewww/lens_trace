@@ -7,11 +7,11 @@
 
 #include "nlohmann/json.hpp"
 
-#include "engine.h"
-#include "model.h"
-#include "acceleration_structure_optix.h"
-#include "camera.h"
-#include "structures.h"
+#include "lens_trace/engine.h"
+#include "lens_trace/model.h"
+#include "lens_trace/acceleration_structure_optix.h"
+#include "lens_trace/camera.h"
+#include "lens_trace/structures.h"
 
 struct EngineParsed {
   RenderPlatform renderPlatform = RENDER_PLATFORM_OPENCL;
