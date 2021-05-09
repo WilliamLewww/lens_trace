@@ -17,6 +17,8 @@ endif()
 add_executable(LensTrace src/main.cpp)
 
 file(GLOB SOURCES "src/*.cpp")
+list(REMOVE_ITEM SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp")
+
 file(GLOB SOURCES_CUDA "src/cuda/*.cpp" "src/cuda/kernels/*.cu")
 file(GLOB SOURCES_OPENCL "src/opencl/*.cpp")
 
