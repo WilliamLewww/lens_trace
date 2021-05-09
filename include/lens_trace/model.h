@@ -2,6 +2,8 @@
 
 #include "tinyobjloader/tiny_obj_loader.h"
 
+#include "lens_trace/resource.h"
+
 #include <unistd.h>
 #include <stdint.h>
 

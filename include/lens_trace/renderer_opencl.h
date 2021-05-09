@@ -7,6 +7,7 @@
 #include "lens_trace/acceleration_structure_explicit.h"
 #include "lens_trace/camera.h"
 #include "lens_trace/structures.h"
+#include "lens_trace/resource.h"
 
 #include <stdio.h>
 #include <time.h>
