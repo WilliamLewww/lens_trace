@@ -1,8 +1,8 @@
 #pragma once
 
-#include "lens_trace/renderer_opencl.h"
-#include "lens_trace/renderer_cuda.h"
-#include "lens_trace/renderer_optix.h"
+#include "lens_trace/opencl/renderer_opencl.h"
+#include "lens_trace/cuda/renderer_cuda.h"
+#include "lens_trace/optix/renderer_optix.h"
 #include "lens_trace/renderer.h"
 #include "lens_trace/structures.h"
 

@@ -1,6 +1,5 @@
 #include "lens_trace/engine.h"
 #include "lens_trace/model.h"
-#include "lens_trace/acceleration_structure_optix.h"
 #include "lens_trace/camera.h"
 #include "lens_trace/structures.h"
 #include "lens_trace/scene_parser.h"

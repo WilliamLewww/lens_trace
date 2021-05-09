@@ -14,10 +14,14 @@ if(NOT CUDA_FOUND AND NOT OpenCL_FOUND)
   message(FATAL_ERROR "Could not find CUDA or OpenCL. Exiting")
 endif()
 
-file(GLOB SOURCES "src/*.cpp" "src/kernels/*.cu")
+file(GLOB SOURCES "src/*.cpp")
+file(GLOB SOURCES_CUDA "src/cuda/*.cpp" "src/cuda/kernels/*.cu")
+file(GLOB SOURCES_OPENCL "src/opencl/*.cpp")
 
 add_library(lenstrace SHARED
   ${SOURCES}
+  ${SOURCES_CUDA}
+  ${SOURCES_OPENCL}
 )
 include_directories(lenstrace include)
 
