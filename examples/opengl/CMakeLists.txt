@@ -10,3 +10,7 @@ find_library(LENS_TRACE_LIBRARY
 	NAMES liblenstrace lenstrace
 	HINTS /usr/local/lib/lens_trace
 )
+
+add_executable(example_opengl main.cpp)
+include_directories(example_opengl ${LENS_TRACE_INCLUDE_DIRECTORY})
+target_link_libraries(example_opengl ${LENS_TRACE_LIBRARY})

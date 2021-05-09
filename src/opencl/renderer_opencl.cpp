@@ -1,6 +1,4 @@
-#ifdef OPENCL_ENABLED
-
-#include "lens_trace/renderer_opencl.h"
+#include "lens_trace/opencl/renderer_opencl.h"
 
 void printKernelBuildLog(cl_device_id deviceID, cl_program program) {
   char* pPrintBuffer = (char*)malloc(4096);
@@ -24,7 +22,8 @@ RendererOpenCL::RendererOpenCL() {
   this->context = clCreateContext(this->contextProperties, 1, &this->deviceID, NULL, NULL, NULL);
   this->commandQueue = clCreateCommandQueueWithProperties(this->context, this->deviceID, NULL, NULL);
 
-  FILE* pKernelFile = fopen("resources/runtime_kernels/basic_opencl.kernel", "rb");
+  std::string basicKernelFileName = Resource::findResource("resources/kernels/basic_opencl.kernel");
+  FILE* pKernelFile = fopen(basicKernelFileName.c_str(), "rb");
   fseek(pKernelFile, 0, SEEK_END);
   uint32_t kernelFileSize = ftell(pKernelFile);
   fseek(pKernelFile, 0, SEEK_SET);
@@ -129,5 +128,3 @@ void RendererOpenCL::render(void* pRenderProperties) {
   clReleaseMemObject(outputDevice);
   clReleaseKernel(this->kernel);
 }
-
-#endif

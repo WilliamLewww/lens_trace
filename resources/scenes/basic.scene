@@ -1,5 +1,5 @@
 {
-  "engine": {
+  "renderer": {
     "render_platform": "RENDER_PLATFORM_OPENCL",
     "kernel_mode": "KERNEL_MODE_LINEAR",
     "thread_organization_mode": "THREAD_ORGANIZATION_MODE_MAX_FIT",

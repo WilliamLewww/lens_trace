@@ -1,6 +1,4 @@
-#ifdef CUDA_ENABLED
-
-#include "lens_trace/renderer_cuda.h"
+#include "lens_trace/cuda/renderer_cuda.h"
 
 extern "C" {
   void kernelWrappers(void* linearNodeBuffer,
@@ -66,5 +64,3 @@ void RendererCUDA::render(void* pRenderProperties) {
     pRenderPropertiesCUDA->kernelMode
   );
 }
-
-#endif

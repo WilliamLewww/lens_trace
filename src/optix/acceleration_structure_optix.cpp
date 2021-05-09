@@ -1,6 +1,4 @@
-#ifdef OPTIX_ENABLED
-
-#include "lens_trace/acceleration_structure_optix.h"
+#include "lens_trace/optix/acceleration_structure_optix.h"
 
 extern "C" {
   void createAccelerationStructure(void* vertexBuffer, uint32_t vertexCount, void* indexBuffer, uint32_t indexCount);
@@ -20,5 +18,3 @@ AccelerationStructureOptix::AccelerationStructureOptix(Model* pModel) {
 AccelerationStructureOptix::~AccelerationStructureOptix() {
 
 }
-
-#endif

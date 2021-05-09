@@ -5,8 +5,8 @@
 #include "lens_trace/model.h"
 
 Model::Model(std::string fileName) {
-  this->fileName = fileName;
-  this->success = tinyobj::LoadObj(&this->attrib, &this->shapes, &this->materials, &this->warning, &this->error, fileName.c_str());
+  this->fileName = Resource::findResource(fileName);
+  this->success = tinyobj::LoadObj(&this->attrib, &this->shapes, &this->materials, &this->warning, &this->error, this->fileName.c_str());
 
   this->checkError();
 

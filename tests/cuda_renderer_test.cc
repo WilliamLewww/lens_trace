@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include "lens_trace/renderer_cuda.h"
+#include "lens_trace/cuda/renderer_cuda.h"
 
 TEST (CreateEngineTEST, ValidEngine) {
   RendererCUDA* renderer = new RendererCUDA();
