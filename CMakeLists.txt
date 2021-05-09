@@ -14,10 +14,11 @@ if(NOT CUDA_FOUND AND NOT OpenCL_FOUND)
   message(FATAL_ERROR "Could not find CUDA or OpenCL. Exiting")
 endif()
 
-add_executable(LensTrace src/main.cpp)
+add_executable(LensTrace src/main.cpp src/scene_parser.cpp)
 
 file(GLOB SOURCES "src/*.cpp")
 list(REMOVE_ITEM SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp")
+list(REMOVE_ITEM SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/scene_parser.cpp")
 
 file(GLOB SOURCES_CUDA "src/cuda/*.cpp" "src/cuda/kernels/*.cu")
 file(GLOB SOURCES_OPENCL "src/opencl/*.cpp")
@@ -78,6 +79,8 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/liblenstrace-cuda.so DESTINATION lib/$
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/liblenstrace-opencl.so DESTINATION lib/${PROJECT_NAME})
 
 file(GLOB LENS_TRACE_INCLUDE "include/lens_trace/*.h")
+list(REMOVE_ITEM LENS_TRACE_INCLUDE "${CMAKE_CURRENT_SOURCE_DIR}/include/lens_trace/scene_parser.h")
+
 file(GLOB LENS_TRACE_CUDA_INCLUDE "include/lens_trace/cuda/*.h")
 file(GLOB LENS_TRACE_OPENCL_INCLUDE "include/lens_trace/opencl/*.h")
 file(GLOB LENS_TRACE_OPTIX_INCLUDE "include/lens_trace/optix/*.h")
@@ -95,4 +98,4 @@ install(FILES ${NLOHMANN_INCLUDE} DESTINATION include/${PROJECT_NAME}/nlohmann)
 install(FILES ${STB_INCLUDE} DESTINATION include/${PROJECT_NAME}/stb)
 install(FILES ${TINYOBJLOADER_INCLUDE} DESTINATION include/${PROJECT_NAME}/tinyobjloader)
 
-install(DIRECTORY resources DESTINATION share/${PROJECT_NAME})
+install(DIRECTORY resources DESTINATION share/${PROJECT_NAME} PATTERN "scenes" EXCLUDE)
