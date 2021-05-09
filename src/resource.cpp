@@ -2,7 +2,7 @@
 
 std::string Resource::findResource(std::string resourcePath) {
   std::ifstream f = std::ifstream(resourcePath.c_str());
-  if (false) {
+  if (f.good()) {
     return resourcePath.c_str();
   }
   else {
