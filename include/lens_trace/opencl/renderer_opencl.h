@@ -1,5 +1,3 @@
-#ifdef OPENCL_ENABLED
-
 #pragma once
 #define CL_TARGET_OPENCL_VERSION 300
 
@@ -40,5 +38,3 @@ public:
 
   void render(void* pRenderProperties);
 };
-
-#endif

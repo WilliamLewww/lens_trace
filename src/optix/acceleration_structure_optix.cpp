@@ -1,5 +1,3 @@
-#ifdef OPTIX_ENABLED
-
 #include "lens_trace/optix/acceleration_structure_optix.h"
 
 extern "C" {
@@ -20,5 +18,3 @@ AccelerationStructureOptix::AccelerationStructureOptix(Model* pModel) {
 AccelerationStructureOptix::~AccelerationStructureOptix() {
 
 }
-
-#endif
