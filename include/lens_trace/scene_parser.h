@@ -7,9 +7,6 @@
 
 #include "nlohmann/json.hpp"
 
-#include "lens_trace/model.h"
-#include "lens_trace/acceleration_structure_explicit.h"
-#include "lens_trace/camera.h"
 #include "lens_trace/structures.h"
 
 struct EngineParsed {

@@ -1,6 +1,3 @@
-#include "lens_trace/model.h"
-#include "lens_trace/camera.h"
-#include "lens_trace/structures.h"
 #include "lens_trace/scene_parser.h"
 
 int main(int argc, const char** argv) {

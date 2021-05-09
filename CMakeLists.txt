@@ -34,7 +34,6 @@ if(CUDA_FOUND)
   include_directories(lenstrace-cuda include)
 
   enable_language(CUDA)
-  target_compile_definitions(lenstrace PRIVATE -DCUDA_ENABLED)
   target_link_libraries(LensTrace lenstrace-cuda)
 endif()
 
@@ -44,7 +43,6 @@ if(OpenCL_FOUND)
   )
   include_directories(lenstrace-opencl include)
 
-  target_compile_definitions(lenstrace PRIVATE -DOPENCL_ENABLED)
   target_link_libraries(lenstrace-opencl ${OpenCL_LIBRARIES})
   target_link_libraries(LensTrace lenstrace-opencl)
 endif()
