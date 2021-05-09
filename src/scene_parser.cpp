@@ -77,3 +77,95 @@ SceneParser::SceneParser(std::string filename) {
 SceneParser::~SceneParser() {
 
 }
+
+uint64_t SceneParser::getOutputBufferSize() {
+  return sizeof(float) * this->rendererParsed.imageDimensions[0] * this->rendererParsed.imageDimensions[1] * this->rendererParsed.imageDimensions[2];
+}
+
+RenderPlatform SceneParser::getRenderPlatform() {
+  return this->rendererParsed.renderPlatform;
+}
+
+void* SceneParser::createOutputBuffer() {
+  return malloc(this->getOutputBufferSize());
+}
+
+Camera* SceneParser::createCamera() {
+  return new Camera(this->cameraParsed.position[0], this->cameraParsed.position[1], this->cameraParsed.position[2], this->cameraParsed.yaw);
+}
+
+Model* SceneParser::createModel() {
+  return new Model(this->worldParsed.models[0].filePath);
+}
+
+AccelerationStructureExplicit* SceneParser::createAccelerationStructure(Model* model) {
+  AccelerationStructureExplicitProperties accelerationStructureExplicitProperties = {
+    .sType = STRUCTURE_TYPE_ACCELERATION_STRUCTURE_PROPERTIES,
+    .pNext = NULL,
+    .accelerationStructureExplicitType = ACCELERATION_STRUCTURE_TYPE_BVH,
+    .pModel = model,
+  };
+  return new AccelerationStructureExplicit(accelerationStructureExplicitProperties);
+}
+
+RenderPropertiesOpenCL SceneParser::getRenderPropertiesOpenCL(void* outputBuffer, AccelerationStructureExplicit* accelerationStructureExplicit, Model* model, Camera* camera) {
+  RenderPropertiesOpenCL renderProperties = {
+    .sType = STRUCTURE_TYPE_RENDER_PROPERTIES_OPENCL,
+    .pNext = NULL,
+    .kernelMode = this->rendererParsed.kernelMode,
+    .threadOrganizationMode = this->rendererParsed.threadOrganizationMode,
+    .threadOrganization = {},
+    .imageDimensions = {this->rendererParsed.imageDimensions[0], this->rendererParsed.imageDimensions[1], this->rendererParsed.imageDimensions[2]},
+    .pOutputBuffer = outputBuffer,
+    .outputBufferSize = this->getOutputBufferSize(),
+    .pAccelerationStructureExplicit = accelerationStructureExplicit,
+    .pModel = model,
+    .pCamera = camera
+  };
+  if (this->rendererParsed.threadOrganizationMode == THREAD_ORGANIZATION_MODE_CUSTOM) {
+    renderProperties.threadOrganization = {
+      .sType = STRUCTURE_TYPE_THREAD_ORGANIZATION_OPENCL,
+      .pNext = NULL,
+      .workBlockSize = {this->rendererParsed.workBlockSize[0], this->rendererParsed.workBlockSize[1]},
+      .threadGroupSize = {this->rendererParsed.threadGroupSize[0], this->rendererParsed.threadGroupSize[1]},
+    };
+  }
+  return renderProperties;
+}
+
+RenderPropertiesCUDA SceneParser::getRenderPropertiesCUDA(void* outputBuffer, AccelerationStructureExplicit* accelerationStructureExplicit, Model* model, Camera* camera) {
+  RenderPropertiesCUDA renderProperties = {
+    .sType = STRUCTURE_TYPE_RENDER_PROPERTIES_CUDA,
+    .pNext = NULL,
+    .kernelMode = this->rendererParsed.kernelMode,
+    .threadOrganizationMode = this->rendererParsed.threadOrganizationMode,
+    .threadOrganization = {},
+    .imageDimensions = {this->rendererParsed.imageDimensions[0], this->rendererParsed.imageDimensions[1], this->rendererParsed.imageDimensions[2]},
+    .pOutputBuffer = outputBuffer,
+    .outputBufferSize = this->getOutputBufferSize(),
+    .pAccelerationStructureExplicit = accelerationStructureExplicit,
+    .pModel = model,
+    .pCamera = camera
+  };
+  if (this->rendererParsed.threadOrganizationMode == THREAD_ORGANIZATION_MODE_CUSTOM) {
+    renderProperties.threadOrganization = {
+      .sType = STRUCTURE_TYPE_THREAD_ORGANIZATION_CUDA,
+      .pNext = NULL,
+      .blockSize = {this->rendererParsed.blockSize[0], this->rendererParsed.blockSize[1]}
+    };
+  }
+  return renderProperties;
+}
+
+BufferToImageProperties SceneParser::getBufferToImageProperties(void* outputBuffer) {
+  BufferToImageProperties bufferToImageProperties = {
+    .sType = STRUCTURE_TYPE_BUFFER_TO_IMAGE_PROPERTIES,
+    .pNext = NULL,
+    .pBuffer = outputBuffer,
+    .bufferSize = this->getOutputBufferSize(),
+    .imageDimensions = {this->rendererParsed.imageDimensions[0], this->rendererParsed.imageDimensions[1], this->rendererParsed.imageDimensions[2]},
+    .imageType = IMAGE_TYPE_JPEG,
+    .filename = this->outputParsed.filePath.c_str()
+  };
+  return bufferToImageProperties;
+}

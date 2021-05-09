@@ -40,13 +40,13 @@ void RendererCUDA::render(void* pRenderProperties) {
     blockSize[1] = 1;
   }
   if (pRenderPropertiesCUDA->threadOrganizationMode == THREAD_ORGANIZATION_MODE_CUSTOM) {
-    ThreadOrganizationCUDA* pThreadOrganization = pRenderPropertiesCUDA->pThreadOrganization;
-    if (pThreadOrganization->sType != STRUCTURE_TYPE_THREAD_ORGANIZATION_CUDA) {
+    ThreadOrganizationCUDA threadOrganization = pRenderPropertiesCUDA->threadOrganization;
+    if (threadOrganization.sType != STRUCTURE_TYPE_THREAD_ORGANIZATION_CUDA) {
       printf("ERROR: ThreadOrganizationCUDA sType\n");
     }
 
-    blockSize[0] = pThreadOrganization->blockSize[0];
-    blockSize[1] = pThreadOrganization->blockSize[1];
+    blockSize[0] = threadOrganization.blockSize[0];
+    blockSize[1] = threadOrganization.blockSize[1];
   }
 
   kernelWrappers(

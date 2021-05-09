@@ -32,7 +32,7 @@ TEST (RenderBufferTEST, ValidBuffer) {
     .pNext = NULL,
     .kernelMode = KERNEL_MODE_LINEAR,
     .threadOrganizationMode = THREAD_ORGANIZATION_MODE_MAX_FIT,
-    .pThreadOrganization = NULL,
+    .threadOrganization = {},
     .imageDimensions = {2048, 2048, 3},
     .pOutputBuffer = pOutputBuffer,
     .outputBufferSize = outputBufferSize,
@@ -71,7 +71,7 @@ TEST (RenderBufferTEST, CustomBlockSize) {
     .pNext = NULL,
     .kernelMode = KERNEL_MODE_LINEAR,
     .threadOrganizationMode = THREAD_ORGANIZATION_MODE_MAX_FIT,
-    .pThreadOrganization = NULL,
+    .threadOrganization = {},
     .imageDimensions = {2048, 2048, 3},
     .pOutputBuffer = pOutputBufferA,
     .outputBufferSize = outputBufferSize,
@@ -90,7 +90,7 @@ TEST (RenderBufferTEST, CustomBlockSize) {
     .workBlockSize = {16, 16},
     .threadGroupSize = {16, 16}
   };
-  renderProperties.pThreadOrganization = &threadOrganization;
+  renderProperties.threadOrganization = threadOrganization;
 
   renderer->render(&renderProperties);
 
@@ -99,6 +99,7 @@ TEST (RenderBufferTEST, CustomBlockSize) {
   threadOrganization.workBlockSize[1] = 8;
   threadOrganization.threadGroupSize[0] = 8;
   threadOrganization.threadGroupSize[1] = 8;
+  renderProperties.threadOrganization = threadOrganization;
 
   renderer->render(&renderProperties);
 
