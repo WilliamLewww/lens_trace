@@ -9,7 +9,7 @@
 
 #include "lens_trace/structures.h"
 
-struct EngineParsed {
+struct RendererParsed {
   RenderPlatform renderPlatform = RENDER_PLATFORM_OPENCL;
   KernelMode kernelMode = KERNEL_MODE_LINEAR;
   ThreadOrganizationMode threadOrganizationMode = THREAD_ORGANIZATION_MODE_MAX_FIT;
@@ -40,7 +40,7 @@ struct OutputParsed {
 
 class SceneParser {
 private:
-  EngineParsed engineParsed;
+  RendererParsed rendererParsed;
   CameraParsed cameraParsed;
   WorldParsed worldParsed;
   OutputParsed outputParsed;
