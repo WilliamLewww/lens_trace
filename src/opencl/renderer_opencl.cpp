@@ -75,16 +75,16 @@ void RendererOpenCL::render(void* pRenderProperties) {
     this->workBlockCount = (pRenderPropertiesOpenCL->imageDimensions[0] / this->workBlockSize[0]) * (pRenderPropertiesOpenCL->imageDimensions[1] / this->workBlockSize[1]);
   }
   if (pRenderPropertiesOpenCL->threadOrganizationMode == THREAD_ORGANIZATION_MODE_CUSTOM) {
-    ThreadOrganizationOpenCL* pThreadOrganization = pRenderPropertiesOpenCL->pThreadOrganization;
-    if (pThreadOrganization->sType != STRUCTURE_TYPE_THREAD_ORGANIZATION_OPENCL) {
+    ThreadOrganizationOpenCL threadOrganization = pRenderPropertiesOpenCL->threadOrganization;
+    if (threadOrganization.sType != STRUCTURE_TYPE_THREAD_ORGANIZATION_OPENCL) {
       printf("ERROR: ThreadOrganizationOpenCL sType\n");
     }
 
-    this->workBlockSize[0] = pThreadOrganization->workBlockSize[0];
-    this->workBlockSize[1] = pThreadOrganization->workBlockSize[1];
+    this->workBlockSize[0] = threadOrganization.workBlockSize[0];
+    this->workBlockSize[1] = threadOrganization.workBlockSize[1];
 
-    this->threadGroupSize[0] = pThreadOrganization->threadGroupSize[0];
-    this->threadGroupSize[1] = pThreadOrganization->threadGroupSize[1];
+    this->threadGroupSize[0] = threadOrganization.threadGroupSize[0];
+    this->threadGroupSize[1] = threadOrganization.threadGroupSize[1];
 
     this->workBlockCount = (pRenderPropertiesOpenCL->imageDimensions[0] / this->workBlockSize[0]) * (pRenderPropertiesOpenCL->imageDimensions[1] / this->workBlockSize[1]);
   }

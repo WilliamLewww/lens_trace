@@ -52,7 +52,7 @@ struct RenderPropertiesOpenCL {
   void* pNext;
   KernelMode kernelMode;
   ThreadOrganizationMode threadOrganizationMode;
-  ThreadOrganizationOpenCL* pThreadOrganization;
+  ThreadOrganizationOpenCL threadOrganization;
   uint64_t imageDimensions[3];
   void* pOutputBuffer;
   uint64_t outputBufferSize;
@@ -66,7 +66,7 @@ struct RenderPropertiesCUDA {
   void* pNext;
   KernelMode kernelMode;
   ThreadOrganizationMode threadOrganizationMode;
-  ThreadOrganizationCUDA* pThreadOrganization;
+  ThreadOrganizationCUDA threadOrganization;
   uint64_t imageDimensions[3];
   void* pOutputBuffer;
   uint64_t outputBufferSize;

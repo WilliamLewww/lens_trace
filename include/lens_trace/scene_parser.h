@@ -8,6 +8,22 @@
 #include "nlohmann/json.hpp"
 
 #include "lens_trace/structures.h"
+#include "lens_trace/renderer.h"
+#include "lens_trace/camera.h"
+#include "lens_trace/model.h"
+#include "lens_trace/acceleration_structure_explicit.h"
+
+#ifdef OPENCL_ENABLED
+#include "lens_trace/opencl/renderer_opencl.h"
+#endif
+
+#ifdef CUDA_ENABLED
+#include "lens_trace/cuda/renderer_cuda.h"
+#endif
+
+#ifdef OPTIX_ENABLED
+#include "lens_trace/optix/renderer_optix.h"
+#endif
 
 struct RendererParsed {
   RenderPlatform renderPlatform = RENDER_PLATFORM_OPENCL;
@@ -47,4 +63,17 @@ private:
 public:
   SceneParser(std::string filename);
   ~SceneParser();
+
+  uint64_t getOutputBufferSize();
+  RenderPlatform getRenderPlatform();
+
+  void* createOutputBuffer();
+
+  Camera* createCamera();
+  Model* createModel();
+  AccelerationStructureExplicit* createAccelerationStructure(Model* model);
+
+  RenderPropertiesOpenCL getRenderPropertiesOpenCL(void* outputBuffer, AccelerationStructureExplicit* accelerationStructureExplicit, Model* model, Camera* camera);
+  RenderPropertiesCUDA getRenderPropertiesCUDA(void* outputBuffer, AccelerationStructureExplicit* accelerationStructureExplicit, Model* model, Camera* camera);
+  BufferToImageProperties getBufferToImageProperties(void* outputBuffer);
 };
