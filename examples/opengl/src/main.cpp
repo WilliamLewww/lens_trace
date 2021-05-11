@@ -8,6 +8,21 @@
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 
+std::vector<int> keyDownList;
+
+void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+  if (action == GLFW_PRESS) {
+    keyDownList.push_back(key);
+  }
+  if (action == GLFW_RELEASE) {
+    keyDownList.erase(std::remove(keyDownList.begin(), keyDownList.end(), key), keyDownList.end());
+  }
+}
+
+bool checkKeyDown(int key) {
+  return std::find(keyDownList.begin(), keyDownList.end(), key) != keyDownList.end();
+}
+
 int main(int argc, char** argv) {
   glfwInit();
 
@@ -15,6 +30,7 @@ int main(int argc, char** argv) {
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
 
   GLFWwindow* window = glfwCreateWindow(800, 800, "OpenGL Example", NULL, NULL);
+  glfwSetKeyCallback(window, keyCallback);
   glfwMakeContextCurrent(window);
   glfwSwapInterval(1);
   glewInit();
@@ -67,12 +83,12 @@ int main(int argc, char** argv) {
   };
 
   float texturePositions[12] = {
-    0, 0,
     0, 1,
-    1, 1,
     0, 0,
-    1, 1,
-    1, 0
+    1, 0,
+    0, 1,
+    1, 0,
+    1, 1
   };
 
   GLuint vao[1];
@@ -131,7 +147,38 @@ int main(int argc, char** argv) {
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 2048, 2048, 0, GL_RGB, GL_FLOAT, pOutputBuffer);
 
   while (!glfwWindowShouldClose(window)) {
-    pCamera->updatePosition(0, 0, -0.1);
+    float positionX = 0.0;
+    float positionZ = 0.0;
+    float yaw = 0.0;
+    if (checkKeyDown(GLFW_KEY_W)) {
+      positionX -= cos(-pCamera->getYaw() - (M_PI / 2)) * 0.1f;
+      positionZ -= sin(-pCamera->getYaw() - (M_PI / 2)) * 0.1f;
+    }
+    if (checkKeyDown(GLFW_KEY_S)) {
+      positionX += cos(-pCamera->getYaw() - (M_PI / 2)) * 0.1f;
+      positionZ += sin(-pCamera->getYaw() - (M_PI / 2)) * 0.1f;
+    }
+    if (checkKeyDown(GLFW_KEY_A)) {
+      positionX += cos(-pCamera->getYaw()) * 0.1f;
+      positionZ += sin(-pCamera->getYaw()) * 0.1f;
+    }
+    if (checkKeyDown(GLFW_KEY_D)) {
+      positionX -= cos(-pCamera->getYaw()) * 0.1f;
+      positionZ -= sin(-pCamera->getYaw()) * 0.1f;
+    }
+    if (checkKeyDown(GLFW_KEY_Q)) {
+      yaw += 0.005f;
+    }
+    if (checkKeyDown(GLFW_KEY_E)) {
+      yaw -= 0.005f;
+    }
+
+    if (positionX != 0 || positionZ != 0) {
+      pCamera->updatePosition(positionX, 0, positionZ);
+    }
+    if (yaw != 0) {
+      pCamera->updateRotation(yaw, 0, 0);
+    }
 
     glBindTexture(GL_TEXTURE_2D, texture);
     renderer->render(&renderProperties);
