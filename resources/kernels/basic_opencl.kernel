@@ -3,6 +3,8 @@
 typedef struct CameraTag {
   float position[3];
   float yaw;
+  float pitch;
+  float roll;
 } Camera;
 
 typedef struct LinearBVHNodeTag {

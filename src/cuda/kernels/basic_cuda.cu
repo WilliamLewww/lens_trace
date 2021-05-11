@@ -38,6 +38,8 @@ struct Material {
 struct Camera {
   float position[3];
   float yaw;
+  float pitch;
+  float roll;
 };
 
 struct Ray {

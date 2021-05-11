@@ -121,8 +121,6 @@ int main(int argc, char** argv) {
     .pCamera = pCamera
   };
 
-  renderer->render(&renderProperties);
-
   GLuint texture;
   glGenTextures(1, &texture);
   glBindTexture(GL_TEXTURE_2D, texture);
@@ -133,6 +131,12 @@ int main(int argc, char** argv) {
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 2048, 2048, 0, GL_RGB, GL_FLOAT, pOutputBuffer);
 
   while (!glfwWindowShouldClose(window)) {
+    pCamera->updatePosition(0, 0, -0.1);
+
+    glBindTexture(GL_TEXTURE_2D, texture);
+    renderer->render(&renderProperties);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 2048, 2048, GL_RGB, GL_FLOAT, pOutputBuffer);
+
     glClear(GL_COLOR_BUFFER_BIT);
 
     glUseProgram(program);
