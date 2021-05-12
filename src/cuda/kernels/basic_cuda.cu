@@ -38,6 +38,8 @@ struct Material {
 struct Camera {
   float position[3];
   float yaw;
+  float pitch;
+  float roll;
 };
 
 struct Ray {
@@ -342,8 +344,10 @@ void linearKernel(LinearBVHNode* linearNodes,
   float4 aperaturePosition = make_float4(0.0, 0.0, 5, 1);
 
   Ray ray = {cameraPosition + filmPosition, aperaturePosition - filmPosition};
-  ray.direction.x = (cos(camera->yaw) * ray.direction.x) + (sin(camera->yaw) * ray.direction.z);
-  ray.direction.z = (-sin(camera->yaw) * ray.direction.x) + (cos(camera->yaw) * ray.direction.z);
+  float newX = (cos(camera->yaw) * ray.direction.x) + (sin(camera->yaw) * ray.direction.z);
+  float newZ = (-sin(camera->yaw) * ray.direction.x) + (cos(camera->yaw) * ray.direction.z);
+  ray.direction.x = newX;
+  ray.direction.z = newZ;
   float3 outputColor = shade(linearNodes, primitives, materials, ray);
 
   output[id + 0] = outputColor.x;
@@ -375,8 +379,10 @@ void tileKernel(LinearBVHNode* linearNodes,
   float4 aperaturePosition = make_float4(0.0, 0.0, 5, 1);
 
   Ray ray = {cameraPosition + filmPosition, aperaturePosition - filmPosition};
-  ray.direction.x = (cos(camera->yaw) * ray.direction.x) + (sin(camera->yaw) * ray.direction.z);
-  ray.direction.z = (-sin(camera->yaw) * ray.direction.x) + (cos(camera->yaw) * ray.direction.z);
+  float newX = (cos(camera->yaw) * ray.direction.x) + (sin(camera->yaw) * ray.direction.z);
+  float newZ = (-sin(camera->yaw) * ray.direction.x) + (cos(camera->yaw) * ray.direction.z);
+  ray.direction.x = newX;
+  ray.direction.z = newZ;
   float3 outputColor = shade(linearNodes, primitives, materials, ray);
 
   output[id + 0] = outputColor.x;
