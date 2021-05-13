@@ -34,7 +34,6 @@ RendererOpenCL::~RendererOpenCL() {
 
 void RendererOpenCL::compileKernel(std::string kernelFilePath) {
   std::string basicKernelFileName = Resource::findResource(kernelFilePath.c_str());
-  printf("%s\n", kernelFilePath.c_str());
   FILE* pKernelFile = fopen(basicKernelFileName.c_str(), "rb");
   fseek(pKernelFile, 0, SEEK_END);
   uint32_t kernelFileSize = ftell(pKernelFile);
