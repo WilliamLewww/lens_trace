@@ -27,6 +27,8 @@
 
 struct RendererParsed {
   RenderPlatform renderPlatform = RENDER_PLATFORM_OPENCL;
+  std::string kernelFilePath = "resources/kernels/basic_opencl.kernel";
+  std::string kernelName = "basic_cuda";
   KernelMode kernelMode = KERNEL_MODE_LINEAR;
   ThreadOrganizationMode threadOrganizationMode = THREAD_ORGANIZATION_MODE_MAX_FIT;
   uint64_t workBlockSize[2] = {32, 32};

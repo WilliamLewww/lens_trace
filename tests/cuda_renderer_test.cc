@@ -30,6 +30,7 @@ TEST (RenderBufferTEST, ValidBuffer) {
   RenderPropertiesCUDA renderProperties = {
     .sType = STRUCTURE_TYPE_RENDER_PROPERTIES_CUDA,
     .pNext = NULL,
+    .kernelName = "basic_cuda",
     .kernelMode = KERNEL_MODE_LINEAR,
     .threadOrganizationMode = THREAD_ORGANIZATION_MODE_MAX_FIT,
     .threadOrganization = {},
@@ -69,6 +70,7 @@ TEST (RenderBufferTEST, CustomBlockSize) {
   RenderPropertiesCUDA renderProperties = {
     .sType = STRUCTURE_TYPE_RENDER_PROPERTIES_CUDA,
     .pNext = NULL,
+    .kernelName = "basic_cuda",
     .kernelMode = KERNEL_MODE_LINEAR,
     .threadOrganizationMode = THREAD_ORGANIZATION_MODE_MAX_FIT,
     .threadOrganization = {},
@@ -129,6 +131,7 @@ TEST (RenderBufferTEST, CorrectColor) {
   RenderPropertiesCUDA renderProperties = {
     .sType = STRUCTURE_TYPE_RENDER_PROPERTIES_CUDA,
     .pNext = NULL,
+    .kernelName = "basic_cuda",
     .kernelMode = KERNEL_MODE_LINEAR,
     .threadOrganizationMode = THREAD_ORGANIZATION_MODE_MAX_FIT,
     .threadOrganization = {},
