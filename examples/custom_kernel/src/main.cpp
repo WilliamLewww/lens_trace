@@ -3,9 +3,10 @@
 #include "lens_trace/camera.h"
 #include "lens_trace/structures.h"
 #include "lens_trace/opencl/renderer_opencl.h"
+#include "lens_trace/image_writer.h"
 
 int main(int argc, char** argv) {
-  uint64_t outputBufferSize = sizeof(float) * 2048 * 2048 * 3;
+  uint64_t outputBufferSize = sizeof(float) * 800 * 800 * 3;
   void* pOutputBuffer = malloc(outputBufferSize);
 
   Camera* pCamera = new Camera(0, 2.5, -50, 0);
@@ -27,7 +28,7 @@ int main(int argc, char** argv) {
     .kernelMode = KERNEL_MODE_LINEAR,
     .threadOrganizationMode = THREAD_ORGANIZATION_MODE_MAX_FIT,
     .threadOrganization = {},
-    .imageDimensions = {2048, 2048, 3},
+    .imageDimensions = {800, 800, 3},
     .pOutputBuffer = pOutputBuffer,
     .outputBufferSize = outputBufferSize,
     .pAccelerationStructureExplicit = pAccelerationStructureExplicit,
@@ -36,6 +37,17 @@ int main(int argc, char** argv) {
   };
 
   renderer->render(&renderProperties);
+
+  BufferToImageProperties bufferToImageProperties = {
+    .sType = STRUCTURE_TYPE_BUFFER_TO_IMAGE_PROPERTIES,
+    .pNext = NULL,
+    .pBuffer = pOutputBuffer,
+    .bufferSize = outputBufferSize,
+    .imageDimensions = {800, 800, 3},
+    .imageType = IMAGE_TYPE_JPEG,
+    .filename = "output.jpg"
+  };
+  ImageWriter::writeBufferToImage(bufferToImageProperties);
 
   delete pCamera;
   delete pModel;
