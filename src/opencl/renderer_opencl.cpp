@@ -21,8 +21,20 @@ RendererOpenCL::RendererOpenCL() {
 
   this->context = clCreateContext(this->contextProperties, 1, &this->deviceID, NULL, NULL, NULL);
   this->commandQueue = clCreateCommandQueueWithProperties(this->context, this->deviceID, NULL, NULL);
+}
 
-  std::string basicKernelFileName = Resource::findResource("resources/kernels/basic_opencl.kernel");
+RendererOpenCL::~RendererOpenCL() {
+  for (auto& x : this->programMap) {
+    clReleaseProgram(x.second);
+  }
+
+  clReleaseCommandQueue(this->commandQueue);
+  clReleaseContext(this->context);
+}
+
+void RendererOpenCL::compileKernel(std::string kernelFilePath) {
+  std::string basicKernelFileName = Resource::findResource(kernelFilePath.c_str());
+  printf("%s\n", kernelFilePath.c_str());
   FILE* pKernelFile = fopen(basicKernelFileName.c_str(), "rb");
   fseek(pKernelFile, 0, SEEK_END);
   uint32_t kernelFileSize = ftell(pKernelFile);
@@ -33,19 +45,13 @@ RendererOpenCL::RendererOpenCL() {
   fclose(pKernelFile);
   pKernelFileBuffer[kernelFileSize] = '\0';
 
-  this->program = clCreateProgramWithSource(this->context, 1, (const char**)&pKernelFileBuffer, NULL, NULL);
+  this->programMap[kernelFilePath] = clCreateProgramWithSource(this->context, 1, (const char**)&pKernelFileBuffer, NULL, NULL);
   free(pKernelFileBuffer);
 
-  int error = clBuildProgram(this->program, 0, NULL, NULL, NULL, NULL);
+  int error = clBuildProgram(this->programMap[kernelFilePath], 0, NULL, NULL, NULL, NULL);
   if (error != CL_SUCCESS) {
-    printKernelBuildLog(this->deviceID, this->program);
+    printKernelBuildLog(this->deviceID, this->programMap[kernelFilePath]);
   }
-}
-
-RendererOpenCL::~RendererOpenCL() {
-  clReleaseProgram(this->program);
-  clReleaseCommandQueue(this->commandQueue);
-  clReleaseContext(this->context);
 }
 
 void RendererOpenCL::render(void* pRenderProperties) {
@@ -55,15 +61,20 @@ void RendererOpenCL::render(void* pRenderProperties) {
     printf("ERROR: RenderPropertiesOpenCL sType\n");
   }
 
+  if (this->programMap.find(pRenderPropertiesOpenCL->kernelFilePath) == this->programMap.end()) {
+    compileKernel(pRenderPropertiesOpenCL->kernelFilePath);
+  }
+  cl_program program = this->programMap[pRenderPropertiesOpenCL->kernelFilePath];
+
   AccelerationStructureExplicit* pAccelerationStructureExplicit = (AccelerationStructureExplicit*)pRenderPropertiesOpenCL->pAccelerationStructureExplicit;
   Model* pModel = (Model*)pRenderPropertiesOpenCL->pModel;
   Camera* pCamera = (Camera*)pRenderPropertiesOpenCL->pCamera;
 
   if (pRenderPropertiesOpenCL->kernelMode == KERNEL_MODE_LINEAR) {
-    this->kernel = clCreateKernel(this->program, "linearKernel", NULL);
+    this->kernel = clCreateKernel(program, "linearKernel", NULL);
   }
   if (pRenderPropertiesOpenCL->kernelMode == KERNEL_MODE_TILE) {
-    this->kernel = clCreateKernel(this->program, "tileKernel", NULL);
+    this->kernel = clCreateKernel(program, "tileKernel", NULL);
   }
   if (pRenderPropertiesOpenCL->threadOrganizationMode == THREAD_ORGANIZATION_MODE_MAX_FIT) {
     this->workBlockSize[0] = std::min(this->maxWorkItemSizes[0], pRenderPropertiesOpenCL->imageDimensions[0]);

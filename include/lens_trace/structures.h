@@ -1,5 +1,6 @@
 #pragma once
 #include <stdint.h>
+#include <string>
 
 enum StructureType {
   STRUCTURE_TYPE_RENDER_PROPERTIES_OPENCL,
@@ -50,6 +51,7 @@ struct ThreadOrganizationCUDA {
 struct RenderPropertiesOpenCL {
   StructureType sType;
   void* pNext;
+  std::string kernelFilePath;
   KernelMode kernelMode;
   ThreadOrganizationMode threadOrganizationMode;
   ThreadOrganizationOpenCL threadOrganization;

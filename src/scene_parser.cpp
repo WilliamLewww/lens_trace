@@ -6,10 +6,18 @@ SceneParser::SceneParser(std::string filename) {
   
   if (jf["renderer"] != nullptr) {
     if (jf["renderer"]["render_platform"] != nullptr) {
-      if (jf["renderer"]["render_platform"] == "RENDER_PLATFORM_OPENCL")
+      if (jf["renderer"]["render_platform"] == "RENDER_PLATFORM_OPENCL") {
         this->rendererParsed.renderPlatform = RENDER_PLATFORM_OPENCL;
-      if (jf["renderer"]["render_platform"] == "RENDER_PLATFORM_CUDA")
+        if (jf["renderer"]["kernel_file_path"] != nullptr) {
+          this->rendererParsed.kernelFilePath = jf["renderer"]["kernel_file_path"];
+        }
+      }
+      if (jf["renderer"]["render_platform"] == "RENDER_PLATFORM_CUDA") {
         this->rendererParsed.renderPlatform = RENDER_PLATFORM_CUDA;
+        if (jf["renderer"]["kernel_name"] != nullptr) {
+          this->rendererParsed.kernelName = jf["renderer"]["kernel_name"];
+        }
+      }
     }
     if (jf["renderer"]["kernel_mode"] != nullptr) {
       if (jf["renderer"]["kernel_mode"] == "KERNEL_MODE_LINEAR")
@@ -112,6 +120,7 @@ RenderPropertiesOpenCL SceneParser::getRenderPropertiesOpenCL(void* outputBuffer
   RenderPropertiesOpenCL renderProperties = {
     .sType = STRUCTURE_TYPE_RENDER_PROPERTIES_OPENCL,
     .pNext = NULL,
+    .kernelFilePath = this->rendererParsed.kernelFilePath,
     .kernelMode = this->rendererParsed.kernelMode,
     .threadOrganizationMode = this->rendererParsed.threadOrganizationMode,
     .threadOrganization = {},

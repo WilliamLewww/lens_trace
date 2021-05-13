@@ -9,6 +9,7 @@
 
 #include <stdio.h>
 #include <time.h>
+#include <map>
 
 #include <CL/cl.h>
 
@@ -26,12 +27,15 @@ private:
   cl_context_properties contextProperties[3];
   cl_context context;
   cl_command_queue commandQueue;
-  cl_program program;
+
+  std::map<std::string, cl_program> programMap;
 
   cl_kernel kernel;
   uint64_t workBlockSize[2];
   uint64_t threadGroupSize[2];
   uint64_t workBlockCount;
+
+  void compileKernel(std::string kernelFilePath);
 public:
   RendererOpenCL();
   ~RendererOpenCL();
