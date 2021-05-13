@@ -1,19 +1,23 @@
 #include "lens_trace/cuda/renderer_cuda.h"
 
 extern "C" {
-  void kernelWrappers(void* linearNodeBuffer,
-                      uint64_t linearNodeBufferSize,
-                      void* primitiveBuffer,
-                      uint64_t primitiveBufferSize,
-                      void* materialBuffer,
-                      uint64_t materialBufferSize,
-                      void* cameraBuffer,
-                      uint64_t cameraBufferSize,
-                      void* outputBuffer, 
-                      uint64_t imageDimensions[3],
-                      uint64_t blockSize[2],
-                      KernelMode kernelMode);
+  void basic_cuda_kernelWrappers(void* linearNodeBuffer,
+                                 uint64_t linearNodeBufferSize,
+                                 void* primitiveBuffer,
+                                 uint64_t primitiveBufferSize,
+                                 void* materialBuffer,
+                                 uint64_t materialBufferSize,
+                                 void* cameraBuffer,
+                                 uint64_t cameraBufferSize,
+                                 void* outputBuffer, 
+                                 uint64_t imageDimensions[3],
+                                 uint64_t blockSize[2],
+                                 KernelMode kernelMode);
 }
+
+std::map<std::string, void (*)(KERNEL_ARGUMENTS)> RendererCUDA::kernelMap = {
+  {"basic_cuda", basic_cuda_kernelWrappers},
+};
 
 RendererCUDA::RendererCUDA() {
 
@@ -49,7 +53,7 @@ void RendererCUDA::render(void* pRenderProperties) {
     blockSize[1] = threadOrganization.blockSize[1];
   }
 
-  kernelWrappers(
+  kernelMap[pRenderPropertiesCUDA->kernelName](
     pAccelerationStructureExplicit->getNodeBuffer(),
     pAccelerationStructureExplicit->getNodeBufferSize(),
     pAccelerationStructureExplicit->getOrderedPrimitiveBuffer(),

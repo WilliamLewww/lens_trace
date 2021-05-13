@@ -146,6 +146,7 @@ RenderPropertiesCUDA SceneParser::getRenderPropertiesCUDA(void* outputBuffer, Ac
   RenderPropertiesCUDA renderProperties = {
     .sType = STRUCTURE_TYPE_RENDER_PROPERTIES_CUDA,
     .pNext = NULL,
+    .kernelName = this->rendererParsed.kernelName,
     .kernelMode = this->rendererParsed.kernelMode,
     .threadOrganizationMode = this->rendererParsed.threadOrganizationMode,
     .threadOrganization = {},

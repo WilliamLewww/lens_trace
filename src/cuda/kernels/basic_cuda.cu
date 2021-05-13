@@ -390,18 +390,18 @@ void tileKernel(LinearBVHNode* linearNodes,
   output[id + 2] = outputColor.z;
 }
 
-extern "C" void kernelWrappers(void* linearNodeBuffer,
-                               uint64_t linearNodeBufferSize,
-                               void* primitiveBuffer,
-                               uint64_t primitiveBufferSize,
-                               void* materialBuffer,
-                               uint64_t materialBufferSize,
-                               void* cameraBuffer,
-                               uint64_t cameraBufferSize,
-                               void* outputBuffer, 
-                               uint64_t imageDimensions[3],
-                               uint64_t blockSize[2],
-                               KernelMode kernelMode) {
+extern "C" void basic_cuda_kernelWrappers(void* linearNodeBuffer,
+                                          uint64_t linearNodeBufferSize,
+                                          void* primitiveBuffer,
+                                          uint64_t primitiveBufferSize,
+                                          void* materialBuffer,
+                                          uint64_t materialBufferSize,
+                                          void* cameraBuffer,
+                                          uint64_t cameraBufferSize,
+                                          void* outputBuffer, 
+                                          uint64_t imageDimensions[3],
+                                          uint64_t blockSize[2],
+                                          KernelMode kernelMode) {
 
   dim3 block(blockSize[0], blockSize[1]);
   dim3 grid((imageDimensions[0] + block.x - 1) / block.x, (imageDimensions[1] + block.y - 1) / block.y);
