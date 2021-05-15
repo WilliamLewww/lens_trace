@@ -33,11 +33,12 @@ struct Material {
   float diffuse[3];
   float ior;
   float dissolve;
+  float emission[3];
 };
 
 struct LightContainer {
   uint32_t count;
-  uint32_t primitive[64];
+  uint32_t primitives[64];
 };
 
 struct Camera {

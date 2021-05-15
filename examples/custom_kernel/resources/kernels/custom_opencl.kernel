@@ -36,11 +36,12 @@ typedef struct MaterialTag {
   float diffuse[3];
   float ior;
   float dissolve;
+  float emission[3];
 } Material;
 
 typedef struct LightContainerTag {
   uint count;
-  uint primitive[64];
+  uint primitives[64];
 } LightContainer;
 
 typedef struct RayTag {

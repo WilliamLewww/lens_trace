@@ -27,18 +27,13 @@ struct Material {
   float diffuse[3];
   float ior;
   float dissolve;
-};
-
-struct LightContainer {
-  uint32_t count;
-  uint32_t primitive[64];
+  float emission[3];
 };
 
 class Model {
 private:
   std::vector<PrimitiveInfo> primitiveInfoList;
   Material* materialBuffer;
-  LightContainer lightContainer;
 
   std::string fileName;
   tinyobj::attrib_t attrib;
@@ -63,9 +58,6 @@ public:
 
   uint64_t getMaterialBufferSize();
   void* getMaterialBuffer();
-
-  uint64_t getLightContainerBufferSize();
-  void* getLightContainerBuffer();
 
   float* getVertices();
   uint32_t getVertexCount();

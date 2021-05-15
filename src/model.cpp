@@ -10,11 +10,6 @@ Model::Model(std::string fileName) {
 
   this->checkError();
 
-  this->lightContainer = {
-    .count = 0,
-    .primitive = {}
-  };
-
   std::vector<std::vector<std::array<float, 3>>> facePositionList;
   std::vector<std::vector<std::array<float, 3>>> faceNormalList;
   std::vector<int> faceMaterialIndexList;
@@ -74,14 +69,6 @@ Model::Model(std::string fileName) {
       .centroid = {centroid[0], centroid[1], centroid[2]}
     };
 
-    if (this->materials[faceMaterialIndexList[x]].emission[0] > 0 ||
-        this->materials[faceMaterialIndexList[x]].emission[1] > 0 ||
-        this->materials[faceMaterialIndexList[x]].emission[2] > 0) {
-      
-      this->lightContainer.primitive[this->lightContainer.count] = this->primitiveInfoList.size();
-      this->lightContainer.count += 1;
-    }
-
     this->primitiveInfoList.push_back(primitiveInfo);
   }
 
@@ -90,6 +77,7 @@ Model::Model(std::string fileName) {
     memcpy(this->materialBuffer[x].diffuse, this->materials[x].diffuse, sizeof(float) * 3);
     memcpy(&this->materialBuffer[x].ior, &this->materials[x].ior, sizeof(float));
     memcpy(&this->materialBuffer[x].dissolve, &this->materials[x].dissolve, sizeof(float));
+    memcpy(this->materialBuffer[x].emission, this->materials[x].emission, sizeof(float) * 3);
   }
 }
 
@@ -131,14 +119,6 @@ uint64_t Model::getMaterialBufferSize() {
 
 void* Model::getMaterialBuffer() {
   return this->materialBuffer;
-}
-
-uint64_t Model::getLightContainerBufferSize() {
-  return sizeof(LightContainer);
-}
-
-void* Model::getLightContainerBuffer() {
-  return &this->lightContainer;
 }
 
 float* Model::getVertices() {
