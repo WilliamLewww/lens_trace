@@ -22,7 +22,6 @@ typedef struct LinearBVHNodeTag {
 } LinearBVHNode;
 
 typedef struct PrimitiveTag {
-  uint index;
   float positionA[3];
   float positionB[3];
   float positionC[3];
