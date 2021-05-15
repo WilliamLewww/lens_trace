@@ -20,6 +20,7 @@ struct LinearBVHNode {
 };
 
 struct Primitive {
+  uint32_t index;
   float positionA[3];
   float positionB[3];
   float positionC[3];

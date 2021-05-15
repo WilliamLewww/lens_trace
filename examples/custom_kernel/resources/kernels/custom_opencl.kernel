@@ -22,6 +22,7 @@ typedef struct LinearBVHNodeTag {
 } LinearBVHNode;
 
 typedef struct PrimitiveTag {
+  uint index;
   float positionA[3];
   float positionB[3];
   float positionC[3];
@@ -240,7 +241,6 @@ float3 shade(__global LinearBVHNode* linearNodes,
 
   return outputColor;
 }
-
 
 __kernel 
 void linearKernel(__global LinearBVHNode* linearNodes, 

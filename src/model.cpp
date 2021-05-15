@@ -59,6 +59,8 @@ Model::Model(std::string fileName) {
     };
 
     PrimitiveInfo primitiveInfo = {
+      .index = (uint32_t)this->primitiveInfoList.size(),
+
       .positionA = {facePositionList[x][0][0], facePositionList[x][0][1], facePositionList[x][0][2]},
       .positionB = {facePositionList[x][1][0], facePositionList[x][1][1], facePositionList[x][1][2]},
       .positionC = {facePositionList[x][2][0], facePositionList[x][2][1], facePositionList[x][2][2]},
@@ -78,7 +80,7 @@ Model::Model(std::string fileName) {
         this->materials[faceMaterialIndexList[x]].emission[1] > 0 ||
         this->materials[faceMaterialIndexList[x]].emission[2] > 0) {
       
-      this->lightContainer.primitive[this->lightContainer.count] = this->primitiveInfoList.size();
+      this->lightContainer.primitive[this->lightContainer.count] = primitiveInfo.index;
       this->lightContainer.count += 1;
     }
 

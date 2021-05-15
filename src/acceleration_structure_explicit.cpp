@@ -15,6 +15,7 @@ AccelerationStructureExplicit::AccelerationStructureExplicit(AccelerationStructu
 
   this->pOrderedPrimitiveBuffer = (Primitive*)malloc(sizeof(Primitive) * this->totalPrimitives);
   for (uint64_t x = 0; x < orderedPrimitiveList.size(); x++) {
+    memcpy(&this->pOrderedPrimitiveBuffer[x].index, &orderedPrimitiveList[x]->index, sizeof(uint32_t));
     memcpy(this->pOrderedPrimitiveBuffer[x].positionA, orderedPrimitiveList[x]->positionA, sizeof(float) * 3);
     memcpy(this->pOrderedPrimitiveBuffer[x].positionB, orderedPrimitiveList[x]->positionB, sizeof(float) * 3);
     memcpy(this->pOrderedPrimitiveBuffer[x].positionC, orderedPrimitiveList[x]->positionC, sizeof(float) * 3);
