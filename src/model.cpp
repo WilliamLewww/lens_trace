@@ -10,6 +10,11 @@ Model::Model(std::string fileName) {
 
   this->checkError();
 
+  this->lightContainer = {
+    .count = 0,
+    .primitive = {}
+  };
+
   std::vector<std::vector<std::array<float, 3>>> facePositionList;
   std::vector<std::vector<std::array<float, 3>>> faceNormalList;
   std::vector<int> faceMaterialIndexList;
@@ -54,6 +59,8 @@ Model::Model(std::string fileName) {
     };
 
     PrimitiveInfo primitiveInfo = {
+      .index = (uint32_t)this->primitiveInfoList.size(),
+
       .positionA = {facePositionList[x][0][0], facePositionList[x][0][1], facePositionList[x][0][2]},
       .positionB = {facePositionList[x][1][0], facePositionList[x][1][1], facePositionList[x][1][2]},
       .positionC = {facePositionList[x][2][0], facePositionList[x][2][1], facePositionList[x][2][2]},
@@ -68,6 +75,14 @@ Model::Model(std::string fileName) {
       .boundsMax = {boundsMax[0], boundsMax[1], boundsMax[2]},
       .centroid = {centroid[0], centroid[1], centroid[2]}
     };
+
+    if (this->materials[faceMaterialIndexList[x]].emission[0] > 0 ||
+        this->materials[faceMaterialIndexList[x]].emission[1] > 0 ||
+        this->materials[faceMaterialIndexList[x]].emission[2] > 0) {
+      
+      this->lightContainer.primitive[this->lightContainer.count] = primitiveInfo.index;
+      this->lightContainer.count += 1;
+    }
 
     this->primitiveInfoList.push_back(primitiveInfo);
   }
@@ -118,6 +133,14 @@ uint64_t Model::getMaterialBufferSize() {
 
 void* Model::getMaterialBuffer() {
   return this->materialBuffer;
+}
+
+uint64_t Model::getLightContainerBufferSize() {
+  return sizeof(LightContainer);
+}
+
+void* Model::getLightContainerBuffer() {
+  return &this->lightContainer;
 }
 
 float* Model::getVertices() {
