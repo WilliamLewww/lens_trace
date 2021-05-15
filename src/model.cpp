@@ -10,6 +10,11 @@ Model::Model(std::string fileName) {
 
   this->checkError();
 
+  this->lightContainer = {
+    .count = 0,
+    .primitive = {}
+  };
+
   std::vector<std::vector<std::array<float, 3>>> facePositionList;
   std::vector<std::vector<std::array<float, 3>>> faceNormalList;
   std::vector<int> faceMaterialIndexList;
@@ -68,6 +73,12 @@ Model::Model(std::string fileName) {
       .boundsMax = {boundsMax[0], boundsMax[1], boundsMax[2]},
       .centroid = {centroid[0], centroid[1], centroid[2]}
     };
+
+    if (this->materials[faceMaterialIndexList[x]].emission[0] > 0 ||
+        this->materials[faceMaterialIndexList[x]].emission[1] > 0 ||
+        this->materials[faceMaterialIndexList[x]].emission[2] > 0) {
+      printf("Hello World\n");
+    }
 
     this->primitiveInfoList.push_back(primitiveInfo);
   }

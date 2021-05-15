@@ -29,10 +29,16 @@ struct Material {
   float dissolve;
 };
 
+struct LightContainer {
+  uint32_t count;
+  uint32_t primitive[64];
+};
+
 class Model {
 private:
   std::vector<PrimitiveInfo> primitiveInfoList;
   Material* materialBuffer;
+  LightContainer lightContainer;
 
   std::string fileName;
   tinyobj::attrib_t attrib;
