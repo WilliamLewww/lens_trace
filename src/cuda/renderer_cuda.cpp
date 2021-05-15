@@ -49,6 +49,8 @@ void RendererCUDA::render(void* pRenderProperties) {
     pAccelerationStructureExplicit->getOrderedPrimitiveBufferSize(),
     pModel->getMaterialBuffer(),
     pModel->getMaterialBufferSize(),
+    pModel->getLightContainerBuffer(),
+    pModel->getLightContainerBufferSize(),
     pCamera->getCameraBuffer(),
     pCamera->getCameraBufferSize(),
     pRenderPropertiesCUDA->pOutputBuffer,

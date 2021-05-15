@@ -35,6 +35,11 @@ struct Material {
   float dissolve;
 };
 
+struct LightContainer {
+  uint32_t count;
+  uint32_t primitive[64];
+};
+
 struct Camera {
   float position[3];
   float yaw;
@@ -324,7 +329,8 @@ float3 shade(LinearBVHNode* linearNodes,
 __global__
 void linearKernel(LinearBVHNode* linearNodes, 
                   Primitive* primitives,
-                  Material* materials, 
+                  Material* materials,
+                  LightContainer* lightContainers,
                   Camera* camera,
                   float* output, 
                   int width, 
@@ -358,7 +364,8 @@ void linearKernel(LinearBVHNode* linearNodes,
 __global__
 void tileKernel(LinearBVHNode* linearNodes, 
                 Primitive* primitives,
-                Material* materials, 
+                Material* materials,
+                LightContainer* lightContainers,
                 Camera* camera,
                 float* output, 
                 int width, 
@@ -396,6 +403,8 @@ extern "C" void basic_cuda_kernelWrappers(void* linearNodeBuffer,
                                           uint64_t primitiveBufferSize,
                                           void* materialBuffer,
                                           uint64_t materialBufferSize,
+                                          void* lightContainerBuffer,
+                                          uint64_t lightContainerBufferSize,
                                           void* cameraBuffer,
                                           uint64_t cameraBufferSize,
                                           void* outputBuffer, 
@@ -418,6 +427,10 @@ extern "C" void basic_cuda_kernelWrappers(void* linearNodeBuffer,
   cudaMalloc(&materialBufferDevice, materialBufferSize);
   cudaMemcpy(materialBufferDevice, materialBuffer, materialBufferSize, cudaMemcpyHostToDevice);
 
+  void* lightContainerBufferDevice;
+  cudaMalloc(&lightContainerBufferDevice, lightContainerBufferSize);
+  cudaMemcpy(lightContainerBufferDevice, lightContainerBuffer, lightContainerBufferSize, cudaMemcpyHostToDevice);
+
   void* cameraBufferDevice;
   cudaMalloc(&cameraBufferDevice, cameraBufferSize);
   cudaMemcpy(cameraBufferDevice, cameraBuffer, cameraBufferSize, cudaMemcpyHostToDevice);
@@ -429,7 +442,8 @@ extern "C" void basic_cuda_kernelWrappers(void* linearNodeBuffer,
     linearKernel<<<grid, block>>>(
       (LinearBVHNode*)linearNodeBufferDevice, 
       (Primitive*)primitiveBufferDevice, 
-      (Material*)materialBufferDevice, 
+      (Material*)materialBufferDevice,
+      (LightContainer*)lightContainerBufferDevice,
       (Camera*)cameraBufferDevice, 
       (float*)outputBufferDevice, 
       imageDimensions[0], 
@@ -442,7 +456,8 @@ extern "C" void basic_cuda_kernelWrappers(void* linearNodeBuffer,
     tileKernel<<<grid, block>>>(
       (LinearBVHNode*)linearNodeBufferDevice, 
       (Primitive*)primitiveBufferDevice, 
-      (Material*)materialBufferDevice, 
+      (Material*)materialBufferDevice,
+      (LightContainer*)lightContainerBufferDevice,
       (Camera*)cameraBufferDevice, 
       (float*)outputBufferDevice, 
       imageDimensions[0], 
@@ -460,6 +475,7 @@ extern "C" void basic_cuda_kernelWrappers(void* linearNodeBuffer,
   cudaMemcpy(outputBuffer, outputBufferDevice, sizeof(float) * imageDimensions[0] * imageDimensions[1] * imageDimensions[2], cudaMemcpyDeviceToHost);
   cudaFree(outputBufferDevice);
   cudaFree(cameraBufferDevice);
+  cudaFree(lightContainerBufferDevice);
   cudaFree(materialBufferDevice);
   cudaFree(primitiveBufferDevice);
   cudaFree(linearNodeBufferDevice);

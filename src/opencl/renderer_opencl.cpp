@@ -108,6 +108,9 @@ void RendererOpenCL::render(void* pRenderProperties) {
   cl_mem materialBufferDevice = clCreateBuffer(this->context, CL_MEM_READ_ONLY, pModel->getMaterialBufferSize(), NULL, NULL);
   clEnqueueWriteBuffer(this->commandQueue, materialBufferDevice, CL_TRUE, 0, pModel->getMaterialBufferSize(), pModel->getMaterialBuffer(), 0, NULL, NULL);
 
+  cl_mem lightContainerBufferDevice = clCreateBuffer(this->context, CL_MEM_READ_ONLY, pModel->getLightContainerBufferSize(), NULL, NULL);
+  clEnqueueWriteBuffer(this->commandQueue, lightContainerBufferDevice, CL_TRUE, 0, pModel->getLightContainerBufferSize(), pModel->getLightContainerBuffer(), 0, NULL, NULL);
+
   cl_mem cameraBufferDevice = clCreateBuffer(this->context, CL_MEM_READ_ONLY, pCamera->getCameraBufferSize(), NULL, NULL);
   clEnqueueWriteBuffer(this->commandQueue, cameraBufferDevice, CL_TRUE, 0, pCamera->getCameraBufferSize(), pCamera->getCameraBuffer(), 0, NULL, NULL);
 
@@ -122,12 +125,13 @@ void RendererOpenCL::render(void* pRenderProperties) {
     clSetKernelArg(this->kernel, 0, sizeof(cl_mem), &nodeBufferDevice);
     clSetKernelArg(this->kernel, 1, sizeof(cl_mem), &primitiveBufferDevice);
     clSetKernelArg(this->kernel, 2, sizeof(cl_mem), &materialBufferDevice);
-    clSetKernelArg(this->kernel, 3, sizeof(cl_mem), &cameraBufferDevice);
-    clSetKernelArg(this->kernel, 4, sizeof(cl_mem), &outputDevice);
-    clSetKernelArg(this->kernel, 5, sizeof(cl_uint), &x);
-    clSetKernelArg(this->kernel, 6, sizeof(cl_uint), &width);
-    clSetKernelArg(this->kernel, 7, sizeof(cl_uint), &height);
-    clSetKernelArg(this->kernel, 8, sizeof(cl_uint), &depth);
+    clSetKernelArg(this->kernel, 3, sizeof(cl_mem), &lightContainerBufferDevice);
+    clSetKernelArg(this->kernel, 4, sizeof(cl_mem), &cameraBufferDevice);
+    clSetKernelArg(this->kernel, 5, sizeof(cl_mem), &outputDevice);
+    clSetKernelArg(this->kernel, 6, sizeof(cl_uint), &x);
+    clSetKernelArg(this->kernel, 7, sizeof(cl_uint), &width);
+    clSetKernelArg(this->kernel, 8, sizeof(cl_uint), &height);
+    clSetKernelArg(this->kernel, 9, sizeof(cl_uint), &depth);
     clEnqueueNDRangeKernel(this->commandQueue, this->kernel, 2, NULL, this->workBlockSize, this->threadGroupSize, 0, NULL, &events[x]);
   }
   clWaitForEvents(this->workBlockCount, events);

@@ -64,6 +64,9 @@ public:
   uint64_t getMaterialBufferSize();
   void* getMaterialBuffer();
 
+  uint64_t getLightContainerBufferSize();
+  void* getLightContainerBuffer();
+
   float* getVertices();
   uint32_t getVertexCount();
 

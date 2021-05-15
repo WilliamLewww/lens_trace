@@ -37,6 +37,11 @@ typedef struct MaterialTag {
   float dissolve;
 } Material;
 
+typedef struct LightContainerTag {
+  uint count;
+  uint primitive[64];
+} LightContainer;
+
 typedef struct RayTag {
   float4 origin;
   float4 direction;
@@ -240,7 +245,8 @@ float3 shade(__global LinearBVHNode* linearNodes,
 __kernel 
 void linearKernel(__global LinearBVHNode* linearNodes, 
                   __global Primitive* primitives, 
-                  __global Material* materials, 
+                  __global Material* materials,
+                  __global LightContainer* lightContainers,
                   __global Camera* camera,
                   __global float* output,
                   uint currentBlock, 
@@ -276,6 +282,7 @@ __kernel
 void tileKernel(__global LinearBVHNode* linearNodes, 
                 __global Primitive* primitives, 
                 __global Material* materials,
+                __global LightContainer* lightContainers,
                 __global Camera* camera,
                 __global float* output, 
                 uint currentBlock, 

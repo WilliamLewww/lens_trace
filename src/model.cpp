@@ -77,7 +77,9 @@ Model::Model(std::string fileName) {
     if (this->materials[faceMaterialIndexList[x]].emission[0] > 0 ||
         this->materials[faceMaterialIndexList[x]].emission[1] > 0 ||
         this->materials[faceMaterialIndexList[x]].emission[2] > 0) {
-      printf("Hello World\n");
+      
+      this->lightContainer.primitive[this->lightContainer.count] = this->primitiveInfoList.size();
+      this->lightContainer.count += 1;
     }
 
     this->primitiveInfoList.push_back(primitiveInfo);
@@ -129,6 +131,14 @@ uint64_t Model::getMaterialBufferSize() {
 
 void* Model::getMaterialBuffer() {
   return this->materialBuffer;
+}
+
+uint64_t Model::getLightContainerBufferSize() {
+  return sizeof(LightContainer);
+}
+
+void* Model::getLightContainerBuffer() {
+  return &this->lightContainer;
 }
 
 float* Model::getVertices() {
