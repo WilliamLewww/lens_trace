@@ -183,106 +183,6 @@ void intersect(RayPayload* rayPayload, Ray ray, __global LinearBVHNode* nodes, _
   }
 }
 
-void intersectIgnorePrimitiveIndex(RayPayload* rayPayload, 
-                                   Ray ray, 
-                                   __global LinearBVHNode* nodes, 
-                                   __global Primitive* primitives, 
-                                   int ignorePrimitiveIndex) {
-
-  float4 invDir = (float4)(1.0 / ray.direction.x, 1.0 / ray.direction.y, 1.0 / ray.direction.z, 0);
-  int dirIsNeg[3] = {invDir.x < 0, invDir.y < 0, invDir.z < 0};
-
-  int toVisitOffset = 0, currentNodeIndex = 0;
-  int nodesToVisit[64];
-  while (true) {
-    __global const LinearBVHNode* node = &nodes[currentNodeIndex];
-
-    if (intersectBounds(ray, invDir, dirIsNeg, node->boundsMin, node->boundsMax)) {
-      if (node->primitiveCount > 0) {
-        for (int i = 0; i < node->primitiveCount; i++) {
-          if (node->primitivesOffset != ignorePrimitiveIndex && intersectTriangle(rayPayload, ray, primitives[node->primitivesOffset])) {
-            rayPayload->primitiveIndex = node->primitivesOffset;
-            rayPayload->hitType = 1;
-          }
-        }
-        if (toVisitOffset == 0) {
-          break;
-        }
-        currentNodeIndex = nodesToVisit[--toVisitOffset];
-      }
-      else {
-        if (dirIsNeg[node->axis]) {
-          nodesToVisit[toVisitOffset++] = currentNodeIndex + 1;
-          currentNodeIndex = node->secondChildOffset;
-        } else {
-          nodesToVisit[toVisitOffset++] = node->secondChildOffset;
-          currentNodeIndex = currentNodeIndex + 1;
-        }
-      }
-    }
-    else {
-      if (toVisitOffset == 0) {
-        break;
-      }
-      currentNodeIndex = nodesToVisit[--toVisitOffset];
-    }
-  }
-}
-
-void traceRayThroughLens(__global LinearBVHNode* linearNodes, 
-                         __global Primitive* primitives, 
-                         __global Material* materials,
-                         RayPayload* rayPayload,
-                         Ray* ray) {
-
-  float3 outputColor = (float3)(0, 0, 0);
-
-  __global Primitive* primitive = &primitives[rayPayload->primitiveIndex];
-  __global Material* material = &materials[primitive->materialIndex];
-
-  float3 barycentrics = (float3)(1.0 - rayPayload->u - rayPayload->v, rayPayload->u, rayPayload->v);
-  float3 positionA = (float3)(primitive->positionA[0], primitive->positionA[1], primitive->positionA[2]);
-  float3 positionB = (float3)(primitive->positionB[0], primitive->positionB[1], primitive->positionB[2]);
-  float3 positionC = (float3)(primitive->positionC[0], primitive->positionC[1], primitive->positionC[2]);
-  float4 position = (float4)(positionA * barycentrics.x + positionB * barycentrics.y + positionC * barycentrics.z, 1.0);
-  float3 normalA = (float3)(primitive->normalA[0], primitive->normalA[1], primitive->normalA[2]);
-  float3 normalB = (float3)(primitive->normalB[0], primitive->normalB[1], primitive->normalB[2]);
-  float3 normalC = (float3)(primitive->normalC[0], primitive->normalC[1], primitive->normalC[2]);
-  float4 normal = (float4)(normalA * barycentrics.x + normalB * barycentrics.y + normalC * barycentrics.z, 0.0);
-
-  float4 transmissionDirection = refract(ray->direction, normal, 1.0, material->ior);
-
-  RayPayload rayPayload2 = {0, 0, FLT_MAX, 0, 0};
-  Ray ray2 = {position, transmissionDirection};
-  intersectIgnorePrimitiveIndex(&rayPayload2, ray2, linearNodes, primitives, rayPayload->primitiveIndex);
-
-  primitive = &primitives[rayPayload2.primitiveIndex];
-  material = &materials[primitive->materialIndex];
-
-  barycentrics = (float3)(1.0 - rayPayload2.u - rayPayload2.v, rayPayload2.u, rayPayload2.v);
-  positionA = (float3)(primitive->positionA[0], primitive->positionA[1], primitive->positionA[2]);
-  positionB = (float3)(primitive->positionB[0], primitive->positionB[1], primitive->positionB[2]);
-  positionC = (float3)(primitive->positionC[0], primitive->positionC[1], primitive->positionC[2]);
-  position = (float4)(positionA * barycentrics.x + positionB * barycentrics.y + positionC * barycentrics.z, 1.0);
-  normalA = (float3)(primitive->normalA[0], primitive->normalA[1], primitive->normalA[2]);
-  normalB = (float3)(primitive->normalB[0], primitive->normalB[1], primitive->normalB[2]);
-  normalC = (float3)(primitive->normalC[0], primitive->normalC[1], primitive->normalC[2]);
-  normal = (float4)(normalA * barycentrics.x + normalB * barycentrics.y + normalC * barycentrics.z, 0.0);
-
-  transmissionDirection = refract(transmissionDirection, -normal, material->ior, 1.0);
-
-  rayPayload->primitiveIndex = 0;
-  rayPayload->hitType = 0;
-  rayPayload->t = FLT_MAX;
-  rayPayload->u = 0;
-  rayPayload->v = 0;
-
-  ray->origin = position;
-  ray->direction = transmissionDirection;
-
-  intersectIgnorePrimitiveIndex(rayPayload, *ray, linearNodes, primitives, rayPayload2.primitiveIndex);
-}
-
 float3 shade(__global LinearBVHNode* linearNodes, 
              __global Primitive* primitives, 
              __global Material* materials,
@@ -297,15 +197,6 @@ float3 shade(__global LinearBVHNode* linearNodes,
   if (rayPayload.hitType == 1) {
     __global Primitive* primitive = &primitives[rayPayload.primitiveIndex];
     __global Material* material = &materials[primitive->materialIndex];
-
-    if (material->dissolve < 1.0) {
-      traceRayThroughLens(linearNodes, primitives, materials, &rayPayload, &ray);
-
-      if (rayPayload.hitType == 1) {
-        primitive = &primitives[rayPayload.primitiveIndex];
-        material = &materials[primitive->materialIndex];
-      }
-    }
 
     outputColor = (float3)(material->diffuse[0], material->diffuse[1], material->diffuse[2]);
   }
