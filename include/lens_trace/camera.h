@@ -13,6 +13,7 @@ private:
   float yaw;
   float pitch;
   float roll;
+  uint32_t frameCount;
 
   void* cameraBuffer;
 public:

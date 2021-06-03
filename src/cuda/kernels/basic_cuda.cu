@@ -46,6 +46,7 @@ struct Camera {
   float yaw;
   float pitch;
   float roll;
+  uint32_t frameCount;
 };
 
 struct Ray {

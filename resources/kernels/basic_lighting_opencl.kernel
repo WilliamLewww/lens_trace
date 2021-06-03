@@ -9,6 +9,7 @@ typedef struct CameraTag {
   float yaw;
   float pitch;
   float roll;
+  uint frameCount;
 } Camera;
 
 typedef struct LinearBVHNodeTag {

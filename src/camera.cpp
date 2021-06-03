@@ -9,11 +9,14 @@ Camera::Camera(float positionX, float positionY, float positionZ, float yaw, flo
   this->pitch = pitch;
   this->roll = roll;
 
-  this->cameraBuffer = malloc(sizeof(float) * 6);
+  this->frameCount = 0;
+
+  this->cameraBuffer = malloc(sizeof(float) * 7);
   memcpy((float*)this->cameraBuffer + 0, this->position, sizeof(float) * 3);
   memcpy((float*)this->cameraBuffer + 3, &this->yaw, sizeof(float) * 1);
   memcpy((float*)this->cameraBuffer + 4, &this->pitch, sizeof(float) * 1);
   memcpy((float*)this->cameraBuffer + 5, &this->roll, sizeof(float) * 1);
+  memcpy((float*)this->cameraBuffer + 6, &this->frameCount, sizeof(float) * 1);
 }
 
 Camera::~Camera() {
@@ -85,5 +88,5 @@ void* Camera::getCameraBuffer() {
 }
 
 uint64_t Camera::getCameraBufferSize() {
-  return sizeof(float) * 6;
+  return sizeof(float) * 7;
 }
