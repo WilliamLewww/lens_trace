@@ -26,6 +26,7 @@ public:
   float getYaw();
   float getPitch();
   float getRoll();
+  uint32_t getFrameCount();
 
   void setPosition(float x, float y, float z);
   void updatePosition(float x, float y, float z);

@@ -47,6 +47,10 @@ float Camera::getRoll() {
   return this->roll;
 }
 
+uint32_t Camera::getFrameCount() {
+  return this->frameCount;
+}
+
 void Camera::setPosition(float x, float y, float z) {
   this->position[0] = x;
   this->position[1] = y;

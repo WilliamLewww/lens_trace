@@ -6,5 +6,5 @@ layout (location = 0) out vec2 texturePosition;
 
 void main() {
   gl_Position = vec4(a_vertexPosition, 0.0, 1.0);
-  texturePosition = a_texturePosition;
+  texturePosition = vec2(a_texturePosition.x, a_texturePosition.y);
 }

@@ -35,43 +35,145 @@ int main(int argc, char** argv) {
   glfwSwapInterval(1);
   glewInit();
 
-  FILE* vertexFile = fopen("resources/shaders/basic.vert", "rb");
-  fseek(vertexFile, 0, SEEK_END);
-  uint32_t vertexFileSize = ftell(vertexFile);
-  fseek(vertexFile, 0, SEEK_SET);
+  GLuint programAccumulator;
+  {
+    FILE* vertexFile = fopen("resources/shaders/accumulator.vert", "rb");
+    fseek(vertexFile, 0, SEEK_END);
+    uint32_t vertexFileSize = ftell(vertexFile);
+    fseek(vertexFile, 0, SEEK_SET);
 
-  char* vertexFileBuffer = (char*)malloc(vertexFileSize + 1);
-  fread(vertexFileBuffer, 1, vertexFileSize, vertexFile);
-  fclose(vertexFile);
-  vertexFileBuffer[vertexFileSize] = '\0';
+    char* vertexFileBuffer = (char*)malloc(vertexFileSize + 1);
+    fread(vertexFileBuffer, 1, vertexFileSize, vertexFile);
+    fclose(vertexFile);
+    vertexFileBuffer[vertexFileSize] = '\0';
 
-  FILE* fragmentFile = fopen("resources/shaders/basic.frag", "rb");
-  fseek(fragmentFile, 0, SEEK_END);
-  uint32_t fragmentFileSize = ftell(fragmentFile);
-  fseek(fragmentFile, 0, SEEK_SET);
+    FILE* fragmentFile = fopen("resources/shaders/accumulator.frag", "rb");
+    fseek(fragmentFile, 0, SEEK_END);
+    uint32_t fragmentFileSize = ftell(fragmentFile);
+    fseek(fragmentFile, 0, SEEK_SET);
 
-  char* fragmentFileBuffer = (char*)malloc(fragmentFileSize + 1);
-  fread(fragmentFileBuffer, 1, fragmentFileSize, fragmentFile);
-  fclose(fragmentFile);
-  fragmentFileBuffer[fragmentFileSize] = '\0';
+    char* fragmentFileBuffer = (char*)malloc(fragmentFileSize + 1);
+    fread(fragmentFileBuffer, 1, fragmentFileSize, fragmentFile);
+    fclose(fragmentFile);
+    fragmentFileBuffer[fragmentFileSize] = '\0';
+      
+    GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
+    glShaderSource(vertexShader, 1, &vertexFileBuffer, NULL);
+    glCompileShader(vertexShader);
 
-  GLuint vertexBuffer;
-  GLuint vertexShader;
-  GLuint fragmentShader;
-  GLuint program;
-    
-  vertexShader = glCreateShader(GL_VERTEX_SHADER);
-  glShaderSource(vertexShader, 1, &vertexFileBuffer, NULL);
-  glCompileShader(vertexShader);
+    {
+      GLint isCompiled = 0;
+      glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &isCompiled);
+      if(isCompiled == GL_FALSE)
+      {
+        GLint maxLength = 0;
+        glGetShaderiv(vertexShader, GL_INFO_LOG_LENGTH, &maxLength);
 
-  fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-  glShaderSource(fragmentShader, 1, &fragmentFileBuffer, NULL);
-  glCompileShader(fragmentShader);
+        std::vector<GLchar> errorLog(maxLength);
+        glGetShaderInfoLog(vertexShader, maxLength, &maxLength, &errorLog[0]);
 
-  program = glCreateProgram();
-  glAttachShader(program, vertexShader);
-  glAttachShader(program, fragmentShader);
-  glLinkProgram(program);
+        glDeleteShader(vertexShader);
+
+        printf("%s\n", errorLog.data());
+      }
+    }
+
+    GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(fragmentShader, 1, &fragmentFileBuffer, NULL);
+    glCompileShader(fragmentShader);
+
+    {
+      GLint isCompiled = 0;
+      glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &isCompiled);
+      if(isCompiled == GL_FALSE)
+      {
+        GLint maxLength = 0;
+        glGetShaderiv(fragmentShader, GL_INFO_LOG_LENGTH, &maxLength);
+
+        std::vector<GLchar> errorLog(maxLength);
+        glGetShaderInfoLog(fragmentShader, maxLength, &maxLength, &errorLog[0]);
+
+        glDeleteShader(fragmentShader);
+
+        printf("%s\n", errorLog.data());
+      }
+    }
+
+    programAccumulator = glCreateProgram();
+    glAttachShader(programAccumulator, vertexShader);
+    glAttachShader(programAccumulator, fragmentShader);
+    glLinkProgram(programAccumulator);
+  }
+
+  GLuint programPresentor;
+  {
+    FILE* vertexFile = fopen("resources/shaders/presentor.vert", "rb");
+    fseek(vertexFile, 0, SEEK_END);
+    uint32_t vertexFileSize = ftell(vertexFile);
+    fseek(vertexFile, 0, SEEK_SET);
+
+    char* vertexFileBuffer = (char*)malloc(vertexFileSize + 1);
+    fread(vertexFileBuffer, 1, vertexFileSize, vertexFile);
+    fclose(vertexFile);
+    vertexFileBuffer[vertexFileSize] = '\0';
+
+    FILE* fragmentFile = fopen("resources/shaders/presentor.frag", "rb");
+    fseek(fragmentFile, 0, SEEK_END);
+    uint32_t fragmentFileSize = ftell(fragmentFile);
+    fseek(fragmentFile, 0, SEEK_SET);
+
+    char* fragmentFileBuffer = (char*)malloc(fragmentFileSize + 1);
+    fread(fragmentFileBuffer, 1, fragmentFileSize, fragmentFile);
+    fclose(fragmentFile);
+    fragmentFileBuffer[fragmentFileSize] = '\0';
+      
+    GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
+    glShaderSource(vertexShader, 1, &vertexFileBuffer, NULL);
+    glCompileShader(vertexShader);
+
+    {
+      GLint isCompiled = 0;
+      glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &isCompiled);
+      if(isCompiled == GL_FALSE)
+      {
+        GLint maxLength = 0;
+        glGetShaderiv(vertexShader, GL_INFO_LOG_LENGTH, &maxLength);
+
+        std::vector<GLchar> errorLog(maxLength);
+        glGetShaderInfoLog(vertexShader, maxLength, &maxLength, &errorLog[0]);
+
+        glDeleteShader(vertexShader);
+
+        printf("%s\n", errorLog.data());
+      }
+    }
+
+    GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(fragmentShader, 1, &fragmentFileBuffer, NULL);
+    glCompileShader(fragmentShader);
+
+    {
+      GLint isCompiled = 0;
+      glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &isCompiled);
+      if(isCompiled == GL_FALSE)
+      {
+        GLint maxLength = 0;
+        glGetShaderiv(fragmentShader, GL_INFO_LOG_LENGTH, &maxLength);
+
+        std::vector<GLchar> errorLog(maxLength);
+        glGetShaderInfoLog(fragmentShader, maxLength, &maxLength, &errorLog[0]);
+
+        glDeleteShader(fragmentShader);
+
+        printf("%s\n", errorLog.data());
+      }
+    }
+
+    programPresentor = glCreateProgram();
+    glAttachShader(programPresentor, vertexShader);
+    glAttachShader(programPresentor, fragmentShader);
+    glLinkProgram(programPresentor);
+  }
 
   float vertexPositions[12] = {
     -1, -1,
@@ -147,6 +249,23 @@ int main(int argc, char** argv) {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 800, 800, 0, GL_RGB, GL_FLOAT, pOutputBuffer);
 
+  GLuint textureAccumulated;
+  glGenTextures(1, &textureAccumulated);
+  glBindTexture(GL_TEXTURE_2D, textureAccumulated);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 800, 800, 0, GL_RGB, GL_FLOAT, pOutputBuffer);
+
+  GLuint frameBuffer;
+  glGenFramebuffers(1, &frameBuffer);
+  glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
+  glBindTexture(GL_TEXTURE_2D, textureAccumulated);
+  glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, textureAccumulated, 0);
+  GLenum drawBuffers[1] = { GL_COLOR_ATTACHMENT0 };
+  glDrawBuffers(1, drawBuffers);
+
   while (!glfwWindowShouldClose(window)) {
     float positionX = 0.0;
     float positionZ = 0.0;
@@ -185,17 +304,33 @@ int main(int argc, char** argv) {
       pCamera->resetFrameCount();
     }
 
+    glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
+    glUseProgram(programAccumulator);
+
     glBindTexture(GL_TEXTURE_2D, texture);
     renderer->render(&renderProperties);
     glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 800, 800, GL_RGB, GL_FLOAT, pOutputBuffer);
 
-    glClear(GL_COLOR_BUFFER_BIT);
-
-    glUseProgram(program);
-
-    glUniform1i(glGetUniformLocation(program, "texture"), 0);
+    glUniform1i(glGetUniformLocation(programAccumulator, "texture"), 0);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, texture);
+
+    glUniform1i(glGetUniformLocation(programAccumulator, "textureAccumulatedSampler"), 1);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, textureAccumulated);
+
+    glUniform1ui(glGetUniformLocation(programAccumulator, "frameCount"), pCamera->getFrameCount());
+
+    glBindVertexArray(vao[0]);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glClear(GL_COLOR_BUFFER_BIT);
+    glUseProgram(programPresentor);
+
+    glUniform1i(glGetUniformLocation(programPresentor, "texture"), 0);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, textureAccumulated);
 
     glBindVertexArray(vao[0]);
     glDrawArrays(GL_TRIANGLES, 0, 6);
