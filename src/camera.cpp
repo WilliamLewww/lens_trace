@@ -83,6 +83,16 @@ void Camera::updateRotation(float yaw, float pitch, float roll) {
   memcpy((float*)this->cameraBuffer + 5, &this->roll, sizeof(float) * 1);
 }
 
+void Camera::incrementFrameCount() {
+  this->frameCount += 1;
+  memcpy((float*)this->cameraBuffer + 6, &this->frameCount, sizeof(float) * 1);
+}
+
+void Camera::resetFrameCount() {
+  this->frameCount = 0;
+  memcpy((float*)this->cameraBuffer + 6, &this->frameCount, sizeof(float) * 1);
+}
+
 void* Camera::getCameraBuffer() {
   return this->cameraBuffer;
 }

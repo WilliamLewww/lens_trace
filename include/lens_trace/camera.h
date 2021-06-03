@@ -33,6 +33,9 @@ public:
   void setRotation(float yaw, float pitch, float roll);
   void updateRotation(float yaw, float pitch, float roll);
 
+  void incrementFrameCount();
+  void resetFrameCount();
+
   void* getCameraBuffer();
   uint64_t getCameraBufferSize();
 };
