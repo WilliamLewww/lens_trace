@@ -65,6 +65,21 @@ inline float random(float2 uv, float seed) {
   return a - floor(a);
 }
 
+float3 uniformSampleHemisphere(float2 uv) {
+  float z = uv.x;
+  float r = sqrt(fmax(0.0f, 1.0f - z * z));
+  float phi = 2.0 * M_PI * uv.y;
+
+  return (float3)(r * cos(phi), z, r * sin(phi));
+}
+
+float3 alignHemisphereWithCoordinateSystem(float3 hemisphere, float3 up) {
+  float3 right = normalize(cross(up, (float3)(0.0072f, 1.0f, 0.0034f)));
+  float3 forward = cross(right, up);
+
+  return hemisphere.x * right + hemisphere.y * up + hemisphere.z * forward;
+}
+
 __global float* getBounds(int dirIsNeg, __global float* boundsMin, __global float* boundsMax) {
   return (dirIsNeg == 0) ? boundsMin : boundsMax;
 }
@@ -224,7 +239,8 @@ float3 shade(__global LinearBVHNode* linearNodes,
              float2 filmPosition,
              uint sampleIndex) {
 
-  float3 outputColor = (float3)(0, 0, 0);
+  float3 directColor = (float3)(0, 0, 0);
+  float3 indirectColor = (float3)(0, 0, 0);
 
   RayPayload rayPayload = {0, 0, FLT_MAX, 0, 0};
   Ray ray = cameraRay;
@@ -274,11 +290,16 @@ float3 shade(__global LinearBVHNode* linearNodes,
     intersectIgnorePrimitiveIndex(&shadowRayPayload, shadowRay, linearNodes, primitives, rayPayload.primitiveIndex);
 
     if (shadowRayPayload.hitType == 0) {
-      outputColor = (float3)(material->diffuse[0], material->diffuse[1], material->diffuse[2]) * dot(positionToLight, normal);
+      directColor = (float3)(material->diffuse[0], material->diffuse[1], material->diffuse[2]) * dot(positionToLight, normal);
     }
+
+    float3 hemisphere = uniformSampleHemisphere((float2)(random(filmPosition, sampleIndex + 3), random(filmPosition, sampleIndex + 4)));
+    float3 alignedHemisphere = alignHemisphereWithCoordinateSystem(hemisphere, normal.xyz);
+
+    Ray indirectRay = {position, (float4)(alignedHemisphere, 0.0)};
   }
 
-  return outputColor;
+  return directColor + indirectColor;
 }
 
 __kernel 
