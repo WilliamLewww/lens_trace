@@ -15,11 +15,6 @@ find_library(LENS_TRACE_LIBRARY
 	HINTS /usr/local/lib/lens_trace
 )
 
-find_library(LENS_TRACE_CUDA_LIBRARY
-	NAMES lenstrace-cuda
-	HINTS /usr/local/lib/lens_trace
-)
-
 find_library(LENS_TRACE_OPENCL_LIBRARY
 	NAMES lenstrace-opencl
 	HINTS /usr/local/lib/lens_trace
@@ -31,7 +26,7 @@ include_directories(accumulator ${OPENGL_INCLUDE_DIRS})
 include_directories(accumulator ${GLFW_INCLUDE_DIRS})
 include_directories(accumulator ${GLEW_INCLUDE_DIRS})
 
-target_link_libraries(accumulator ${LENS_TRACE_LIBRARY} ${LENS_TRACE_CUDA_LIBRARY} ${LENS_TRACE_OPENCL_LIBRARY})
+target_link_libraries(accumulator ${LENS_TRACE_LIBRARY} ${LENS_TRACE_OPENCL_LIBRARY})
 target_link_libraries(accumulator ${OPENGL_LIBRARIES})
 target_link_libraries(accumulator glfw)
 target_link_libraries(accumulator ${GLEW_LIBRARIES})
