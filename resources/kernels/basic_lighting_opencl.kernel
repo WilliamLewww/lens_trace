@@ -246,7 +246,7 @@ float3 shade(__global LinearBVHNode* linearNodes,
     float4 normal = (float4)(normalA * barycentrics.x + normalB * barycentrics.y + normalC * barycentrics.z, 0.0);
 
     int lightRandomIndex = random(filmPosition, sampleIndex) * lightContainers[0].count;
-    Primitive* lightPrimitive = &primitives[lightContainers[0].primitives[lightRandomIndex]];
+    __global Primitive* lightPrimitive = &primitives[lightContainers[0].primitives[lightRandomIndex]];
 
     float2 uv = (float2)(random(filmPosition, sampleIndex + 1), random(filmPosition, sampleIndex + 2));
     if (uv.x + uv.y > 1.0f) {
