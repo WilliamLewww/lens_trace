@@ -134,7 +134,7 @@ bool intersectTriangle(RayPayload* rayPayload, Ray ray, Primitive primitive) {
 }
 
 __device__
-bool intersectBounds(Ray ray, float4 invDir, int dirIsNeg[3], const float boundsMin[3], const float boundsMax[3]) {
+bool intersectBounds(Ray ray, float4 invDir, int dirIsNeg[3], const float* boundsMin, const float* boundsMax) {
   float tMin = (getBounds(dirIsNeg[0], boundsMin, boundsMax)[0] - ray.origin.x) * invDir.x;
   float tMax = (getBounds(1 - dirIsNeg[0], boundsMin, boundsMax)[0] - ray.origin.x) * invDir.x;
   float tyMin = (getBounds(dirIsNeg[1], boundsMin, boundsMax)[1] - ray.origin.y) * invDir.y;

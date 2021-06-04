@@ -80,7 +80,7 @@ float3 alignHemisphereWithCoordinateSystem(float3 hemisphere, float3 up) {
   return hemisphere.x * right + hemisphere.y * up + hemisphere.z * forward;
 }
 
-__global float* getBounds(int dirIsNeg, __global float* boundsMin, __global float* boundsMax) {
+__global float* getBounds(int dirIsNeg, __global const float* boundsMin, __global const float* boundsMax) {
   return (dirIsNeg == 0) ? boundsMin : boundsMax;
 }
 
@@ -125,7 +125,7 @@ bool intersectTriangle(RayPayload* rayPayload, Ray ray, Primitive primitive) {
   return false;
 }
 
-bool intersectBounds(Ray ray, float4 invDir, int dirIsNeg[3], __global float boundsMin[3], __global float boundsMax[3]) {
+bool intersectBounds(Ray ray, float4 invDir, int dirIsNeg[3], __global const float* boundsMin, __global const float* boundsMax) {
   float tMin = (getBounds(dirIsNeg[0], boundsMin, boundsMax)[0] - ray.origin.x) * invDir.x;
   float tMax = (getBounds(1 - dirIsNeg[0], boundsMin, boundsMax)[0] - ray.origin.x) * invDir.x;
   float tyMin = (getBounds(dirIsNeg[1], boundsMin, boundsMax)[1] - ray.origin.y) * invDir.y;
