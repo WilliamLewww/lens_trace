@@ -301,12 +301,13 @@ float3 shade(__global LinearBVHNode* linearNodes,
 
       Ray extensionRay = {position, alignedHemisphere};
       float4 previousNormal = normal;
+      int previousPrimitive = rayPayload.primitiveIndex;
 
       bool rayActive = true;
       int maxRayDepth = 16;
       for (int rayDepth = 0; rayDepth < maxRayDepth && rayActive; rayDepth++) {
         RayPayload extensionRayPayload = {0, 0, FLT_MAX, 0, 0};
-        intersect(&extensionRayPayload, extensionRay, linearNodes, primitives);
+        intersectIgnorePrimitiveIndex(&extensionRayPayload, extensionRay, linearNodes, primitives, previousPrimitive);
 
         bool extensionHitLight = false;
         for (int x = 0; x < lightContainers[0].count; x++) {
@@ -319,25 +320,52 @@ float3 shade(__global LinearBVHNode* linearNodes,
           indirectColor += (float3)(1.0 / (rayDepth + 1)) * (float3)(1, 1, 1) * dot(previousNormal, extensionRay.direction);
         }
         else {
-          __global Primitive* extensionPrimitive = &primitives[extensionRayPayload.primitiveIndex];
-          __global Material* extensionMaterial = &materials[extensionPrimitive->materialIndex];
+          if (extensionRayPayload.hitType == 1) {
+            __global Primitive* extensionPrimitive = &primitives[extensionRayPayload.primitiveIndex];
+            __global Material* extensionMaterial = &materials[extensionPrimitive->materialIndex];
 
-          float3 extensionBarycentrics = (float3)(1.0 - extensionRayPayload.u - extensionRayPayload.v, extensionRayPayload.u, extensionRayPayload.v);
-          float4 extensionPosition = extractDataFromBarycentrics(extensionBarycentrics, extensionPrimitive->positionA, extensionPrimitive->positionB, extensionPrimitive->positionC);
-          float4 extensionNormal = extractDataFromBarycentrics(extensionBarycentrics, extensionPrimitive->normalA, extensionPrimitive->normalB, extensionPrimitive->normalC);
+            float3 extensionBarycentrics = (float3)(1.0 - extensionRayPayload.u - extensionRayPayload.v, extensionRayPayload.u, extensionRayPayload.v);
+            float4 extensionPosition = extractDataFromBarycentrics(extensionBarycentrics, extensionPrimitive->positionA, extensionPrimitive->positionB, extensionPrimitive->positionC);
+            float4 extensionNormal = extractDataFromBarycentrics(extensionBarycentrics, extensionPrimitive->normalA, extensionPrimitive->normalB, extensionPrimitive->normalC);
 
-          int extensionLightRandomIndex = random(filmPosition, sampleIndex) * lightContainers[0].count;
-          Primitive* extensionLightPrimitive = &primitives[lightContainers[0].primitives[extensionLightRandomIndex]];
+            int extensionLightRandomIndex = random(filmPosition, sampleIndex + rayDepth + 5) * lightContainers[0].count;
+            Primitive* extensionLightPrimitive = &primitives[lightContainers[0].primitives[extensionLightRandomIndex]];
 
-          float2 extensionUV = (float2)(random(filmPosition, sampleIndex + 1), random(filmPosition, sampleIndex + 2));
-          if (extensionUV.x + extensionUV.y > 1.0f) {
-            extensionUV.x = 1.0f - extensionUV.x;
-            extensionUV.y = 1.0f - extensionUV.y;
+            float2 extensionUV = (float2)(random(filmPosition, sampleIndex + rayDepth + 6), random(filmPosition, sampleIndex + rayDepth + 7));
+            if (extensionUV.x + extensionUV.y > 1.0f) {
+              extensionUV.x = 1.0f - extensionUV.x;
+              extensionUV.y = 1.0f - extensionUV.y;
+            }
+            float3 extensionLightBarycentric = (float3)(1.0 - extensionUV.x - extensionUV.y, extensionUV.x, extensionUV.y);
+            float4 extensionLightPosition = extractDataFromBarycentrics(extensionLightBarycentric, extensionLightPrimitive->positionA, extensionLightPrimitive->positionB, extensionLightPrimitive->positionC);
+
+            float4 extensionPositionToLight = normalize(extensionLightPosition - extensionPosition);
+
+            RayPayload extensionShadowRayPayload = {0, 0, distance(extensionPosition, extensionLightPosition) - SHADOW_RAY_EPSILON, 0, 0};
+            Ray extensionShadowRay = {
+              .origin = extensionPosition,
+              .direction = extensionPositionToLight,
+            };
+            intersectIgnorePrimitiveIndex(&extensionShadowRayPayload, extensionShadowRay, linearNodes, primitives, extensionRayPayload.primitiveIndex);
+          
+            if (extensionShadowRayPayload.hitType == 0) {
+              indirectColor += (float3)(1.0 / (rayDepth + 1)) * (float3)(extensionMaterial->diffuse[0], extensionMaterial->diffuse[1], extensionMaterial->diffuse[2]) * dot(extensionPositionToLight, extensionNormal);
+            
+              hemisphere = uniformSampleHemisphere((float2)(random(filmPosition, sampleIndex + rayDepth + 8), random(filmPosition, sampleIndex + rayDepth + 9)));
+              alignedHemisphere = alignHemisphereWithCoordinateSystem(hemisphere, extensionNormal);
+
+              extensionRay.origin = extensionPosition;
+              extensionRay.direction = alignedHemisphere;
+              previousNormal = extensionNormal;
+              previousPrimitive = extensionRayPayload.primitiveIndex;
+            }
+            else {
+              rayActive = false;
+            }
           }
-          float3 extensionLightBarycentric = (float3)(1.0 - extensionUV.x - extensionUV.y, extensionUV.x, extensionUV.y);
-          float4 extensionLightPosition = extractDataFromBarycentrics(extensionLightBarycentric, extensionLightPrimitive->positionA, extensionLightPrimitive->positionB, extensionLightPrimitive->positionC);
-
-          float4 extensionPositionToLight = normalize(extensionLightPosition - extensionPosition);
+          else {
+            rayActive = false;
+          }
         }
       }
     }
