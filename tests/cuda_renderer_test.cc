@@ -13,7 +13,7 @@ TEST (RenderBufferTEST, ValidBuffer) {
   RendererCUDA* renderer = new RendererCUDA();
   EXPECT_TRUE(renderer != NULL);
 
-  uint64_t outputBufferSize = sizeof(float) * 2048 * 2048 * 3;
+  uint64_t outputBufferSize = sizeof(float) * 800 * 800 * 3;
   void* pOutputBuffer = malloc(outputBufferSize);
 
   Camera* pCamera = new Camera(0, 2.5, -50, 0);
@@ -34,7 +34,7 @@ TEST (RenderBufferTEST, ValidBuffer) {
     .kernelMode = KERNEL_MODE_LINEAR,
     .threadOrganizationMode = THREAD_ORGANIZATION_MODE_MAX_FIT,
     .threadOrganization = {},
-    .imageDimensions = {2048, 2048, 3},
+    .imageDimensions = {800, 800, 3},
     .pOutputBuffer = pOutputBuffer,
     .outputBufferSize = outputBufferSize,
     .pAccelerationStructureExplicit = pAccelerationStructureExplicit,
@@ -51,7 +51,7 @@ TEST (RenderBufferTEST, CustomBlockSize) {
   RendererCUDA* renderer = new RendererCUDA();
   EXPECT_TRUE(renderer != NULL);
 
-  uint64_t outputBufferSize = sizeof(float) * 2048 * 2048 * 3;
+  uint64_t outputBufferSize = sizeof(float) * 800 * 800 * 3;
   void* pOutputBufferA = malloc(outputBufferSize);
   void* pOutputBufferB = malloc(outputBufferSize);
   void* pOutputBufferC = malloc(outputBufferSize);
@@ -74,7 +74,7 @@ TEST (RenderBufferTEST, CustomBlockSize) {
     .kernelMode = KERNEL_MODE_LINEAR,
     .threadOrganizationMode = THREAD_ORGANIZATION_MODE_MAX_FIT,
     .threadOrganization = {},
-    .imageDimensions = {2048, 2048, 3},
+    .imageDimensions = {800, 800, 3},
     .pOutputBuffer = pOutputBufferA,
     .outputBufferSize = outputBufferSize,
     .pAccelerationStructureExplicit = pAccelerationStructureExplicit,
@@ -102,7 +102,7 @@ TEST (RenderBufferTEST, CustomBlockSize) {
 
   renderer->render(&renderProperties);
 
-  for (int x = 0; x < 2048 * 2048; x += 32) {
+  for (int x = 0; x < 800 * 800; x += 32) {
     EXPECT_FLOAT_EQ(((float*)pOutputBufferA)[x], ((float*)pOutputBufferB)[x]);
     EXPECT_FLOAT_EQ(((float*)pOutputBufferB)[x], ((float*)pOutputBufferC)[x]);
   }
