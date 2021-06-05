@@ -48,6 +48,71 @@ TEST (RenderBufferTEST, ValidBuffer) {
   free(pOutputBuffer);
 }
 
+TEST (RenderBufferTEST, KernelMode) {
+  RendererCUDA* renderer = new RendererCUDA();
+  EXPECT_TRUE(renderer != NULL);
+
+  uint64_t outputBufferSize = sizeof(float) * 800 * 800 * 3;
+  void* pOutputBufferA = malloc(outputBufferSize);
+  void* pOutputBufferB = malloc(outputBufferSize);
+
+  Camera* pCamera = new Camera(0, 2.5, -50, 0);
+  Model* pModel = new Model("resources/models/green_wall.obj");
+
+  AccelerationStructureExplicitProperties accelerationStructureExplicitProperties = {
+    .sType = STRUCTURE_TYPE_ACCELERATION_STRUCTURE_PROPERTIES,
+    .pNext = NULL,
+    .accelerationStructureExplicitType = ACCELERATION_STRUCTURE_TYPE_BVH,
+    .pModel = pModel,
+  };
+  AccelerationStructureExplicit* pAccelerationStructureExplicit = new AccelerationStructureExplicit(accelerationStructureExplicitProperties);
+
+  {
+    RenderPropertiesCUDA renderProperties = {
+      .sType = STRUCTURE_TYPE_RENDER_PROPERTIES_CUDA,
+      .pNext = NULL,
+      .kernelName = "basic_cuda",
+      .kernelMode = KERNEL_MODE_LINEAR,
+      .threadOrganizationMode = THREAD_ORGANIZATION_MODE_MAX_FIT,
+      .threadOrganization = {},
+      .imageDimensions = {800, 800, 3},
+      .pOutputBuffer = pOutputBufferA,
+      .outputBufferSize = outputBufferSize,
+      .pAccelerationStructureExplicit = pAccelerationStructureExplicit,
+      .pModel = pModel,
+      .pCamera = pCamera
+    };
+
+    renderer->render(&renderProperties);
+  }
+  {
+    RenderPropertiesCUDA renderProperties = {
+      .sType = STRUCTURE_TYPE_RENDER_PROPERTIES_CUDA,
+      .pNext = NULL,
+      .kernelName = "basic_cuda",
+      .kernelMode = KERNEL_MODE_TILE,
+      .threadOrganizationMode = THREAD_ORGANIZATION_MODE_MAX_FIT,
+      .threadOrganization = {},
+      .imageDimensions = {800, 800, 3},
+      .pOutputBuffer = pOutputBufferB,
+      .outputBufferSize = outputBufferSize,
+      .pAccelerationStructureExplicit = pAccelerationStructureExplicit,
+      .pModel = pModel,
+      .pCamera = pCamera
+    };
+
+    renderer->render(&renderProperties);
+  }
+
+  for (int x = 0; x < 800 * 800 * 3; x += 32) {
+    EXPECT_FLOAT_EQ(((float*)pOutputBufferA)[x], ((float*)pOutputBufferB)[x]);
+  }
+
+  delete renderer;
+  free(pOutputBufferB);
+  free(pOutputBufferA);
+}
+
 TEST (RenderBufferTEST, CorrectColor) {
   RendererCUDA* renderer = new RendererCUDA();
   EXPECT_TRUE(renderer != NULL);
