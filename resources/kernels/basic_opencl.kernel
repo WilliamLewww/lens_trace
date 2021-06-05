@@ -70,7 +70,7 @@ inline float4 refract(float4 incidentDirection, float4 normal, float firstIOR, f
   return n * incidentDirection + (n * cosI - cosT) * normal;
 }
 
-__global float* getBounds(int dirIsNeg, __global const float* boundsMin, __global const float* boundsMax) {
+__global const float* getBounds(int dirIsNeg, __global const float* boundsMin, __global const float* boundsMax) {
   return (dirIsNeg == 0) ? boundsMin : boundsMax;
 }
 

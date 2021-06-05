@@ -76,11 +76,14 @@ void RendererOpenCL::render(void* pRenderProperties) {
     this->kernel = clCreateKernel(program, "tileKernel", NULL);
   }
   if (pRenderPropertiesOpenCL->threadOrganizationMode == THREAD_ORGANIZATION_MODE_MAX_FIT) {
+    uint64_t maxWorkGroupSizeKernel;
+    clGetKernelWorkGroupInfo(this->kernel, this->deviceID, CL_KERNEL_WORK_GROUP_SIZE, sizeof(maxWorkGroupSizeKernel), &maxWorkGroupSizeKernel, NULL);
+    
     this->workBlockSize[0] = std::min(this->maxWorkItemSizes[0], pRenderPropertiesOpenCL->imageDimensions[0]);
     this->workBlockSize[1] = std::min(this->maxWorkItemSizes[1], pRenderPropertiesOpenCL->imageDimensions[1]);
 
     this->threadGroupSize[0] = 32;
-    this->threadGroupSize[1] = (this->maxWorkGroupSize / 32);
+    this->threadGroupSize[1] = (std::min(this->maxWorkGroupSize, maxWorkGroupSizeKernel) / 32);
 
     this->workBlockCount = (pRenderPropertiesOpenCL->imageDimensions[0] / this->workBlockSize[0]) * (pRenderPropertiesOpenCL->imageDimensions[1] / this->workBlockSize[1]);
   }

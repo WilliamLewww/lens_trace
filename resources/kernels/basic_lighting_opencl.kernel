@@ -66,7 +66,7 @@ inline float random(float2 uv, float seed) {
   return a - floor(a);
 }
 
-__global float* getBounds(int dirIsNeg, __global const float* boundsMin, __global const float* boundsMax) {
+__global const float* getBounds(int dirIsNeg, __global const float* boundsMin, __global const float* boundsMax) {
   return (dirIsNeg == 0) ? boundsMin : boundsMax;
 }
 
