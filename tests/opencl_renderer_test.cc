@@ -52,7 +52,7 @@ TEST (RenderBufferTEST, CustomBlockSize) {
   RendererOpenCL* renderer = new RendererOpenCL();
   EXPECT_TRUE(renderer != NULL);
 
-  uint64_t outputBufferSize = sizeof(float) * 800 * 800 * 3;
+  uint64_t outputBufferSize = sizeof(float) * 100 * 100 * 3;
   void* pOutputBufferA = malloc(outputBufferSize);
   void* pOutputBufferB = malloc(outputBufferSize);
   void* pOutputBufferC = malloc(outputBufferSize);
@@ -75,7 +75,7 @@ TEST (RenderBufferTEST, CustomBlockSize) {
     .kernelMode = KERNEL_MODE_LINEAR,
     .threadOrganizationMode = THREAD_ORGANIZATION_MODE_MAX_FIT,
     .threadOrganization = {},
-    .imageDimensions = {800, 800, 3},
+    .imageDimensions = {100, 100, 3},
     .pOutputBuffer = pOutputBufferA,
     .outputBufferSize = outputBufferSize,
     .pAccelerationStructureExplicit = pAccelerationStructureExplicit,
@@ -90,23 +90,23 @@ TEST (RenderBufferTEST, CustomBlockSize) {
   ThreadOrganizationOpenCL threadOrganization = {
     .sType = STRUCTURE_TYPE_THREAD_ORGANIZATION_OPENCL,
     .pNext = NULL,
-    .workBlockSize = {16, 16},
-    .threadGroupSize = {16, 16}
+    .workBlockSize = {25, 25},
+    .threadGroupSize = {32, 2}
   };
   renderProperties.threadOrganization = threadOrganization;
 
   renderer->render(&renderProperties);
 
   renderProperties.pOutputBuffer = pOutputBufferC;
-  threadOrganization.workBlockSize[0] = 8;
-  threadOrganization.workBlockSize[1] = 8;
-  threadOrganization.threadGroupSize[0] = 8;
-  threadOrganization.threadGroupSize[1] = 8;
+  threadOrganization.workBlockSize[0] = 25;
+  threadOrganization.workBlockSize[1] = 25;
+  threadOrganization.threadGroupSize[0] = 32;
+  threadOrganization.threadGroupSize[1] = 1;
   renderProperties.threadOrganization = threadOrganization;
 
   renderer->render(&renderProperties);
 
-  for (int x = 0; x < 800 * 800; x += 32) {
+  for (int x = 0; x < 100 * 100; x += 32) {
     EXPECT_FLOAT_EQ(((float*)pOutputBufferA)[x], ((float*)pOutputBufferB)[x]);
     EXPECT_FLOAT_EQ(((float*)pOutputBufferB)[x], ((float*)pOutputBufferC)[x]);
   }
