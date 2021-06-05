@@ -45,6 +45,7 @@ TEST (RenderBufferTEST, ValidBuffer) {
   renderer->render(&renderProperties);
 
   delete renderer;
+  free(pOutputBuffer);
 }
 
 TEST (RenderBufferTEST, CustomBlockSize) {
@@ -111,6 +112,9 @@ TEST (RenderBufferTEST, CustomBlockSize) {
   }
 
   delete renderer;
+  free(pOutputBufferC);
+  free(pOutputBufferB);
+  free(pOutputBufferA);
 }
 
 TEST (RenderBufferTEST, CorrectColor) {
@@ -155,6 +159,7 @@ TEST (RenderBufferTEST, CorrectColor) {
   }
 
   delete renderer;
+  free(pOutputBuffer);
 }
 
 int main(int argc, char** argv) {
