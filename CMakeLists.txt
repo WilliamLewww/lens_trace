@@ -78,24 +78,30 @@ add_custom_target(copy_resources
 add_dependencies(LensTrace copy_resources)
 
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/liblenstrace.so DESTINATION lib/${PROJECT_NAME})
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/liblenstrace-cuda.so DESTINATION lib/${PROJECT_NAME})
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/liblenstrace-opencl.so DESTINATION lib/${PROJECT_NAME})
-
 file(GLOB LENS_TRACE_INCLUDE "include/lens_trace/*.h")
 list(REMOVE_ITEM LENS_TRACE_INCLUDE "${CMAKE_CURRENT_SOURCE_DIR}/include/lens_trace/scene_parser.h")
+install(FILES ${LENS_TRACE_INCLUDE} DESTINATION include/${PROJECT_NAME}/lens_trace)
 
-file(GLOB LENS_TRACE_CUDA_INCLUDE "include/lens_trace/cuda/*.h")
-file(GLOB LENS_TRACE_OPENCL_INCLUDE "include/lens_trace/opencl/*.h")
-file(GLOB LENS_TRACE_OPTIX_INCLUDE "include/lens_trace/optix/*.h")
+if(CUDA_FOUND)
+  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/liblenstrace-cuda.so DESTINATION lib/${PROJECT_NAME})
+  file(GLOB LENS_TRACE_CUDA_INCLUDE "include/lens_trace/cuda/*.h")
+  install(FILES ${LENS_TRACE_CUDA_INCLUDE} DESTINATION include/${PROJECT_NAME}/lens_trace/cuda)
+endif()
+
+if(OpenCL_FOUND)
+  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/liblenstrace-opencl.so DESTINATION lib/${PROJECT_NAME})
+  file(GLOB LENS_TRACE_OPENCL_INCLUDE "include/lens_trace/opencl/*.h")
+  install(FILES ${LENS_TRACE_OPENCL_INCLUDE} DESTINATION include/${PROJECT_NAME}/lens_trace/opencl)
+endif()
+
+if(OPTIX_FOUND)
+  file(GLOB LENS_TRACE_OPTIX_INCLUDE "include/lens_trace/optix/*.h")
+  install(FILES ${LENS_TRACE_OPTIX_INCLUDE} DESTINATION include/${PROJECT_NAME}/lens_trace/optix)
+endif()
 
 file(GLOB NLOHMANN_INCLUDE "include/nlohmann/*.hpp")
 file(GLOB STB_INCLUDE "include/stb/*.h")
 file(GLOB TINYOBJLOADER_INCLUDE "include/tinyobjloader/*.h")
-
-install(FILES ${LENS_TRACE_INCLUDE} DESTINATION include/${PROJECT_NAME}/lens_trace)
-install(FILES ${LENS_TRACE_CUDA_INCLUDE} DESTINATION include/${PROJECT_NAME}/lens_trace/cuda)
-install(FILES ${LENS_TRACE_OPENCL_INCLUDE} DESTINATION include/${PROJECT_NAME}/lens_trace/opencl)
-install(FILES ${LENS_TRACE_OPTIX_INCLUDE} DESTINATION include/${PROJECT_NAME}/lens_trace/optix)
 
 install(FILES ${NLOHMANN_INCLUDE} DESTINATION include/${PROJECT_NAME}/nlohmann)
 install(FILES ${STB_INCLUDE} DESTINATION include/${PROJECT_NAME}/stb)

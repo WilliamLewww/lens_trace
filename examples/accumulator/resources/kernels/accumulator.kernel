@@ -1,5 +1,8 @@
 #pragma OPENCL EXTENSION cl_khr_fp64 : enable
 
+#define TRIANGLE_INTERSECTION_EPSILON 0.0001
+#define SHADOW_RAY_EPSILON 0.01
+
 typedef struct CameraTag {
   float position[3];
   float yaw;
@@ -57,17 +60,9 @@ typedef struct RayPayloadTag {
   float v;
 } RayPayload;
 
-inline float4 reflect(float4 incidentDirection, float4 normal) {
-  float cosI = -dot(normal, incidentDirection);
-  return incidentDirection + 2.0f * cosI * normal;
-}
-
-inline float4 refract(float4 incidentDirection, float4 normal, float firstIOR, float secondIOR) {
-  float n = firstIOR / secondIOR;
-  float cosI = -dot(normal, incidentDirection);
-  float sinT2 = n * n * (1.0 - cosI * cosI);
-  float cosT = sqrt(1.0 - sinT2);
-  return n * incidentDirection + (n * cosI - cosT) * normal;
+inline float random(float2 uv, float seed) {
+  float a = sin(fmod(dot(uv, (float2)(12.9898, 78.233)) + 1113.1 * seed, M_PI)) * 43758.5453;
+  return a - floor(a);
 }
 
 __global const float* getBounds(int dirIsNeg, __global const float* boundsMin, __global const float* boundsMax) {
@@ -75,7 +70,6 @@ __global const float* getBounds(int dirIsNeg, __global const float* boundsMin, _
 }
 
 bool intersectTriangle(RayPayload* rayPayload, Ray ray, Primitive primitive) {
-  const float EPSILON = 0.0000001;
   float4 positionA = (float4)(primitive.positionA[0], primitive.positionA[1], primitive.positionA[2], 1);
   float4 positionB = (float4)(primitive.positionB[0], primitive.positionB[1], primitive.positionB[2], 1);
   float4 positionC = (float4)(primitive.positionC[0], primitive.positionC[1], primitive.positionC[2], 1);
@@ -85,7 +79,7 @@ bool intersectTriangle(RayPayload* rayPayload, Ray ray, Primitive primitive) {
   float4 pvec = cross(ray.direction, v0v2);
   float det = dot(v0v1, pvec);
 
-  if (fabs(det) < EPSILON) {
+  if (fabs(det) < TRIANGLE_INTERSECTION_EPSILON) {
     return false;
   }
 
@@ -142,7 +136,7 @@ void intersect(RayPayload* rayPayload, Ray ray, __global LinearBVHNode* nodes, _
   int toVisitOffset = 0, currentNodeIndex = 0;
   int nodesToVisit[64];
   while (true) {
-    __global const LinearBVHNode* node = &nodes[currentNodeIndex];
+    __global LinearBVHNode* node = &nodes[currentNodeIndex];
 
     if (intersectBounds(ray, invDir, dirIsNeg, node->boundsMin, node->boundsMax)) {
       if (node->primitiveCount > 0) {
@@ -222,64 +216,13 @@ void intersectIgnorePrimitiveIndex(RayPayload* rayPayload,
   }
 }
 
-void traceRayThroughLens(__global LinearBVHNode* linearNodes, 
-                         __global Primitive* primitives, 
-                         __global Material* materials,
-                         RayPayload* rayPayload,
-                         Ray* ray) {
-
-  float3 outputColor = (float3)(0, 0, 0);
-
-  __global Primitive* primitive = &primitives[rayPayload->primitiveIndex];
-  __global Material* material = &materials[primitive->materialIndex];
-
-  float3 barycentrics = (float3)(1.0 - rayPayload->u - rayPayload->v, rayPayload->u, rayPayload->v);
-  float3 positionA = (float3)(primitive->positionA[0], primitive->positionA[1], primitive->positionA[2]);
-  float3 positionB = (float3)(primitive->positionB[0], primitive->positionB[1], primitive->positionB[2]);
-  float3 positionC = (float3)(primitive->positionC[0], primitive->positionC[1], primitive->positionC[2]);
-  float4 position = (float4)(positionA * barycentrics.x + positionB * barycentrics.y + positionC * barycentrics.z, 1.0);
-  float3 normalA = (float3)(primitive->normalA[0], primitive->normalA[1], primitive->normalA[2]);
-  float3 normalB = (float3)(primitive->normalB[0], primitive->normalB[1], primitive->normalB[2]);
-  float3 normalC = (float3)(primitive->normalC[0], primitive->normalC[1], primitive->normalC[2]);
-  float4 normal = (float4)(normalA * barycentrics.x + normalB * barycentrics.y + normalC * barycentrics.z, 0.0);
-
-  float4 transmissionDirection = refract(ray->direction, normal, 1.0, material->ior);
-
-  RayPayload rayPayload2 = {0, 0, FLT_MAX, 0, 0};
-  Ray ray2 = {position, transmissionDirection};
-  intersectIgnorePrimitiveIndex(&rayPayload2, ray2, linearNodes, primitives, rayPayload->primitiveIndex);
-
-  primitive = &primitives[rayPayload2.primitiveIndex];
-  material = &materials[primitive->materialIndex];
-
-  barycentrics = (float3)(1.0 - rayPayload2.u - rayPayload2.v, rayPayload2.u, rayPayload2.v);
-  positionA = (float3)(primitive->positionA[0], primitive->positionA[1], primitive->positionA[2]);
-  positionB = (float3)(primitive->positionB[0], primitive->positionB[1], primitive->positionB[2]);
-  positionC = (float3)(primitive->positionC[0], primitive->positionC[1], primitive->positionC[2]);
-  position = (float4)(positionA * barycentrics.x + positionB * barycentrics.y + positionC * barycentrics.z, 1.0);
-  normalA = (float3)(primitive->normalA[0], primitive->normalA[1], primitive->normalA[2]);
-  normalB = (float3)(primitive->normalB[0], primitive->normalB[1], primitive->normalB[2]);
-  normalC = (float3)(primitive->normalC[0], primitive->normalC[1], primitive->normalC[2]);
-  normal = (float4)(normalA * barycentrics.x + normalB * barycentrics.y + normalC * barycentrics.z, 0.0);
-
-  transmissionDirection = refract(transmissionDirection, -normal, material->ior, 1.0);
-
-  rayPayload->primitiveIndex = 0;
-  rayPayload->hitType = 0;
-  rayPayload->t = FLT_MAX;
-  rayPayload->u = 0;
-  rayPayload->v = 0;
-
-  ray->origin = position;
-  ray->direction = transmissionDirection;
-
-  intersectIgnorePrimitiveIndex(rayPayload, *ray, linearNodes, primitives, rayPayload2.primitiveIndex);
-}
-
 float3 shade(__global LinearBVHNode* linearNodes, 
              __global Primitive* primitives, 
              __global Material* materials,
-             Ray cameraRay) {
+             __global LightContainer* lightContainers,
+             Ray cameraRay,
+             float2 filmPosition,
+             uint sampleIndex) {
 
   float3 outputColor = (float3)(0, 0, 0);
 
@@ -287,20 +230,52 @@ float3 shade(__global LinearBVHNode* linearNodes,
   Ray ray = cameraRay;
   intersect(&rayPayload, ray, linearNodes, primitives);
 
+  for (int x = 0; x < lightContainers[0].count; x++) {
+    if (rayPayload.primitiveIndex == lightContainers[0].primitives[x]) {
+      return (float3)(1, 1, 1);
+    }
+  }
+
   if (rayPayload.hitType == 1) {
     __global Primitive* primitive = &primitives[rayPayload.primitiveIndex];
     __global Material* material = &materials[primitive->materialIndex];
 
-    if (material->dissolve < 1.0) {
-      traceRayThroughLens(linearNodes, primitives, materials, &rayPayload, &ray);
+    float3 barycentrics = (float3)(1.0 - rayPayload.u - rayPayload.v, rayPayload.u, rayPayload.v);
+    float3 positionA = (float3)(primitive->positionA[0], primitive->positionA[1], primitive->positionA[2]);
+    float3 positionB = (float3)(primitive->positionB[0], primitive->positionB[1], primitive->positionB[2]);
+    float3 positionC = (float3)(primitive->positionC[0], primitive->positionC[1], primitive->positionC[2]);
+    float4 position = (float4)(positionA * barycentrics.x + positionB * barycentrics.y + positionC * barycentrics.z, 1.0);
+    float3 normalA = (float3)(primitive->normalA[0], primitive->normalA[1], primitive->normalA[2]);
+    float3 normalB = (float3)(primitive->normalB[0], primitive->normalB[1], primitive->normalB[2]);
+    float3 normalC = (float3)(primitive->normalC[0], primitive->normalC[1], primitive->normalC[2]);
+    float4 normal = (float4)(normalA * barycentrics.x + normalB * barycentrics.y + normalC * barycentrics.z, 0.0);
 
-      if (rayPayload.hitType == 1) {
-        primitive = &primitives[rayPayload.primitiveIndex];
-        material = &materials[primitive->materialIndex];
-      }
+    int lightRandomIndex = random(filmPosition, sampleIndex) * lightContainers[0].count;
+    Primitive* lightPrimitive = &primitives[lightContainers[0].primitives[lightRandomIndex]];
+
+    float2 uv = (float2)(random(filmPosition, sampleIndex + 1), random(filmPosition, sampleIndex + 2));
+    if (uv.x + uv.y > 1.0f) {
+      uv.x = 1.0f - uv.x;
+      uv.y = 1.0f - uv.y;
     }
+    float3 lightBarycentric = (float3)(1.0 - uv.x - uv.y, uv.x, uv.y);
+    float3 lightPositionA = (float3)(lightPrimitive->positionA[0], lightPrimitive->positionA[1], lightPrimitive->positionA[2]);
+    float3 lightPositionB = (float3)(lightPrimitive->positionB[0], lightPrimitive->positionB[1], lightPrimitive->positionB[2]);
+    float3 lightPositionC = (float3)(lightPrimitive->positionC[0], lightPrimitive->positionC[1], lightPrimitive->positionC[2]);
+    float4 lightPosition = (float4)(lightPositionA * lightBarycentric.x + lightPositionB * lightBarycentric.y + lightPositionC * lightBarycentric.z, 1.0);
 
-    outputColor = (float3)(material->diffuse[0], material->diffuse[1], material->diffuse[2]);
+    float4 positionToLight = normalize(lightPosition - position);
+
+    RayPayload shadowRayPayload = {0, 0, distance(position, lightPosition) - SHADOW_RAY_EPSILON, 0, 0};
+    Ray shadowRay = {
+      .origin = position,
+      .direction = positionToLight,
+    };
+    intersectIgnorePrimitiveIndex(&shadowRayPayload, shadowRay, linearNodes, primitives, rayPayload.primitiveIndex);
+
+    if (shadowRayPayload.hitType == 0) {
+      outputColor = (float3)(material->diffuse[0], material->diffuse[1], material->diffuse[2]) * dot(positionToLight, normal);
+    }
   }
 
   return outputColor;
@@ -335,11 +310,12 @@ void linearKernel(__global LinearBVHNode* linearNodes,
   float newZ = (-sin(camera->yaw) * ray.direction.x) + (cos(camera->yaw) * ray.direction.z);
   ray.direction.x = newX;
   ray.direction.z = newZ;
-  float3 outputColor = shade(linearNodes, primitives, materials, ray);
 
-  output[blockID + 0] = outputColor.x;
-  output[blockID + 1] = outputColor.y;
-  output[blockID + 2] = outputColor.z;
+  float3 color = shade(linearNodes, primitives, materials, lightContainers, ray, filmPosition.xy, camera->frameCount);
+
+  output[blockID + 0] = clamp(color.x, 0.0f, 1.0f);
+  output[blockID + 1] = clamp(color.y, 0.0f, 1.0f);
+  output[blockID + 2] = clamp(color.z, 0.0f, 1.0f);
 }
 
 __kernel 
@@ -374,9 +350,10 @@ void tileKernel(__global LinearBVHNode* linearNodes,
   float newZ = (-sin(camera->yaw) * ray.direction.x) + (cos(camera->yaw) * ray.direction.z);
   ray.direction.x = newX;
   ray.direction.z = newZ;
-  float3 outputColor = shade(linearNodes, primitives, materials, ray);
 
-  output[blockID + 0] = outputColor.x;
-  output[blockID + 1] = outputColor.y;
-  output[blockID + 2] = outputColor.z;
+  float3 color = shade(linearNodes, primitives, materials, lightContainers, ray, filmPosition.xy, camera->frameCount);
+
+  output[blockID + 0] = color.x;
+  output[blockID + 1] = color.y;
+  output[blockID + 2] = color.z;
 }

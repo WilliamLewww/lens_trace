@@ -76,11 +76,14 @@ void RendererOpenCL::render(void* pRenderProperties) {
     this->kernel = clCreateKernel(program, "tileKernel", NULL);
   }
   if (pRenderPropertiesOpenCL->threadOrganizationMode == THREAD_ORGANIZATION_MODE_MAX_FIT) {
+    uint64_t maxWorkGroupSizeKernel;
+    clGetKernelWorkGroupInfo(this->kernel, this->deviceID, CL_KERNEL_WORK_GROUP_SIZE, sizeof(maxWorkGroupSizeKernel), &maxWorkGroupSizeKernel, NULL);
+    
     this->workBlockSize[0] = std::min(this->maxWorkItemSizes[0], pRenderPropertiesOpenCL->imageDimensions[0]);
     this->workBlockSize[1] = std::min(this->maxWorkItemSizes[1], pRenderPropertiesOpenCL->imageDimensions[1]);
 
     this->threadGroupSize[0] = 32;
-    this->threadGroupSize[1] = (this->maxWorkGroupSize / 32);
+    this->threadGroupSize[1] = (std::min(this->maxWorkGroupSize, maxWorkGroupSizeKernel) / 32);
 
     this->workBlockCount = (pRenderPropertiesOpenCL->imageDimensions[0] / this->workBlockSize[0]) * (pRenderPropertiesOpenCL->imageDimensions[1] / this->workBlockSize[1]);
   }
@@ -108,8 +111,8 @@ void RendererOpenCL::render(void* pRenderProperties) {
   cl_mem materialBufferDevice = clCreateBuffer(this->context, CL_MEM_READ_ONLY, pModel->getMaterialBufferSize(), NULL, NULL);
   clEnqueueWriteBuffer(this->commandQueue, materialBufferDevice, CL_TRUE, 0, pModel->getMaterialBufferSize(), pModel->getMaterialBuffer(), 0, NULL, NULL);
 
-  cl_mem lightContainerBufferDevice = clCreateBuffer(this->context, CL_MEM_READ_ONLY, pModel->getLightContainerBufferSize(), NULL, NULL);
-  clEnqueueWriteBuffer(this->commandQueue, lightContainerBufferDevice, CL_TRUE, 0, pModel->getLightContainerBufferSize(), pModel->getLightContainerBuffer(), 0, NULL, NULL);
+  cl_mem lightContainerBufferDevice = clCreateBuffer(this->context, CL_MEM_READ_ONLY, pAccelerationStructureExplicit->getLightContainerBufferSize(), NULL, NULL);
+  clEnqueueWriteBuffer(this->commandQueue, lightContainerBufferDevice, CL_TRUE, 0, pAccelerationStructureExplicit->getLightContainerBufferSize(), pAccelerationStructureExplicit->getLightContainerBuffer(), 0, NULL, NULL);
 
   cl_mem cameraBufferDevice = clCreateBuffer(this->context, CL_MEM_READ_ONLY, pCamera->getCameraBufferSize(), NULL, NULL);
   clEnqueueWriteBuffer(this->commandQueue, cameraBufferDevice, CL_TRUE, 0, pCamera->getCameraBufferSize(), pCamera->getCameraBuffer(), 0, NULL, NULL);

@@ -13,6 +13,7 @@ private:
   float yaw;
   float pitch;
   float roll;
+  uint32_t frameCount;
 
   void* cameraBuffer;
 public:
@@ -25,12 +26,16 @@ public:
   float getYaw();
   float getPitch();
   float getRoll();
+  uint32_t getFrameCount();
 
   void setPosition(float x, float y, float z);
   void updatePosition(float x, float y, float z);
 
   void setRotation(float yaw, float pitch, float roll);
   void updateRotation(float yaw, float pitch, float roll);
+
+  void incrementFrameCount();
+  void resetFrameCount();
 
   void* getCameraBuffer();
   uint64_t getCameraBufferSize();

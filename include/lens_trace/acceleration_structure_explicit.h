@@ -32,7 +32,6 @@ struct LinearBVHNode {
 };
 
 struct Primitive {
-  uint32_t index;
   float positionA[3];
   float positionB[3];
   float positionC[3];
@@ -42,6 +41,11 @@ struct Primitive {
   int materialIndex;
 };
 
+struct LightContainer {
+  uint32_t count;
+  uint32_t primitives[64];
+};
+
 class AccelerationStructureExplicit {
 private:
   int totalNodes;
@@ -49,6 +53,8 @@ private:
 
   int totalPrimitives;
   Primitive* pOrderedPrimitiveBuffer;
+
+  LightContainer lightContainer;
 
   BVHBuildNode* recursiveBuild(std::vector<PrimitiveInfo>* pPrimitiveInfoList, int start, int end, int* pTotalNodes, std::vector<PrimitiveInfo*>& orderedPrimitiveList);
   void recursiveFree(BVHBuildNode* pNode);
@@ -63,4 +69,7 @@ public:
 
   uint64_t getOrderedPrimitiveBufferSize();
   void* getOrderedPrimitiveBuffer();
+
+  uint64_t getLightContainerBufferSize();
+  void* getLightContainerBuffer();
 };

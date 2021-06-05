@@ -2,6 +2,7 @@
 
 AccelerationStructureExplicit::AccelerationStructureExplicit(AccelerationStructureExplicitProperties accelerationStructureExplicitProperties) {
   Model* pModel = (Model*)accelerationStructureExplicitProperties.pModel;
+  Material* pMaterial = (Material*)pModel->getMaterialBuffer();
 
   this->totalPrimitives = pModel->getPrimitiveInfoListP()->size();
   this->totalNodes = 0;
@@ -13,9 +14,13 @@ AccelerationStructureExplicit::AccelerationStructureExplicit(AccelerationStructu
   flattenBVHTree(this->pLinearNodeBuffer, pRoot, &offset);
   recursiveFree(pRoot);
 
+  this->lightContainer = {
+    .count = 0,
+    .primitives = {}
+  };
+
   this->pOrderedPrimitiveBuffer = (Primitive*)malloc(sizeof(Primitive) * this->totalPrimitives);
   for (uint64_t x = 0; x < orderedPrimitiveList.size(); x++) {
-    memcpy(&this->pOrderedPrimitiveBuffer[x].index, &orderedPrimitiveList[x]->index, sizeof(uint32_t));
     memcpy(this->pOrderedPrimitiveBuffer[x].positionA, orderedPrimitiveList[x]->positionA, sizeof(float) * 3);
     memcpy(this->pOrderedPrimitiveBuffer[x].positionB, orderedPrimitiveList[x]->positionB, sizeof(float) * 3);
     memcpy(this->pOrderedPrimitiveBuffer[x].positionC, orderedPrimitiveList[x]->positionC, sizeof(float) * 3);
@@ -23,6 +28,15 @@ AccelerationStructureExplicit::AccelerationStructureExplicit(AccelerationStructu
     memcpy(this->pOrderedPrimitiveBuffer[x].normalB, orderedPrimitiveList[x]->normalB, sizeof(float) * 3);
     memcpy(this->pOrderedPrimitiveBuffer[x].normalC, orderedPrimitiveList[x]->normalC, sizeof(float) * 3);
     memcpy(&this->pOrderedPrimitiveBuffer[x].materialIndex, &orderedPrimitiveList[x]->materialIndex, sizeof(int));
+    
+    Material material = pMaterial[orderedPrimitiveList[x]->materialIndex];
+    if (material.emission[0] > 0 ||
+        material.emission[1] > 0 ||
+        material.emission[2] > 0) {
+
+      lightContainer.primitives[lightContainer.count] = x;
+      lightContainer.count += 1;
+    }
   }
 }
 
@@ -168,4 +182,12 @@ uint64_t AccelerationStructureExplicit::getOrderedPrimitiveBufferSize() {
 
 void* AccelerationStructureExplicit::getOrderedPrimitiveBuffer() {
   return this->pOrderedPrimitiveBuffer;
+}
+
+uint64_t AccelerationStructureExplicit::getLightContainerBufferSize() {
+  return sizeof(LightContainer);
+}
+
+void* AccelerationStructureExplicit::getLightContainerBuffer() {
+  return &this->lightContainer;
 }

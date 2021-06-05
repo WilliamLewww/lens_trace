@@ -20,7 +20,6 @@ struct LinearBVHNode {
 };
 
 struct Primitive {
-  uint32_t index;
   float positionA[3];
   float positionB[3];
   float positionC[3];
@@ -34,11 +33,12 @@ struct Material {
   float diffuse[3];
   float ior;
   float dissolve;
+  float emission[3];
 };
 
 struct LightContainer {
   uint32_t count;
-  uint32_t primitive[64];
+  uint32_t primitives[64];
 };
 
 struct Camera {
@@ -46,6 +46,7 @@ struct Camera {
   float yaw;
   float pitch;
   float roll;
+  uint32_t frameCount;
 };
 
 struct Ray {
@@ -133,7 +134,7 @@ bool intersectTriangle(RayPayload* rayPayload, Ray ray, Primitive primitive) {
 }
 
 __device__
-bool intersectBounds(Ray ray, float4 invDir, int dirIsNeg[3], const float boundsMin[3], const float boundsMax[3]) {
+bool intersectBounds(Ray ray, float4 invDir, int dirIsNeg[3], const float* boundsMin, const float* boundsMax) {
   float tMin = (getBounds(dirIsNeg[0], boundsMin, boundsMax)[0] - ray.origin.x) * invDir.x;
   float tMax = (getBounds(1 - dirIsNeg[0], boundsMin, boundsMax)[0] - ray.origin.x) * invDir.x;
   float tyMin = (getBounds(dirIsNeg[1], boundsMin, boundsMax)[1] - ray.origin.y) * invDir.y;
