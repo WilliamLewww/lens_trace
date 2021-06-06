@@ -135,7 +135,11 @@ void RendererOpenCL::render(void* pRenderProperties) {
     clSetKernelArg(this->kernel, 7, sizeof(cl_uint), &width);
     clSetKernelArg(this->kernel, 8, sizeof(cl_uint), &height);
     clSetKernelArg(this->kernel, 9, sizeof(cl_uint), &depth);
-    clEnqueueNDRangeKernel(this->commandQueue, this->kernel, 2, NULL, this->workBlockSize, this->threadGroupSize, 0, NULL, &events[x]);
+    // cl_int result = clEnqueueNDRangeKernel(this->commandQueue, this->kernel, 2, NULL, this->workBlockSize, this->threadGroupSize, 0, NULL, &events[x]);
+    cl_int result = clEnqueueNDRangeKernel(this->commandQueue, this->kernel, 2, NULL, this->workBlockSize, NULL, 0, NULL, &events[x]);
+    if (result != CL_SUCCESS) {
+      printf("Kernel Error: %d\n", result);
+    }
   }
   clWaitForEvents(this->workBlockCount, events);
 
