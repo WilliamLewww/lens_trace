@@ -109,6 +109,9 @@ TEST (RenderBufferTEST, CustomBlockSize) {
   }
 
   delete renderer;
+  free(pOutputBufferC);
+  free(pOutputBufferB);
+  free(pOutputBufferA);
 }
 
 TEST (RenderBufferTEST, KernelMode) {
