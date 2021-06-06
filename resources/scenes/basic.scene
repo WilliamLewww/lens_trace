@@ -4,7 +4,7 @@
     "kernel_file_path": "resources/kernels/basic_opencl.kernel",
     "kernel_mode": "KERNEL_MODE_LINEAR",
     "thread_organization_mode": "THREAD_ORGANIZATION_MODE_MAX_FIT",
-    "image_dimensions": [2048, 2048, 3]
+    "image_dimensions": [800, 800, 3]
   },
   "camera": {
     "position": [0, 2.5, -50],
