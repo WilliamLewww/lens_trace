@@ -60,7 +60,7 @@ typedef struct RayPayloadTag {
   float v;
 } RayPayload;
 
-float random(float2 uv, float seed) {
+inline float random(float2 uv, float seed) {
   float a = sin(fmod(dot(uv, (float2)(12.9898, 78.233)) + 1113.1 * seed, M_PI)) * 43758.5453;
   return a - floor(a);
 }

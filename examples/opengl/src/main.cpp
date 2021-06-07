@@ -126,7 +126,7 @@ int main(int argc, char** argv) {
   RenderPropertiesCUDA renderProperties = {
     .sType = STRUCTURE_TYPE_RENDER_PROPERTIES_CUDA,
     .pNext = NULL,
-    .kernelName = "basic_cuda",
+    .kernelName = "basic",
     .kernelMode = KERNEL_MODE_LINEAR,
     .threadOrganizationMode = THREAD_ORGANIZATION_MODE_MAX_FIT,
     .threadOrganization = {},

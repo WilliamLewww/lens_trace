@@ -1,11 +1,11 @@
 #include "lens_trace/cuda/renderer_cuda.h"
 
 extern "C" {
-  void basic_cuda_kernelWrappers(KERNEL_ARGUMENTS);
+  void basic_kernelWrappers(KERNEL_ARGUMENTS);
 }
 
 std::map<std::string, void (*)(KERNEL_ARGUMENTS)> RendererCUDA::kernelMap = {
-  {"basic_cuda", basic_cuda_kernelWrappers},
+  {"basic", basic_kernelWrappers},
 };
 
 RendererCUDA::RendererCUDA() {

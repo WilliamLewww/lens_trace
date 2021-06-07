@@ -399,7 +399,7 @@ void tileKernel(LinearBVHNode* linearNodes,
   output[id + 2] = outputColor.z;
 }
 
-extern "C" void basic_cuda_kernelWrappers(void* linearNodeBuffer,
+extern "C" void basic_kernelWrappers(void* linearNodeBuffer,
                                           uint64_t linearNodeBufferSize,
                                           void* primitiveBuffer,
                                           uint64_t primitiveBufferSize,

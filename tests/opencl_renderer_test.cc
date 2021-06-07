@@ -30,7 +30,7 @@ TEST (RenderBufferTEST, ValidBuffer) {
   RenderPropertiesOpenCL renderProperties = {
     .sType = STRUCTURE_TYPE_RENDER_PROPERTIES_OPENCL,
     .pNext = NULL,
-    .kernelFilePath = "resources/kernels/basic_opencl.kernel",
+    .kernelFilePath = "resources/kernels/basic.kernel",
     .kernelMode = KERNEL_MODE_LINEAR,
     .threadOrganizationMode = THREAD_ORGANIZATION_MODE_MAX_FIT,
     .threadOrganization = {},
@@ -71,7 +71,7 @@ TEST (RenderBufferTEST, CustomBlockSize) {
   RenderPropertiesOpenCL renderProperties = {
     .sType = STRUCTURE_TYPE_RENDER_PROPERTIES_OPENCL,
     .pNext = NULL,
-    .kernelFilePath = "resources/kernels/basic_opencl.kernel",
+    .kernelFilePath = "resources/kernels/basic.kernel",
     .kernelMode = KERNEL_MODE_LINEAR,
     .threadOrganizationMode = THREAD_ORGANIZATION_MODE_MAX_FIT,
     .threadOrganization = {},
@@ -140,7 +140,7 @@ TEST (RenderBufferTEST, KernelMode) {
     RenderPropertiesOpenCL renderProperties = {
       .sType = STRUCTURE_TYPE_RENDER_PROPERTIES_OPENCL,
       .pNext = NULL,
-      .kernelFilePath = "resources/kernels/basic_opencl.kernel",
+      .kernelFilePath = "resources/kernels/basic.kernel",
       .kernelMode = KERNEL_MODE_LINEAR,
       .threadOrganizationMode = THREAD_ORGANIZATION_MODE_MAX_FIT,
       .threadOrganization = {},
@@ -158,7 +158,7 @@ TEST (RenderBufferTEST, KernelMode) {
     RenderPropertiesOpenCL renderProperties = {
       .sType = STRUCTURE_TYPE_RENDER_PROPERTIES_OPENCL,
       .pNext = NULL,
-      .kernelFilePath = "resources/kernels/basic_opencl.kernel",
+      .kernelFilePath = "resources/kernels/basic.kernel",
       .kernelMode = KERNEL_MODE_TILE,
       .threadOrganizationMode = THREAD_ORGANIZATION_MODE_MAX_FIT,
       .threadOrganization = {},
@@ -203,7 +203,7 @@ TEST (RenderBufferTEST, CorrectColor) {
   RenderPropertiesOpenCL renderProperties = {
     .sType = STRUCTURE_TYPE_RENDER_PROPERTIES_OPENCL,
     .pNext = NULL,
-    .kernelFilePath = "resources/kernels/basic_opencl.kernel",
+    .kernelFilePath = "resources/kernels/basic.kernel",
     .kernelMode = KERNEL_MODE_LINEAR,
     .threadOrganizationMode = THREAD_ORGANIZATION_MODE_MAX_FIT,
     .threadOrganization = {},
