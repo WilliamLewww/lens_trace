@@ -13,7 +13,7 @@ TEST (RenderBufferTEST, ValidBuffer) {
   RendererOpenCL* renderer = new RendererOpenCL();
   EXPECT_TRUE(renderer != NULL);
 
-  uint64_t outputBufferSize = sizeof(float) * 800 * 800 * 3;
+  uint64_t outputBufferSize = sizeof(float) * 100 * 100 * 3;
   void* pOutputBuffer = malloc(outputBufferSize);
 
   Camera* pCamera = new Camera(0, 2.5, -50, 0);
@@ -34,7 +34,7 @@ TEST (RenderBufferTEST, ValidBuffer) {
     .kernelMode = KERNEL_MODE_LINEAR,
     .threadOrganizationMode = THREAD_ORGANIZATION_MODE_MAX_FIT,
     .threadOrganization = {},
-    .imageDimensions = {800, 800, 3},
+    .imageDimensions = {100, 100, 3},
     .pOutputBuffer = pOutputBuffer,
     .outputBufferSize = outputBufferSize,
     .pAccelerationStructureExplicit = pAccelerationStructureExplicit,
@@ -121,7 +121,7 @@ TEST (RenderBufferTEST, KernelMode) {
   RendererOpenCL* renderer = new RendererOpenCL();
   EXPECT_TRUE(renderer != NULL);
 
-  uint64_t outputBufferSize = sizeof(float) * 800 * 800 * 3;
+  uint64_t outputBufferSize = sizeof(float) * 100 * 100 * 3;
   void* pOutputBufferA = malloc(outputBufferSize);
   void* pOutputBufferB = malloc(outputBufferSize);
 
@@ -144,7 +144,7 @@ TEST (RenderBufferTEST, KernelMode) {
       .kernelMode = KERNEL_MODE_LINEAR,
       .threadOrganizationMode = THREAD_ORGANIZATION_MODE_MAX_FIT,
       .threadOrganization = {},
-      .imageDimensions = {800, 800, 3},
+      .imageDimensions = {100, 100, 3},
       .pOutputBuffer = pOutputBufferA,
       .outputBufferSize = outputBufferSize,
       .pAccelerationStructureExplicit = pAccelerationStructureExplicit,
@@ -162,7 +162,7 @@ TEST (RenderBufferTEST, KernelMode) {
       .kernelMode = KERNEL_MODE_TILE,
       .threadOrganizationMode = THREAD_ORGANIZATION_MODE_MAX_FIT,
       .threadOrganization = {},
-      .imageDimensions = {800, 800, 3},
+      .imageDimensions = {100, 100, 3},
       .pOutputBuffer = pOutputBufferB,
       .outputBufferSize = outputBufferSize,
       .pAccelerationStructureExplicit = pAccelerationStructureExplicit,
@@ -173,7 +173,7 @@ TEST (RenderBufferTEST, KernelMode) {
     renderer->render(&renderProperties);
   }
 
-  for (int x = 0; x < 800 * 800 * 3; x += 32) {
+  for (int x = 0; x < 100 * 100 * 3; x += 32) {
     EXPECT_FLOAT_EQ(((float*)pOutputBufferA)[x], ((float*)pOutputBufferB)[x]);
   }
 
