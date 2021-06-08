@@ -1,7 +1,7 @@
 {
   "renderer": {
     "render_platform": "RENDER_PLATFORM_OPENCL",
-    "kernel_file_path": "resources/kernels/basic.kernel",
+    "kernel_file_path": "resources/kernels/opencl/basic.cl",
     "kernel_mode": "KERNEL_MODE_LINEAR",
     "thread_organization_mode": "THREAD_ORGANIZATION_MODE_MAX_FIT",
     "image_dimensions": [2048, 2048, 3]

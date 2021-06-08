@@ -14,8 +14,8 @@ SceneParser::SceneParser(std::string filename) {
       }
       if (jf["renderer"]["render_platform"] == "RENDER_PLATFORM_CUDA") {
         this->rendererParsed.renderPlatform = RENDER_PLATFORM_CUDA;
-        if (jf["renderer"]["kernel_name"] != nullptr) {
-          this->rendererParsed.kernelName = jf["renderer"]["kernel_name"];
+        if (jf["renderer"]["kernel_file_path"] != nullptr) {
+          this->rendererParsed.kernelFilePath = jf["renderer"]["kernel_file_path"];
         }
       }
     }
@@ -146,7 +146,7 @@ RenderPropertiesCUDA SceneParser::getRenderPropertiesCUDA(void* outputBuffer, Ac
   RenderPropertiesCUDA renderProperties = {
     .sType = STRUCTURE_TYPE_RENDER_PROPERTIES_CUDA,
     .pNext = NULL,
-    .kernelName = this->rendererParsed.kernelName,
+    .kernelFilePath = this->rendererParsed.kernelFilePath,
     .kernelMode = this->rendererParsed.kernelMode,
     .threadOrganizationMode = this->rendererParsed.threadOrganizationMode,
     .threadOrganization = {},

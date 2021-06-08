@@ -66,7 +66,7 @@ struct RenderPropertiesOpenCL {
 struct RenderPropertiesCUDA {
   StructureType sType;
   void* pNext;
-  std::string kernelName;
+  std::string kernelFilePath;
   KernelMode kernelMode;
   ThreadOrganizationMode threadOrganizationMode;
   ThreadOrganizationCUDA threadOrganization;

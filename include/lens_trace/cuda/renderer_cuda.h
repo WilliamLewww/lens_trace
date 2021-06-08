@@ -5,15 +5,22 @@
 #include "lens_trace/camera.h"
 #include "lens_trace/structures.h"
 
+#include <cuda.h>
+#include <cuda_runtime.h>
+#include <nvrtc.h>
+
 #include <stdio.h>
 #include <time.h>
 #include <map>
 
-#define KERNEL_ARGUMENTS void*, uint64_t, void*, uint64_t, void*, uint64_t, void*, uint64_t, void*, uint64_t, void*, uint64_t[3], uint64_t[2], KernelMode
-
 class RendererCUDA : public Renderer {
 private:
-  static std::map<std::string, void (*)(KERNEL_ARGUMENTS)> kernelMap;
+  CUdevice device;
+  CUcontext context;
+
+  std::map<std::string, nvrtcProgram> programMap;
+
+  void compileKernel(std::string kernelFilePath);
 public:
   RendererCUDA();
   ~RendererCUDA();

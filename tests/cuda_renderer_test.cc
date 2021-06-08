@@ -30,7 +30,7 @@ TEST (RenderBufferTEST, ValidBuffer) {
   RenderPropertiesCUDA renderProperties = {
     .sType = STRUCTURE_TYPE_RENDER_PROPERTIES_CUDA,
     .pNext = NULL,
-    .kernelName = "basic",
+    .kernelFilePath = "resources/kernels/cuda/basic.cu",
     .kernelMode = KERNEL_MODE_LINEAR,
     .threadOrganizationMode = THREAD_ORGANIZATION_MODE_MAX_FIT,
     .threadOrganization = {},
@@ -71,7 +71,7 @@ TEST (RenderBufferTEST, CustomBlockSize) {
   RenderPropertiesCUDA renderProperties = {
     .sType = STRUCTURE_TYPE_RENDER_PROPERTIES_CUDA,
     .pNext = NULL,
-    .kernelName = "basic",
+    .kernelFilePath = "resources/kernels/cuda/basic.cu",
     .kernelMode = KERNEL_MODE_LINEAR,
     .threadOrganizationMode = THREAD_ORGANIZATION_MODE_MAX_FIT,
     .threadOrganization = {},
@@ -137,7 +137,7 @@ TEST (RenderBufferTEST, KernelMode) {
     RenderPropertiesCUDA renderProperties = {
       .sType = STRUCTURE_TYPE_RENDER_PROPERTIES_CUDA,
       .pNext = NULL,
-      .kernelName = "basic",
+      .kernelFilePath = "resources/kernels/cuda/basic.cu",
       .kernelMode = KERNEL_MODE_LINEAR,
       .threadOrganizationMode = THREAD_ORGANIZATION_MODE_MAX_FIT,
       .threadOrganization = {},
@@ -155,7 +155,7 @@ TEST (RenderBufferTEST, KernelMode) {
     RenderPropertiesCUDA renderProperties = {
       .sType = STRUCTURE_TYPE_RENDER_PROPERTIES_CUDA,
       .pNext = NULL,
-      .kernelName = "basic",
+      .kernelFilePath = "resources/kernels/cuda/basic.cu",
       .kernelMode = KERNEL_MODE_TILE,
       .threadOrganizationMode = THREAD_ORGANIZATION_MODE_MAX_FIT,
       .threadOrganization = {},
@@ -200,7 +200,7 @@ TEST (RenderBufferTEST, CorrectColor) {
   RenderPropertiesCUDA renderProperties = {
     .sType = STRUCTURE_TYPE_RENDER_PROPERTIES_CUDA,
     .pNext = NULL,
-    .kernelName = "basic",
+    .kernelFilePath = "resources/kernels/cuda/basic.cu",
     .kernelMode = KERNEL_MODE_LINEAR,
     .threadOrganizationMode = THREAD_ORGANIZATION_MODE_MAX_FIT,
     .threadOrganization = {},

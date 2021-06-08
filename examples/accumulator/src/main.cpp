@@ -228,7 +228,7 @@ int main(int argc, char** argv) {
   RenderPropertiesOpenCL renderProperties = {
     .sType = STRUCTURE_TYPE_RENDER_PROPERTIES_OPENCL,
     .pNext = NULL,
-    .kernelFilePath = "resources/kernels/accumulator.kernel",
+    .kernelFilePath = "resources/kernels/accumulator.cl",
     .kernelMode = KERNEL_MODE_LINEAR,
     .threadOrganizationMode = THREAD_ORGANIZATION_MODE_MAX_FIT,
     .threadOrganization = {},

@@ -1,9 +1,9 @@
-#include <stdio.h>
-#include <stdint.h>
-
-#include "lens_trace/structures.h"
-
 #define FLT_MAX 10000000
+
+enum KernelMode {
+  KERNEL_MODE_LINEAR,
+  KERNEL_MODE_TILE
+};
 
 struct LinearBVHNode {
   float boundsMin[3];
@@ -14,7 +14,7 @@ struct LinearBVHNode {
     int secondChildOffset;
   };
 
-  ushort primitiveCount;
+  unsigned short primitiveCount;
   unsigned char axis;
   unsigned char pad[1];
 };
@@ -37,8 +37,8 @@ struct Material {
 };
 
 struct LightContainer {
-  uint32_t count;
-  uint32_t primitives[64];
+  unsigned int count;
+  unsigned int primitives[64];
 };
 
 struct Camera {
@@ -46,7 +46,7 @@ struct Camera {
   float yaw;
   float pitch;
   float roll;
-  uint32_t frameCount;
+  unsigned int frameCount;
 };
 
 struct Ray {
@@ -397,88 +397,4 @@ void tileKernel(LinearBVHNode* linearNodes,
   output[id + 0] = outputColor.x;
   output[id + 1] = outputColor.y;
   output[id + 2] = outputColor.z;
-}
-
-extern "C" void basic_kernelWrappers(void* linearNodeBuffer,
-                                          uint64_t linearNodeBufferSize,
-                                          void* primitiveBuffer,
-                                          uint64_t primitiveBufferSize,
-                                          void* materialBuffer,
-                                          uint64_t materialBufferSize,
-                                          void* lightContainerBuffer,
-                                          uint64_t lightContainerBufferSize,
-                                          void* cameraBuffer,
-                                          uint64_t cameraBufferSize,
-                                          void* outputBuffer, 
-                                          uint64_t imageDimensions[3],
-                                          uint64_t blockSize[2],
-                                          KernelMode kernelMode) {
-
-  dim3 block(blockSize[0], blockSize[1]);
-  dim3 grid((imageDimensions[0] + block.x - 1) / block.x, (imageDimensions[1] + block.y - 1) / block.y);
-
-  void* linearNodeBufferDevice;
-  cudaMalloc(&linearNodeBufferDevice, linearNodeBufferSize);
-  cudaMemcpy(linearNodeBufferDevice, linearNodeBuffer, linearNodeBufferSize, cudaMemcpyHostToDevice);
-
-  void* primitiveBufferDevice;
-  cudaMalloc(&primitiveBufferDevice, primitiveBufferSize);
-  cudaMemcpy(primitiveBufferDevice, primitiveBuffer, primitiveBufferSize, cudaMemcpyHostToDevice);
-
-  void* materialBufferDevice;
-  cudaMalloc(&materialBufferDevice, materialBufferSize);
-  cudaMemcpy(materialBufferDevice, materialBuffer, materialBufferSize, cudaMemcpyHostToDevice);
-
-  void* lightContainerBufferDevice;
-  cudaMalloc(&lightContainerBufferDevice, lightContainerBufferSize);
-  cudaMemcpy(lightContainerBufferDevice, lightContainerBuffer, lightContainerBufferSize, cudaMemcpyHostToDevice);
-
-  void* cameraBufferDevice;
-  cudaMalloc(&cameraBufferDevice, cameraBufferSize);
-  cudaMemcpy(cameraBufferDevice, cameraBuffer, cameraBufferSize, cudaMemcpyHostToDevice);
-
-  void* outputBufferDevice;
-  cudaMalloc(&outputBufferDevice, sizeof(float) * imageDimensions[0] * imageDimensions[1] * imageDimensions[2]);
-
-  if (kernelMode == KERNEL_MODE_LINEAR) {
-    linearKernel<<<grid, block>>>(
-      (LinearBVHNode*)linearNodeBufferDevice, 
-      (Primitive*)primitiveBufferDevice, 
-      (Material*)materialBufferDevice,
-      (LightContainer*)lightContainerBufferDevice,
-      (Camera*)cameraBufferDevice, 
-      (float*)outputBufferDevice, 
-      imageDimensions[0], 
-      imageDimensions[1], 
-      imageDimensions[2]
-    );
-  }
-
-  if (kernelMode == KERNEL_MODE_TILE) {
-    tileKernel<<<grid, block>>>(
-      (LinearBVHNode*)linearNodeBufferDevice, 
-      (Primitive*)primitiveBufferDevice, 
-      (Material*)materialBufferDevice,
-      (LightContainer*)lightContainerBufferDevice,
-      (Camera*)cameraBufferDevice, 
-      (float*)outputBufferDevice, 
-      imageDimensions[0], 
-      imageDimensions[1], 
-      imageDimensions[2]
-    );
-  }
-  cudaDeviceSynchronize();
-
-  cudaError_t error = cudaGetLastError();
-  if (error != cudaSuccess) {
-    printf("%s\n", cudaGetErrorString(error));
-  }
-
-  cudaMemcpy(outputBuffer, outputBufferDevice, sizeof(float) * imageDimensions[0] * imageDimensions[1] * imageDimensions[2], cudaMemcpyDeviceToHost);
-  cudaFree(outputBufferDevice);
-  cudaFree(cameraBufferDevice);
-  cudaFree(lightContainerBufferDevice);
-  cudaFree(materialBufferDevice);
-  cudaFree(primitiveBufferDevice);
-  cudaFree(linearNodeBufferDevice);
 }
