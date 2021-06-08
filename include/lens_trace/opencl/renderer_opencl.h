@@ -30,7 +30,6 @@ private:
 
   std::map<std::string, cl_program> programMap;
 
-  cl_kernel kernel;
   uint64_t workBlockSize[2];
   uint64_t threadGroupSize[2];
   uint64_t workBlockCount;

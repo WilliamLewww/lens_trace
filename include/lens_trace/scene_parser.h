@@ -27,7 +27,7 @@
 
 struct RendererParsed {
   RenderPlatform renderPlatform = RENDER_PLATFORM_OPENCL;
-  std::string kernelFilePath = "resources/kernels/basic.kernel";
+  std::string kernelFilePath = "resources/kernels/opencl/basic.cl";
   std::string kernelName = "basic";
   KernelMode kernelMode = KERNEL_MODE_LINEAR;
   ThreadOrganizationMode threadOrganizationMode = THREAD_ORGANIZATION_MODE_MAX_FIT;

@@ -60,24 +60,26 @@ void RendererOpenCL::render(void* pRenderProperties) {
     printf("ERROR: RenderPropertiesOpenCL sType\n");
   }
 
+  AccelerationStructureExplicit* pAccelerationStructureExplicit = (AccelerationStructureExplicit*)pRenderPropertiesOpenCL->pAccelerationStructureExplicit;
+  Model* pModel = (Model*)pRenderPropertiesOpenCL->pModel;
+  Camera* pCamera = (Camera*)pRenderPropertiesOpenCL->pCamera;
+
   if (this->programMap.find(pRenderPropertiesOpenCL->kernelFilePath) == this->programMap.end()) {
     compileKernel(pRenderPropertiesOpenCL->kernelFilePath);
   }
   cl_program program = this->programMap[pRenderPropertiesOpenCL->kernelFilePath];
 
-  AccelerationStructureExplicit* pAccelerationStructureExplicit = (AccelerationStructureExplicit*)pRenderPropertiesOpenCL->pAccelerationStructureExplicit;
-  Model* pModel = (Model*)pRenderPropertiesOpenCL->pModel;
-  Camera* pCamera = (Camera*)pRenderPropertiesOpenCL->pCamera;
+  cl_kernel kernel;
 
   if (pRenderPropertiesOpenCL->kernelMode == KERNEL_MODE_LINEAR) {
-    this->kernel = clCreateKernel(program, "linearKernel", NULL);
+    kernel = clCreateKernel(program, "linearKernel", NULL);
   }
   if (pRenderPropertiesOpenCL->kernelMode == KERNEL_MODE_TILE) {
-    this->kernel = clCreateKernel(program, "tileKernel", NULL);
+    kernel = clCreateKernel(program, "tileKernel", NULL);
   }
   if (pRenderPropertiesOpenCL->threadOrganizationMode == THREAD_ORGANIZATION_MODE_MAX_FIT) {
     uint64_t maxWorkGroupSizeKernel;
-    clGetKernelWorkGroupInfo(this->kernel, this->deviceID, CL_KERNEL_WORK_GROUP_SIZE, sizeof(maxWorkGroupSizeKernel), &maxWorkGroupSizeKernel, NULL);
+    clGetKernelWorkGroupInfo(kernel, this->deviceID, CL_KERNEL_WORK_GROUP_SIZE, sizeof(maxWorkGroupSizeKernel), &maxWorkGroupSizeKernel, NULL);
     
     this->workBlockSize[0] = std::min(this->maxWorkItemSizes[0], pRenderPropertiesOpenCL->imageDimensions[0]);
     this->workBlockSize[1] = std::min(this->maxWorkItemSizes[1], pRenderPropertiesOpenCL->imageDimensions[1]);
@@ -125,18 +127,18 @@ void RendererOpenCL::render(void* pRenderProperties) {
 
   cl_event events[this->workBlockCount];
   for (cl_uint x = 0; x < this->workBlockCount; x++) {
-    clSetKernelArg(this->kernel, 0, sizeof(cl_mem), &nodeBufferDevice);
-    clSetKernelArg(this->kernel, 1, sizeof(cl_mem), &primitiveBufferDevice);
-    clSetKernelArg(this->kernel, 2, sizeof(cl_mem), &materialBufferDevice);
-    clSetKernelArg(this->kernel, 3, sizeof(cl_mem), &lightContainerBufferDevice);
-    clSetKernelArg(this->kernel, 4, sizeof(cl_mem), &cameraBufferDevice);
-    clSetKernelArg(this->kernel, 5, sizeof(cl_mem), &outputDevice);
-    clSetKernelArg(this->kernel, 6, sizeof(cl_uint), &x);
-    clSetKernelArg(this->kernel, 7, sizeof(cl_uint), &width);
-    clSetKernelArg(this->kernel, 8, sizeof(cl_uint), &height);
-    clSetKernelArg(this->kernel, 9, sizeof(cl_uint), &depth);
-    // cl_int result = clEnqueueNDRangeKernel(this->commandQueue, this->kernel, 2, NULL, this->workBlockSize, this->threadGroupSize, 0, NULL, &events[x]);
-    cl_int result = clEnqueueNDRangeKernel(this->commandQueue, this->kernel, 2, NULL, this->workBlockSize, NULL, 0, NULL, &events[x]);
+    clSetKernelArg(kernel, 0, sizeof(cl_mem), &nodeBufferDevice);
+    clSetKernelArg(kernel, 1, sizeof(cl_mem), &primitiveBufferDevice);
+    clSetKernelArg(kernel, 2, sizeof(cl_mem), &materialBufferDevice);
+    clSetKernelArg(kernel, 3, sizeof(cl_mem), &lightContainerBufferDevice);
+    clSetKernelArg(kernel, 4, sizeof(cl_mem), &cameraBufferDevice);
+    clSetKernelArg(kernel, 5, sizeof(cl_mem), &outputDevice);
+    clSetKernelArg(kernel, 6, sizeof(cl_uint), &x);
+    clSetKernelArg(kernel, 7, sizeof(cl_uint), &width);
+    clSetKernelArg(kernel, 8, sizeof(cl_uint), &height);
+    clSetKernelArg(kernel, 9, sizeof(cl_uint), &depth);
+    // cl_int result = clEnqueueNDRangeKernel(this->commandQueue, kernel, 2, NULL, this->workBlockSize, this->threadGroupSize, 0, NULL, &events[x]);
+    cl_int result = clEnqueueNDRangeKernel(this->commandQueue, kernel, 2, NULL, this->workBlockSize, NULL, 0, NULL, &events[x]);
     if (result != CL_SUCCESS) {
       printf("Kernel Error: %d\n", result);
     }
@@ -147,5 +149,5 @@ void RendererOpenCL::render(void* pRenderProperties) {
   clFinish(this->commandQueue);
 
   clReleaseMemObject(outputDevice);
-  clReleaseKernel(this->kernel);
+  clReleaseKernel(kernel);
 }
