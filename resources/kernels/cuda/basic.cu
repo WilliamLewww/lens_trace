@@ -328,7 +328,7 @@ float3 shade(LinearBVHNode* linearNodes,
   return outputColor;
 }
 
-__global__
+extern "C" __global__
 void linearKernel(LinearBVHNode* linearNodes, 
                   Primitive* primitives,
                   Material* materials,
@@ -363,7 +363,7 @@ void linearKernel(LinearBVHNode* linearNodes,
   output[id + 2] = outputColor.z;
 }
 
-__global__
+extern "C" __global__
 void tileKernel(LinearBVHNode* linearNodes, 
                 Primitive* primitives,
                 Material* materials,
