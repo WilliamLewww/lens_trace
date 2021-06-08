@@ -1,6 +1,7 @@
 cmake_minimum_required (VERSION 2.8.12)
 project(example_opengl LANGUAGES CXX)
 
+find_package(CUDA REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(glfw3 REQUIRED)
 find_package(GLEW REQUIRED)
@@ -27,6 +28,7 @@ find_library(LENS_TRACE_OPENCL_LIBRARY
 
 add_executable(example_opengl src/main.cpp)
 include_directories(example_opengl ${LENS_TRACE_INCLUDE_DIRECTORY})
+include_directories(example_opengl ${CUDA_INCLUDE_DIRS})
 include_directories(example_opengl ${OPENGL_INCLUDE_DIRS})
 include_directories(example_opengl ${GLFW_INCLUDE_DIRS})
 include_directories(example_opengl ${GLEW_INCLUDE_DIRS})
