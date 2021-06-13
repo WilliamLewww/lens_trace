@@ -29,13 +29,20 @@ void RendererCUDA::compileKernel(std::string kernelFilePath) {
   fclose(pKernelFile);
   pKernelFileBuffer[kernelFileSize] = '\0';
 
-  nvrtcCreateProgram(&this->programMap[kernelFilePath], pKernelFileBuffer, kernelFilePath.c_str(), 0, NULL, NULL);
+  nvrtcCreateProgram(&this->programMap[kernelFilePath].program, pKernelFileBuffer, kernelFilePath.c_str(), 0, NULL, NULL);
   free(pKernelFileBuffer);
 
-  nvrtcResult error = nvrtcCompileProgram(this->programMap[kernelFilePath], 0, NULL);
+  nvrtcResult error = nvrtcCompileProgram(this->programMap[kernelFilePath].program, 0, NULL);
   if (error != NVRTC_SUCCESS) {
-    printKernelBuildLog(this->programMap[kernelFilePath]);
+    printKernelBuildLog(this->programMap[kernelFilePath].program);
   }
+
+  size_t ptxSize;
+  nvrtcGetPTXSize(this->programMap[kernelFilePath].program, &ptxSize);
+  char* ptx = (char*)malloc(ptxSize);
+  nvrtcGetPTX(this->programMap[kernelFilePath].program, ptx);
+  cuModuleLoadDataEx(&this->programMap[kernelFilePath].module, ptx, 0, 0, 0);
+  free(ptx);
 }
 
 void RendererCUDA::render(void* pRenderProperties) {
@@ -52,23 +59,14 @@ void RendererCUDA::render(void* pRenderProperties) {
   if (this->programMap.find(pRenderPropertiesCUDA->kernelFilePath) == this->programMap.end()) {
     compileKernel(pRenderPropertiesCUDA->kernelFilePath);
   }
-  nvrtcProgram program = this->programMap[pRenderPropertiesCUDA->kernelFilePath];
+  nvrtcProgram program = this->programMap[pRenderPropertiesCUDA->kernelFilePath].program;
 
-  size_t ptxSize;
-  nvrtcGetPTXSize(program, &ptxSize);
-  char* ptx = new char[ptxSize];
-  nvrtcGetPTX(program, ptx);
-
-  CUmodule module;
   CUfunction kernel;
-
-  cuModuleLoadDataEx(&module, ptx, 0, 0, 0);
-
   if (pRenderPropertiesCUDA->kernelMode == KERNEL_MODE_LINEAR) {
-    cuModuleGetFunction(&kernel, module, "linearKernel");
+    cuModuleGetFunction(&kernel, this->programMap[pRenderPropertiesCUDA->kernelFilePath].module, "linearKernel");
   }
   if (pRenderPropertiesCUDA->kernelMode == KERNEL_MODE_TILE) {
-    cuModuleGetFunction(&kernel, module, "tileKernel");
+    cuModuleGetFunction(&kernel, this->programMap[pRenderPropertiesCUDA->kernelFilePath].module, "tileKernel");
   }
 
   uint64_t blockSize[2];
@@ -137,4 +135,11 @@ void RendererCUDA::render(void* pRenderProperties) {
 
   cuCtxSynchronize();
   cuMemcpyDtoH(pRenderPropertiesCUDA->pOutputBuffer, outputBufferDevice, sizeof(float) * pRenderPropertiesCUDA->imageDimensions[0] * pRenderPropertiesCUDA->imageDimensions[1] * pRenderPropertiesCUDA->imageDimensions[2]);
+
+  cuMemFree(outputBufferDevice);
+  cuMemFree(cameraBufferDevice);
+  cuMemFree(lightContainerBufferDevice);
+  cuMemFree(materialBufferDevice);
+  cuMemFree(primitiveBufferDevice);
+  cuMemFree(linearNodeBufferDevice);
 }

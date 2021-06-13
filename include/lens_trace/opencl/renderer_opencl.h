@@ -30,10 +30,6 @@ private:
 
   std::map<std::string, cl_program> programMap;
 
-  uint64_t workBlockSize[2];
-  uint64_t threadGroupSize[2];
-  uint64_t workBlockCount;
-
   void compileKernel(std::string kernelFilePath);
 public:
   RendererOpenCL();

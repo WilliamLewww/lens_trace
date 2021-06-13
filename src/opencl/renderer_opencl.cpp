@@ -70,24 +70,24 @@ void RendererOpenCL::render(void* pRenderProperties) {
   cl_program program = this->programMap[pRenderPropertiesOpenCL->kernelFilePath];
 
   cl_kernel kernel;
-
   if (pRenderPropertiesOpenCL->kernelMode == KERNEL_MODE_LINEAR) {
     kernel = clCreateKernel(program, "linearKernel", NULL);
   }
   if (pRenderPropertiesOpenCL->kernelMode == KERNEL_MODE_TILE) {
     kernel = clCreateKernel(program, "tileKernel", NULL);
   }
+
+  uint64_t workBlockSize[2];
+  uint64_t threadGroupSize[2];
   if (pRenderPropertiesOpenCL->threadOrganizationMode == THREAD_ORGANIZATION_MODE_MAX_FIT) {
     uint64_t maxWorkGroupSizeKernel;
     clGetKernelWorkGroupInfo(kernel, this->deviceID, CL_KERNEL_WORK_GROUP_SIZE, sizeof(maxWorkGroupSizeKernel), &maxWorkGroupSizeKernel, NULL);
     
-    this->workBlockSize[0] = std::min(this->maxWorkItemSizes[0], pRenderPropertiesOpenCL->imageDimensions[0]);
-    this->workBlockSize[1] = std::min(this->maxWorkItemSizes[1], pRenderPropertiesOpenCL->imageDimensions[1]);
+    workBlockSize[0] = std::min(this->maxWorkItemSizes[0], pRenderPropertiesOpenCL->imageDimensions[0]);
+    workBlockSize[1] = std::min(this->maxWorkItemSizes[1], pRenderPropertiesOpenCL->imageDimensions[1]);
 
-    this->threadGroupSize[0] = 32;
-    this->threadGroupSize[1] = (std::min(this->maxWorkGroupSize, maxWorkGroupSizeKernel) / 32);
-
-    this->workBlockCount = (pRenderPropertiesOpenCL->imageDimensions[0] / this->workBlockSize[0]) * (pRenderPropertiesOpenCL->imageDimensions[1] / this->workBlockSize[1]);
+    threadGroupSize[0] = 32;
+    threadGroupSize[1] = (std::min(this->maxWorkGroupSize, maxWorkGroupSizeKernel) / 32);
   }
   if (pRenderPropertiesOpenCL->threadOrganizationMode == THREAD_ORGANIZATION_MODE_CUSTOM) {
     ThreadOrganizationOpenCL threadOrganization = pRenderPropertiesOpenCL->threadOrganization;
@@ -95,14 +95,13 @@ void RendererOpenCL::render(void* pRenderProperties) {
       printf("ERROR: ThreadOrganizationOpenCL sType\n");
     }
 
-    this->workBlockSize[0] = threadOrganization.workBlockSize[0];
-    this->workBlockSize[1] = threadOrganization.workBlockSize[1];
+    workBlockSize[0] = threadOrganization.workBlockSize[0];
+    workBlockSize[1] = threadOrganization.workBlockSize[1];
 
-    this->threadGroupSize[0] = threadOrganization.threadGroupSize[0];
-    this->threadGroupSize[1] = threadOrganization.threadGroupSize[1];
-
-    this->workBlockCount = (pRenderPropertiesOpenCL->imageDimensions[0] / this->workBlockSize[0]) * (pRenderPropertiesOpenCL->imageDimensions[1] / this->workBlockSize[1]);
+    threadGroupSize[0] = threadOrganization.threadGroupSize[0];
+    threadGroupSize[1] = threadOrganization.threadGroupSize[1];
   }
+  uint64_t workBlockCount = (pRenderPropertiesOpenCL->imageDimensions[0] / workBlockSize[0]) * (pRenderPropertiesOpenCL->imageDimensions[1] / workBlockSize[1]);
 
   cl_mem nodeBufferDevice = clCreateBuffer(this->context, CL_MEM_READ_ONLY, pAccelerationStructureExplicit->getNodeBufferSize(), NULL, NULL);
   clEnqueueWriteBuffer(this->commandQueue, nodeBufferDevice, CL_TRUE, 0, pAccelerationStructureExplicit->getNodeBufferSize(), pAccelerationStructureExplicit->getNodeBuffer(), 0, NULL, NULL);
@@ -125,8 +124,8 @@ void RendererOpenCL::render(void* pRenderProperties) {
   cl_uint height = pRenderPropertiesOpenCL->imageDimensions[1];
   cl_uint depth = pRenderPropertiesOpenCL->imageDimensions[2];
 
-  cl_event events[this->workBlockCount];
-  for (cl_uint x = 0; x < this->workBlockCount; x++) {
+  cl_event events[workBlockCount];
+  for (cl_uint x = 0; x < workBlockCount; x++) {
     clSetKernelArg(kernel, 0, sizeof(cl_mem), &nodeBufferDevice);
     clSetKernelArg(kernel, 1, sizeof(cl_mem), &primitiveBufferDevice);
     clSetKernelArg(kernel, 2, sizeof(cl_mem), &materialBufferDevice);
@@ -137,13 +136,13 @@ void RendererOpenCL::render(void* pRenderProperties) {
     clSetKernelArg(kernel, 7, sizeof(cl_uint), &width);
     clSetKernelArg(kernel, 8, sizeof(cl_uint), &height);
     clSetKernelArg(kernel, 9, sizeof(cl_uint), &depth);
-    // cl_int result = clEnqueueNDRangeKernel(this->commandQueue, kernel, 2, NULL, this->workBlockSize, this->threadGroupSize, 0, NULL, &events[x]);
-    cl_int result = clEnqueueNDRangeKernel(this->commandQueue, kernel, 2, NULL, this->workBlockSize, NULL, 0, NULL, &events[x]);
+    // cl_int result = clEnqueueNDRangeKernel(this->commandQueue, kernel, 2, NULL, workBlockSize, threadGroupSize, 0, NULL, &events[x]);
+    cl_int result = clEnqueueNDRangeKernel(this->commandQueue, kernel, 2, NULL, workBlockSize, NULL, 0, NULL, &events[x]);
     if (result != CL_SUCCESS) {
       printf("Kernel Error: %d\n", result);
     }
   }
-  clWaitForEvents(this->workBlockCount, events);
+  clWaitForEvents(workBlockCount, events);
 
   clEnqueueReadBuffer(this->commandQueue, outputDevice, CL_TRUE, 0, pRenderPropertiesOpenCL->outputBufferSize, pRenderPropertiesOpenCL->pOutputBuffer, 0, NULL, NULL);
   clFinish(this->commandQueue);

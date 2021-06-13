@@ -13,12 +13,17 @@
 #include <time.h>
 #include <map>
 
+struct ProgramCUDA {
+  nvrtcProgram program;
+  CUmodule module;
+};
+
 class RendererCUDA : public Renderer {
 private:
   CUdevice device;
   CUcontext context;
 
-  std::map<std::string, nvrtcProgram> programMap;
+  std::map<std::string, ProgramCUDA> programMap;
 
   void compileKernel(std::string kernelFilePath);
 public:
