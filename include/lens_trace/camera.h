@@ -9,13 +9,13 @@
 
 class Camera {
 private:
-  float position[3];
-  float yaw;
-  float pitch;
-  float roll;
-  uint32_t frameCount;
-
-  void* cameraBuffer;
+  struct BufferData {
+    float position[3];
+    float yaw;
+    float pitch;
+    float roll;
+    uint32_t frameCount;
+  } bufferData;
 public:
   Camera(float positionX, float positionY, float positionZ, float yaw = 0, float pitch = 0, float roll = 0);
   ~Camera();
