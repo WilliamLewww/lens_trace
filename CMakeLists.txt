@@ -1,7 +1,7 @@
 cmake_minimum_required (VERSION 2.8.12)
 project(lens_trace LANGUAGES CXX)
 
-find_package(CUDAToolkit)
+find_package(CUDA)
 find_package(OpenCL)
 find_package(GTest)
 find_package(Threads)
@@ -10,7 +10,7 @@ if(GTest_FOUND)
   enable_testing()
 endif()
 
-if(NOT CUDAToolkit_FOUND AND NOT OpenCL_FOUND)
+if(NOT CUDA_FOUND AND NOT OpenCL_FOUND)
   message(FATAL_ERROR "Could not find CUDA or OpenCL. Exiting")
 endif()
 
@@ -28,15 +28,15 @@ add_library(lenstrace SHARED
 )
 include_directories(lenstrace include)
 
-if(CUDAToolkit_FOUND)
+if(CUDA_FOUND)
   add_library(lenstrace-cuda SHARED
     ${SOURCES_CUDA}
   )
   include_directories(lenstrace-cuda include)
-  include_directories(lenstrace-cuda ${CUDAToolkit_INCLUDE_DIRS})
+  include_directories(lenstrace-cuda ${CUDA_INCLUDE_DIRS})
 
   enable_language(CUDA)
-  target_link_libraries(lenstrace-cuda ${CUDAToolkit_LIBRARY_DIR} CUDA::cudart CUDA::nvrtc)
+  target_link_libraries(lenstrace-cuda ${CUDA_LIBRARIES} -lcuda -lnvrtc)
   target_link_libraries(LensTrace lenstrace-cuda)
   target_compile_definitions(LensTrace PRIVATE -DCUDA_ENABLED)
 endif()
@@ -54,7 +54,7 @@ endif()
 
 if(GTest_FOUND AND BUILD_TESTING)
   set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/tests)
-  if(CUDAToolkit_FOUND)
+  if(CUDA_FOUND)
     add_executable(CUDA_RENDERER_TEST tests/cuda_renderer_test.cc)
     include_directories(CUDA_RENDERER_TEST include)
     include_directories(CUDA_RENDERER_TEST ${GTEST_INCLUDE_DIRS})
@@ -83,7 +83,7 @@ file(GLOB LENS_TRACE_INCLUDE "include/lens_trace/*.h")
 list(REMOVE_ITEM LENS_TRACE_INCLUDE "${CMAKE_CURRENT_SOURCE_DIR}/include/lens_trace/scene_parser.h")
 install(FILES ${LENS_TRACE_INCLUDE} DESTINATION include/${PROJECT_NAME}/lens_trace)
 
-if(CUDAToolkit_FOUND)
+if(CUDA_FOUND)
   install(FILES ${CMAKE_CURRENT_BINARY_DIR}/liblenstrace-cuda.so DESTINATION lib/${PROJECT_NAME})
   file(GLOB LENS_TRACE_CUDA_INCLUDE "include/lens_trace/cuda/*.h")
   install(FILES ${LENS_TRACE_CUDA_INCLUDE} DESTINATION include/${PROJECT_NAME}/lens_trace/cuda)
